@@ -33,3 +33,9 @@ def test_encode_clap_audio():
         embeddings = encode_clap_audio(audio, encoder, processor)
         assert embeddings.shape[0] == audio.shape[0]
         assert embeddings.shape[1] == EXPECTED_CLAP_IPA_SIZE[size]
+
+def test_compute_cosine_similarity_matrix():
+    emb_a = torch.randn(5, 512)
+    emb_b = torch.randn(3, 512)
+    sim_matrix = compute_cosine_similarity_matrix(emb_a, emb_b)
+    assert sim_matrix.shape == (5, 3)
