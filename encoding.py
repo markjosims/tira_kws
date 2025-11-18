@@ -26,7 +26,6 @@ def encode_clap_audio(
     speech_encoder,
     speech_processor,
 ):
-
     audio_input = speech_processor(
         audio_batch,
         sampling_rate=SAMPLE_RATE,
