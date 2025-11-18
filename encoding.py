@@ -38,6 +38,61 @@ def encode_clap_audio(
         speech_embed = speech_encoder(**audio_input)['pooler_output']
     return speech_embed
 
+def get_frame(
+        audio: torch.Tensor,
+        frame_start: int,
+        frame_end: int,
+        sample_rate: int = SAMPLE_RATE,
+        return_timestamps: bool = False,        
+):
+    f"""
+    Slice a frame from the audio tensor indicated by the sample indices `frame_start` and `frame_end`.
+    If `return_timestamps=True`, instead return a dict with keys `start_s` (start time in seconds),
+    `end_s` (end time in seconds) and `samples` (tensor of wav samples for the given frame).
+    Pass `sample_rate` to override the default sample rate of {SAMPLE_RATE}.
+    """
+    if return_timestamps:
+        frame_start_s = frame_start/sample_rate
+        frame_end_s = frame_end/sample_rate
+        return {
+            'start_s': frame_start_s,
+            'end_s': frame_end_s,
+            'samples': audio[frame_start:frame_end]
+        }
+    return audio[frame_start:frame_end]
+
+def get_sliding_window(
+        audio: torch.Tensor,
+        window_size: float,
+        window_hop: float,
+        sample_rate: int = SAMPLE_RATE,
+        return_timestamps: bool = False,
+    ):
+    f"""
+    Split audio tensor into a list of tensors, each corresponding to a frame of length `framelength_s`
+    staggered by `frameshift_s`. If `return_timestamps=True`, return a list of dictionaries with keys `start_s`
+    (start time in seconds), `end_s` (end time in seconds) and `samples` (tensor of wav samples for the given frame).
+    Pass `sample_rate` to override the default sample rate of {SAMPLE_RATE}.
+    """
+    if len(audio)==0:
+        return []
+    framelength_samples = int(window_size * sample_rate)
+    frameshift_samples = int(window_hop * sample_rate)
+    
+    frame_start = 0
+    frame_end = framelength_samples
+    windows = []
+    while frame_end<len(audio):
+        frame = get_frame(audio, frame_start, frame_end, sample_rate, return_timestamps)
+        windows.append(frame)
+        frame_start+=frameshift_samples
+        frame_end+=frameshift_samples
+    # append last truncated frame
+    frame = get_frame(audio, frame_start, len(audio), sample_rate, return_timestamps)
+    windows.append(frame)
+    
+    return windows
+
 ########################
 # embedding comparison #
 ########################
