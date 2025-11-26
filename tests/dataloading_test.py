@@ -37,7 +37,7 @@ def test_sliding_window():
 def test_sliding_window_clap():
     ds_orig = load_tira_asr()
     ds_orig = ds_orig['train'].select(range(4))  # use a small subset for testing
-    ds_sliding = prepare_dataset(ds_orig, encoding='clap_ipa', window_size=1.0)
+    ds_sliding = prepare_dataset(ds_orig, encoder='clap_ipa', window_size=1.0)
     assert len(ds_sliding) > len(ds_orig)
     for i in range(len(ds_sliding)):
         assert 'input_features' in ds_sliding[i]

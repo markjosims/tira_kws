@@ -5,16 +5,15 @@ of the record with the highest speech-to-speech cosine similarity
 """
 
 import pandas as pd
+from constants import CSV_PATH, KEYPHRASE_PATH, SIMILARITY_MATRIX_PATH
 from dataloading import load_tira_asr
 import torch
 from tqdm import tqdm
 from pynini.lib.edit_transducer import LevenshteinDistance
 from typing import *
 from jiwer import wer, cer
+import os
 tqdm.pandas()
-
-OUTPUT_PATH = "data/most_predicted_word.csv"
-SIMILARITY_MATRIX_PATH = "data/similarity_matrix.pt"
 
 def get_most_similar_transcription_index(row, similarity_matrix):
     row_index = row.name
@@ -60,9 +59,12 @@ def main():
     is_mismatched = df['transcription'] != df['most_similar_transcription']
 
     transcription_counts = df['transcription'].value_counts()
+    transcription_list = transcription_counts.index.tolist()
+
     is_unique = df['transcription'].isin(
         transcription_counts[transcription_counts == 1].index
     )
+    transcription_id = df['transcription'].apply(transcription_list.index)
 
     wer_values = df.progress_apply(
         lambda row: wer(
@@ -79,6 +81,7 @@ def main():
 
     df['mismatched'] = is_mismatched
     df['unique'] = is_unique
+    df['transcription_id'] = transcription_id
     df['wer'] = wer_values
     df['cer'] = cer_values
 
@@ -104,12 +107,24 @@ def main():
     print(f"Overall average WER: {df['wer'].mean():.2f}")
     print(f"Overall average CER: {df['cer'].mean():.2f}")
 
+    df['source'] = df['wav_source'].apply(
+        os.path.basename
+    ).apply(
+        lambda f: os.path.splitext(f)[0]
+    )
+
     rows_to_keep = [
         'transcription', 'most_similar_transcription',
-        'mismatched', 'unique', 'wer', 'cer'
+        'mismatched', 'unique', 'wer', 'cer',
+        'start', 'end', 'source', 'transcription_id',
     ]
     df = df[rows_to_keep]
-    df.to_csv(OUTPUT_PATH, index_label='index')
+    df['duration'] = df['end'] - df['start']
+
+    df.to_csv(CSV_PATH, index_label='index')
+
+    with open(KEYPHRASE_PATH, 'w', encoding='utf-8') as f:
+        f.write('\n'.join(transcription_list))
 
 if __name__ == "__main__":
     main()

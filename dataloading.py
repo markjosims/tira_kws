@@ -15,7 +15,19 @@ def load_tira_asr() -> Dataset:
 
 def load_tira_drz() -> Dataset:
     dataset = load_from_disk(TIRA_DRZ_PATH)
+    dataset = dataset.rename_columns({'text': 'transcription'})
+
+    # for now only returning English subset
+    dataset = dataset.filter(lambda example: example['transcription'].lower() == 'eng')
     return dataset
+
+def load_dataset(dataset_name: str) -> Dataset:
+    if dataset_name == "tira_asr":
+        return load_tira_asr()
+    elif dataset_name == "tira_drz":
+        return load_tira_drz()
+    else:
+        raise ValueError(f"Unsupported dataset: {dataset_name}")
 
 def get_encoder_funct_w_sliding_window(
         encoder_funct: Callable,
@@ -44,13 +56,13 @@ def get_encoder_funct_w_sliding_window(
 
 def prepare_dataset(
         dataset,
-        encoding: Literal['clap_ipa', None] = None,
+        encoder: Literal['clap_ipa', None] = None,
         encoder_size: Literal['tiny', 'base', 'small'] = 'small',
         window_size: Optional[float] = None,
         window_hop: Optional[float] = None,
     ) -> Dataset:
     processor = load_clap_speech_processor()
-    if encoding == 'clap_ipa':
+    if encoder == 'clap_ipa':
         speech_encoder = load_clap_speech_encoder(encoder_size)
         speech_encoder.eval()
         encoder_funct = lambda audio, _: (encode_clap_audio(
