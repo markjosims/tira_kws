@@ -26,6 +26,8 @@ def encode_clap_audio(
     speech_encoder,
     speech_processor,
 ):
+    if type(audio_batch) is torch.Tensor:
+        audio_batch = audio_batch.cpu().numpy()
     audio_input = speech_processor(
         audio_batch,
         sampling_rate=SAMPLE_RATE,
@@ -38,8 +40,18 @@ def encode_clap_audio(
         speech_embed = speech_encoder(**audio_input)['pooler_output']
     return speech_embed
 
+def add_sliding_window_args(parser):
+    parser.add_argument('--window_size', '-w', type=float, default=None, help='Window size in seconds for sliding window embedding extraction.')
+    parser.add_argument('--window_hop', '-p', type=float, default=None, help='Window hop in seconds for sliding window embedding extraction.')
+    return parser
+
+def add_encoder_args(parser):
+    parser.add_argument('--encoder', '-e', type=str, default='clap_ipa', help='Encoder model to use for generating embeddings.')
+    parser.add_argument('--encoder_size', '-s', type=str, default='base', help='Size of CLAP speech encoder to use.')
+    return parser
+
 def get_frame(
-        audio: torch.Tensor,
+        audio: np.ndarray,
         frame_start: int,
         frame_end: int,
         sample_rate: int = SAMPLE_RATE,
@@ -51,15 +63,20 @@ def get_frame(
     `end_s` (end time in seconds) and `samples` (tensor of wav samples for the given frame).
     Pass `sample_rate` to override the default sample rate of {SAMPLE_RATE}.
     """
+    samples = audio[frame_start:frame_end]
+    if len(samples) < (frame_end - frame_start):
+        # pad with zeros if needed
+        pad_length = (frame_end - frame_start) - len(samples)
+        samples = np.pad(samples, (0, pad_length), mode='constant')
     if return_timestamps:
         frame_start_s = frame_start/sample_rate
         frame_end_s = frame_end/sample_rate
         return {
             'start_s': frame_start_s,
             'end_s': frame_end_s,
-            'samples': audio[frame_start:frame_end]
+            'samples': samples
         }
-    return audio[frame_start:frame_end]
+    return samples
 
 def get_sliding_window(
         audio: torch.Tensor,
@@ -88,7 +105,7 @@ def get_sliding_window(
         frame_start+=frameshift_samples
         frame_end+=frameshift_samples
     # append last truncated frame
-    frame = get_frame(audio, frame_start, len(audio), sample_rate, return_timestamps)
+    frame = get_frame(audio, frame_start, frame_end, sample_rate, return_timestamps)
     windows.append(frame)
     
     return windows
