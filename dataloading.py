@@ -1,4 +1,4 @@
-from datasets import Dataset, DatasetDict, load_from_disk
+from datasets import Dataset, DatasetDict, load_from_disk, concatenate_datasets
 from torch.utils.data import DataLoader
 import torch
 from transformers import WhisperProcessor
@@ -8,31 +8,62 @@ from encoding import (
     get_sliding_window,
 )
 from typing import *
+from argparse import ArgumentParser
+
+def add_dataset_optional_args(parser: ArgumentParser) -> ArgumentParser:
+    parser.add_argument(
+        '--num_records', '-n', type=int, default=None, help='Number of records to load from dataset.'
+    )
+    parser.add_argument(
+        '--batch_size', '-b', type=int, default=BATCH_SIZE, help='Batch size for data loading and computing embeddings.'
+    )
+    return parser
+
+def add_dataset_args(parser: ArgumentParser) -> ArgumentParser:
+    parser.add_argument(
+        '--dataset', '-d', type=str, default='tira_asr', help='Dataset to load.'
+    )
+    add_dataset_optional_args(parser)
+    return parser
 
 def load_tira_asr() -> Dataset:
     dataset = load_from_disk(TIRA_ASR_PATH)
+
+    # combine train, validation, and test splits
+    dataset = concatenate_datasets([
+        dataset['train'],
+        dataset['validation'],
+        dataset['test'],
+    ])
+
     return dataset
 
 def load_tira_drz() -> Dataset:
     dataset = load_from_disk(TIRA_DRZ_PATH)
     dataset = dataset.rename_columns({'text': 'transcription'})
+    dataset = dataset['train']
 
     # for now only returning English subset
     dataset = dataset.filter(lambda example: example['transcription'].lower() == 'eng')
     return dataset
 
-def load_dataset(dataset_name: str) -> Dataset:
+def load_dataset(dataset_name: str, num_records: Optional[int] = None) -> Dataset:
     if dataset_name == "tira_asr":
-        return load_tira_asr()
+        dataset = load_tira_asr()
     elif dataset_name == "tira_drz":
-        return load_tira_drz()
+        dataset = load_tira_drz()
     else:
         raise ValueError(f"Unsupported dataset: {dataset_name}")
+    if num_records is not None:
+        dataset = dataset.select(range(num_records))
+    return dataset
+    
 
 def get_encoder_funct_w_sliding_window(
         encoder_funct: Callable,
         window_size: float,
         window_hop: Optional[float] = None,
+        batch_size: int = BATCH_SIZE,
     ) -> Callable:
     if window_hop is None:
         window_hop = window_size / 2.0
@@ -47,9 +78,11 @@ def get_encoder_funct_w_sliding_window(
                 window_size=window_size,
                 window_hop=window_hop,
             )
-            window_embeddings, _ = original_encoder_funct(windows, sr)
-            window_encodings.append(window_embeddings)
             num_windows.append(len(windows))
+            window_batchloader = DataLoader(windows, batch_size=batch_size)
+            for batch in window_batchloader:
+                window_embeddings, _ = original_encoder_funct(batch, sr)
+                window_encodings.append(window_embeddings)
         all_window_embeddings = torch.cat(window_encodings, dim=0)
         return all_window_embeddings, num_windows
     return encoder_funct
@@ -60,6 +93,7 @@ def prepare_dataset(
         encoder_size: Literal['tiny', 'base', 'small'] = 'small',
         window_size: Optional[float] = None,
         window_hop: Optional[float] = None,
+        batch_size: int = BATCH_SIZE,
     ) -> Dataset:
     processor = load_clap_speech_processor()
     if encoder == 'clap_ipa':
@@ -83,14 +117,16 @@ def prepare_dataset(
             encoder_funct,
             window_size,
             window_hop,
+            batch_size,
         )
 
     dataset = dataset.map(
         prepare_dataset_batch,
         batched=True,
-        batch_size=BATCH_SIZE,
+        batch_size=batch_size,
         remove_columns=colnames,
         load_from_cache_file=True,
+        with_indices=True,
         fn_kwargs={
             'processor': processor,
             'encoder_funct': encoder_funct,
@@ -102,6 +138,7 @@ def prepare_dataset(
 
 def prepare_dataset_batch(
         batch: Dataset,
+        index: int,
         processor: WhisperProcessor,
         encoder_funct: Callable = None,
 ) -> Dataset:
@@ -121,21 +158,26 @@ def prepare_dataset_batch(
     )['input_ids']
 
     if num_windows is not None:
-        label_ids = expand_label_ids(num_windows, label_ids)
+        label_ids = expand_col(num_windows, label_ids)
+        index = expand_col(num_windows, index)
     processed_batch['label_ids'] = label_ids
+    processed_batch['index'] = index
 
     return processed_batch
 
-def expand_label_ids(num_windows, label_ids):
-    expanded_label_ids = []
+def expand_col(num_windows, col):
+    expanded_col = []
     for i, n_windows in enumerate(num_windows):
         for _ in range(n_windows):
-            expanded_label_ids.append(label_ids[i])
-    label_ids = torch.stack(expanded_label_ids, dim=0)
-    return label_ids
+            expanded_col.append(col[i])
+    if type(col) == torch.Tensor:
+        col = torch.stack(expanded_col, dim=0)
+    else:
+        col = expanded_col
+    return col
 
 def get_audio_dataloader(
         dataset: Dataset,
-        batch_size: int = BATCH_SIZE
+        batch_size: int = BATCH_SIZE,
     ) -> DataLoader:
     return DataLoader(dataset, batch_size=batch_size)
