@@ -6,7 +6,7 @@ from pathlib import Path
 
 SAMPLE_RATE = 16_000
 DEVICE = torch.device(0 if torch.cuda.is_available() else "cpu")
-BATCH_SIZE = int(os.environ.get("BATCH_SIZE", 128))
+BATCH_SIZE = int(os.environ.get("BATCH_SIZE", 256))
 
 # file paths
 
