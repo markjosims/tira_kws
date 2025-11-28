@@ -42,6 +42,7 @@ from constants import (
     SIMILARITY_MATRIX_PATH, CSV_PATH,
     KEYPHRASE_PATH, MAX_KEYWORD_STR
 )
+from encoding import add_sliding_window_args
 import pandas as pd
 import torch
 import numpy as np
@@ -54,7 +55,7 @@ JSON_OUPUT_PATH_TEMPLATE = 'data/roc_auc_ws{window_size}.json'
 
 def parse_args():
     parser = ArgumentParser()
-    parser.add_argument('--window_size', '-w', type=float, required=True)
+    parser = add_sliding_window_args(parser)
     parser.add_argument('--min_duration', '-m', type=float, help="If not set, use window size - 1sec.")
     parser.add_argument('--max_duration', '-M', type=float, help="If not set, use window size + 1sec.")
 
