@@ -14,6 +14,12 @@ from typing import *
 from argparse import ArgumentParser
 
 def add_dataset_optional_args(parser: ArgumentParser) -> ArgumentParser:
+    """
+    Add optional parameters for dataset loading to the argument parser.
+    Keep separate from `add_dataset_args` to allow reuse in other scripts
+    where the `--dataset` arg isn't used, e.g. `lid_roc_auc.py` which
+    uses `--in_domain` and `--out_domain` instead.
+    """
     parser.add_argument(
         '--num_records', '-n', type=int, default=None, help='Number of records to load from dataset.'
     )
@@ -23,6 +29,9 @@ def add_dataset_optional_args(parser: ArgumentParser) -> ArgumentParser:
     return parser
 
 def add_dataset_args(parser: ArgumentParser) -> ArgumentParser:
+    """
+    Add dataset-related parameters to the argument parser.
+    """
     parser.add_argument(
         '--dataset', '-d', type=str, default='tira_asr', help='Dataset to load.'
     )
@@ -30,6 +39,10 @@ def add_dataset_args(parser: ArgumentParser) -> ArgumentParser:
     return parser
 
 def load_tira_asr() -> Dataset:
+    """
+    Load the Tira ASR dataset from disk and combine train, validation, and test splits
+    (since the KWS experiment doesn't involve training).
+    """
     dataset = load_from_disk(TIRA_ASR_PATH)
 
     # combine train, validation, and test splits
@@ -42,6 +55,10 @@ def load_tira_asr() -> Dataset:
     return dataset
 
 def load_tira_drz() -> Dataset:
+    """
+    Load the Tira Diarization dataset from disk, filter non-English rows
+    and return the 'train' (only) subset. 
+    """
     dataset = load_from_disk(TIRA_DRZ_PATH)
     dataset = dataset.rename_columns({'text': 'transcription'})
     dataset = dataset['train']
@@ -51,6 +68,11 @@ def load_tira_drz() -> Dataset:
     return dataset
 
 def load_dataset(dataset_name: str, num_records: Optional[int] = None) -> Dataset:
+    """
+    Load dataset by name.
+    - `tira_asr`: Tira ASR dataset
+    - `tira_drz`: Tira Diarization dataset
+    """
     if dataset_name == "tira_asr":
         dataset = load_tira_asr()
     elif dataset_name == "tira_drz":
@@ -68,6 +90,26 @@ def get_encoder_funct_w_sliding_window(
         window_hop: Optional[float] = None,
         batch_size: int = BATCH_SIZE,
     ) -> Callable:
+    """
+    Wrap a function that encodes audio batches to apply sliding window encoding.
+    Normal behavior is for the encoder function to take in a batch of audio samples.
+    Since windowing breaks each audio sample into multiple windows, the new encoder function
+    will first break each audio sample into windows, then encode all windows in batches,
+    and finally return all window encodings concatenated together.
+
+    In order to keep track of which windows belong to which original audio sample,
+    the new encoder function will also return a list indicating the number of windows
+    generated for each original audio sample.
+
+    Arguments:
+        - encoder_funct: Original encoder function that takes in audio batch and sample rate.
+        - window_size: Size of the sliding window in seconds.
+        - window_hop: Hop size between windows in seconds. If None, defaults to half the window size.
+        - batch_size: Batch size for processing windows.
+    Returns:
+        - A new encoder function that applies sliding window encoding and returns the concatenated window
+            embeddings along with the number of windows per original audio sample.
+    """
     if window_hop is None:
         window_hop = window_size / 2.0
     original_encoder_funct = encoder_funct
@@ -103,6 +145,16 @@ def prepare_dataset(
         window_hop: Optional[float] = None,
         batch_size: int = BATCH_SIZE,
     ) -> Dataset:
+    """
+    Applies audio preprocessing and, optionally, encoding to the dataset.
+    If no `encoder` is specified, audio is preprocessed using the WhisperProcessor only.
+    If `window_size` is specified, sliding window encoding is applied.
+    Returns the processed dataset with columns `input_features` and `label_ids`.
+    If sliding window encoding is used, the dataset will be enlarged so that `input_features`
+    will contain embeddings for each window, and `label_ids` will be expanded accordingly to
+    match the number of windows, and an additional `index` column will be added to keep track
+    of the original record indices.
+    """
     processor = load_clap_speech_processor()
     if encoder == 'clap_ipa':
         speech_encoder = load_clap_speech_encoder(encoder_size)
@@ -154,8 +206,17 @@ def prepare_dataset_batch(
         batch: Dataset,
         index: int,
         processor: WhisperProcessor,
-        encoder_funct: Callable = None,
+        encoder_funct: Callable,
 ) -> Dataset:
+    """
+    Helper function for `prepare_dataset`. Prepare a batch of dataset by encoding audio and
+    processing labels. `encoder_funct` is a function that takes in a batch of audio samples
+    and sample rate and returns a tuple of encoded input features and an array of window counts
+    (if using sliding window encoding) or None.
+
+    If using sliding window encoding, use the `num_windows` array to expand the `label_ids` and `index`
+    columns to match the number of windows.
+    """
     processed_batch = {}
 
     audio = [row['array'] for row in batch['audio']]
@@ -180,6 +241,18 @@ def prepare_dataset_batch(
     return processed_batch
 
 def expand_col(num_windows, col):
+    """
+    Arguments:
+    - num_windows: List of number of windows per original audio sample.
+    - col: Column to expand (list or tensor).
+    Returns:
+    - Expanded column (list or tensor) where each entry in `col` is repeated
+      according to the corresponding number in `num_windows`.
+
+    Given a list `num_windows` indicating how many windows were generated
+    for each original audio sample, expand the input column `col` by repeating
+    each entry according to the corresponding number in `num_windows`.
+    """
     expanded_col = []
     for i, n_windows in enumerate(num_windows):
         for _ in range(n_windows):
@@ -194,4 +267,7 @@ def get_audio_dataloader(
         dataset: Dataset,
         batch_size: int = BATCH_SIZE,
     ) -> DataLoader:
+    """
+    Wraps a dataset in a DataLoader with the specified batch size.
+    """
     return DataLoader(dataset, batch_size=batch_size)
