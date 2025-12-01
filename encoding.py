@@ -51,10 +51,6 @@ def get_frame(
     Pass `sample_rate` to override the default sample rate of {SAMPLE_RATE}.
     """
     samples = audio[frame_start:frame_end]
-    if len(samples) < (frame_end - frame_start):
-        # pad with zeros if needed
-        pad_length = (frame_end - frame_start) - len(samples)
-        samples = np.pad(samples, (0, pad_length), mode='constant')
     if return_timestamps:
         frame_start_s = frame_start/sample_rate
         frame_end_s = frame_end/sample_rate
