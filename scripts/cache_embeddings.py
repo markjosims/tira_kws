@@ -82,28 +82,42 @@ def get_all_embed_paths(argdict) -> Dict[str, str]:
         paths['indices'] = get_embed_path(**argdict, embedding_type='indices')
     return paths
 
-def load_embeddings(argdict) -> Dict[str, torch.Tensor]:
+def load_embeddings(argdict, compute_if_not_found: bool = True) -> Dict[str, torch.Tensor]:
     """
     Loads all relevant embeddings for the given argument dictionary.
     If any embeddings are missing, computes and caches them first.
 
     Args:
         argdict (Dict[str, Any]): Dictionary of arguments including dataset, encoder, etc.  
+        compute_if_not_found (bool): Whether to compute embeddings if not found on disk.
     Returns:
         Dict[str, torch.Tensor]: Dictionary containing loaded embeddings.
     """
     embed_dict = {}
     paths = get_all_embed_paths(argdict)
-    if not all(os.path.exists(path) for path in paths.values()):
-        print("Embedding file not found, computing embeddings and caching...")
-        breakpoint()
-        return cache_embeddings(argdict)
+    embeds_exist = all(os.path.exists(path) for path in paths.values())
+    num_records = argdict.get('num_records', None)
+    if not embeds_exist and num_records is not None:
+        argdict_no_nr = argdict.copy()
+        argdict_no_nr['num_records'] = None
+        embeds_no_nr = load_embeddings(argdict_no_nr, compute_if_not_found=False)
+        if embeds_no_nr is not None:
+            print("Loading embeddings computed without num_records restriction...")
+            for key in paths.keys():
+                embed_dict[key] = embeds_no_nr[key][:num_records]
+            return embed_dict
 
+    if not embeds_exist and compute_if_not_found:
+        print("Embedding file not found, computing embeddings and caching...")
+        return cache_embeddings(argdict)
+    elif not embeds_exist:
+        return
+
+    print("Loading embeddings from disk...")
     for key, path in paths.items():
-        print(f"Loading {key} from {path}...")
         embed_dict[key] = torch.load(path)
     return embed_dict
-    
+
 
 def compute_embeddings(
         dataset: str = None,
