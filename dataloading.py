@@ -102,6 +102,12 @@ def prepare_dataset(
         encoder_funct = lambda audio, _: (encode_clap_audio(
             audio, speech_encoder, processor
         ), None)
+    elif encoder == 'speechbrain_lid':
+        speechbrain_encoder = load_speechbrain_encoder()
+        speechbrain_encoder.eval()
+        encoder_funct = lambda audio, _: (encode_speechbrain_audio(
+            audio, speechbrain_encoder,
+        ), None)
     else:
         encoder_funct = lambda audio, sr: (processor(
             audio, sampling_rate=sr, return_tensors='pt'
