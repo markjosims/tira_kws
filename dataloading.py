@@ -69,22 +69,27 @@ def get_encoder_funct_w_sliding_window(
         window_hop = window_size / 2.0
     original_encoder_funct = encoder_funct
     def encoder_funct(audio_batch, sr):
+        audio_batch = [torch.tensor(audio) for audio in audio_batch]
         window_encodings = []
-        num_windows = []
+        num_windows_per_record = []
+        windows = []
         for audio in audio_batch:
-            windows = get_sliding_window(
+            window_batch = get_sliding_window(
                 audio,
                 sample_rate=sr,
                 window_size=window_size,
                 window_hop=window_hop,
             )
-            num_windows.append(len(windows))
-            window_batchloader = DataLoader(windows, batch_size=batch_size)
-            for batch in window_batchloader:
-                window_embeddings, _ = original_encoder_funct(batch, sr)
-                window_encodings.append(window_embeddings)
+
+            windows.extend(window_batch)
+            num_windows_per_record.append(len(window_batch))
+        windows = pad_sequence(windows, batch_first=True, padding_value=0.0)
+        window_batchloader = DataLoader(windows, batch_size=batch_size)
+        for batch in tqdm(window_batchloader, total=len(window_batchloader)):
+            window_embeddings, _ = original_encoder_funct(batch, sr)
+            window_encodings.append(window_embeddings)
         all_window_embeddings = torch.cat(window_encodings, dim=0)
-        return all_window_embeddings, num_windows
+        return all_window_embeddings, num_windows_per_record
     return encoder_funct
 
 def prepare_dataset(
