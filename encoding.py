@@ -1,8 +1,9 @@
+from __future__ import annotations
 from typing import *
-from clap.encoders import SpeechEncoder, PhoneEncoder
 import numpy as np
 import torch
 from torch.nn import functional as F
+from torch.nn.utils.rnn import pad_sequence
 from transformers import AutoProcessor
 from constants import DEVICE, SAMPLE_RATE
 
