@@ -5,49 +5,35 @@ import torch
 from torch.nn import functional as F
 from torch.nn.utils.rnn import pad_sequence
 from transformers import AutoProcessor
-from constants import DEVICE, SAMPLE_RATE
+from argparse import ArgumentParser
+from constants import (
+    CLAP_IS_AVAILABLE, SPEECHBRAIN_IS_AVAILABLE, DEVICE, SAMPLE_RATE,
+    SPEECHBRAIN_LID_ENCODER_NAME, CLAP_IPA_ENCODER_NAME,
+)
 
-#####################
-# speech embeddings #
-#####################
+if CLAP_IS_AVAILABLE or TYPE_CHECKING:
+    from clap.encoders import SpeechEncoder, PhoneEncoder
+if SPEECHBRAIN_IS_AVAILABLE or TYPE_CHECKING:
+    from speechbrain.inference.classifiers import EncoderClassifier
 
-def load_clap_speech_encoder(
-    encoder_size: Literal['tiny', 'base', 'small'] = 'small'
-) -> SpeechEncoder:
-    encoder_name = f'anyspeech/clap-ipa-{encoder_size}-speech'
-    encoder = SpeechEncoder.from_pretrained(encoder_name)
-    encoder.to(DEVICE)
-    return encoder
-
-def load_clap_speech_processor():
-    return AutoProcessor.from_pretrained('openai/whisper-tiny')
-
-def encode_clap_audio(
-    audio_batch,
-    speech_encoder,
-    speech_processor,
-):
-    if type(audio_batch) is torch.Tensor:
-        audio_batch = audio_batch.cpu().numpy()
-    audio_input = speech_processor(
-        audio_batch,
-        sampling_rate=SAMPLE_RATE,
-        return_tensors='pt',
-        return_attention_mask=True,
-    )
-    audio_input=audio_input.to(DEVICE)
-
-    with torch.no_grad():
-        speech_embed = speech_encoder(**audio_input)['pooler_output']
-    return speech_embed
+"""
+## Speech encoding utilities
+- add_sliding_window_args: Add command-line arguments for sliding window parameters.
+- add_encoder_args: Add command-line arguments for encoder model selection.
+- get_sliding_window: Split audio into overlapping windows for frame-level processing.
+- get_frame: Helper function for `get_sliding_window` to extract a specific frame from an audio sample.
+"""
 
 def add_sliding_window_args(parser):
     parser.add_argument('--window_size', '-w', type=float, default=None, help='Window size in seconds for sliding window embedding extraction.')
     parser.add_argument('--window_hop', '-p', type=float, default=None, help='Window hop in seconds for sliding window embedding extraction.')
     return parser
 
-def add_encoder_args(parser):
-    parser.add_argument('--encoder', '-e', type=str, default='clap_ipa', help='Encoder model to use for generating embeddings.')
+def add_encoder_args(parser: ArgumentParser):
+    parser.add_argument(
+        '--encoder', '-e', type=str, default='clap_ipa', choices=['clap_ipa', 'speechbrain_lid'],
+        help='Encoder model to use for generating embeddings.'
+    )
     parser.add_argument('--encoder_size', '-s', type=str, default='base', help='Size of CLAP speech encoder to use.')
     return parser
 
@@ -111,9 +97,105 @@ def get_sliding_window(
     
     return windows
 
-########################
-# embedding comparison #
-########################
+"""
+## CLAP IPA encoder utilities
+- load_clap_speech_encoder: Load a CLAP speech encoder model.
+- load_clap_speech_processor: Load the corresponding audio processor.
+- encode_clap_audio: Encode a batch of audio samples into embeddings using the CLAP encoder and processor.
+"""
+
+def load_clap_speech_encoder(
+    encoder_size: Literal['tiny', 'base', 'small'] = 'small'
+) -> SpeechEncoder:
+    """
+    Load a CLAP speech encoder of the specified size.
+    Available sizes are 'tiny', 'base', and 'small'.
+    """
+    encoder_name = CLAP_IPA_ENCODER_NAME.format(encoder_size=encoder_size)
+    encoder = SpeechEncoder.from_pretrained(encoder_name)
+    encoder.to(DEVICE)
+    return encoder
+
+def load_clap_speech_processor():
+    """
+    Load the CLAP speech processor (WhisperProcessor).
+    The processor is the same for all CLAP speech encoder sizes.
+    """
+    return AutoProcessor.from_pretrained('openai/whisper-tiny')
+
+def encode_clap_audio(
+    audio_batch: Union[List[np.ndarray], torch.Tensor],
+    speech_encoder: SpeechEncoder,
+    speech_processor: AutoProcessor,
+):
+    """
+    Encode a batch of audio samples into embeddings using the CLAP speech encoder and processor.
+    Args:
+        audio_batch (Union[List[np.ndarray], torch.Tensor]): Batch of audio samples. Each sample is a 1D numpy array or tensor.
+        speech_encoder (SpeechEncoder): Pretrained CLAP speech encoder model.
+        speech_processor (AutoProcessor): Corresponding audio processor (WhisperProcessor).
+    Returns:
+        torch.Tensor: Tensor of shape (batch_size, embedding_dim) containing the audio embeddings.
+    """
+    if type(audio_batch) is torch.Tensor:
+        audio_batch = audio_batch.cpu().numpy()
+    audio_input = speech_processor(
+        audio_batch,
+        sampling_rate=SAMPLE_RATE,
+        return_tensors='pt',
+        return_attention_mask=True,
+    )
+    audio_input=audio_input.to(DEVICE)
+
+    with torch.no_grad():
+        speech_embed = speech_encoder(**audio_input)['pooler_output']
+    return speech_embed.cpu()
+
+"""
+## Speechbrain encoder utilities
+"""
+
+def load_speechbrain_encoder(
+    model_name: str = SPEECHBRAIN_LID_ENCODER_NAME,
+) -> EncoderClassifier:
+    f"""
+    Load a Speechbrain encoder model for speech embedding extraction.
+    Default model is {SPEECHBRAIN_LID_ENCODER_NAME}.
+    """
+    classifier = EncoderClassifier.from_hparams(
+        source=model_name,
+        run_opts={"device":DEVICE},
+    )
+    return classifier
+
+def encode_speechbrain_audio(
+    audio_batch: Union[List[np.ndarray], torch.Tensor],
+    speechbrain_encoder: EncoderClassifier,
+):
+    """
+    Encode a batch of audio samples into embeddings using the Speechbrain encoder.
+    Args:
+        audio_batch (Union[List[np.ndarray], torch.Tensor]): Batch of audio samples. Each sample is a 1D numpy array or tensor.
+        speechbrain_encoder (EncoderClassifier): Pretrained Speechbrain encoder model.
+    Returns:
+        torch.Tensor: Tensor of shape (batch_size, embedding_dim) containing the audio embeddings.
+    """
+    if type(audio_batch) is np.ndarray:
+        audio_batch = torch.tensor(audio_batch)
+    elif type(audio_batch) is list:
+        audio_batch = [torch.tensor(audio) for audio in audio_batch]
+    audio_batch = pad_sequence(audio_batch, batch_first=True, padding_value=0.0)
+    audio_batch = audio_batch.to(DEVICE)
+    with torch.no_grad():
+        speech_embed = speechbrain_encoder.encode_batch(audio_batch)
+    audio_batch.cpu()
+    speech_embed = speech_embed.squeeze(1).cpu()
+    return speech_embed
+
+"""
+## Similarity computation utilities
+- compute_cosine_similarity_matrix: Compute cosine similarity matrix between two sets of embeddings.
+"""
 
 def compute_cosine_similarity_matrix(
     embeddings_a: torch.Tensor,
