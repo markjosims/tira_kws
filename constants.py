@@ -27,9 +27,11 @@ TIRA_ASR_PATH = DATA_DIR / "tira_asr"
 TIRA_DRZ_PATH = DATA_DIR / "tira_drz"
 
 ## local data paths
-CSV_PATH = Path("data/kws_predictions/most_predicted_word.csv")
 LABELS_DIR = Path("data/labels")
-KEYPHRASE_PATH = LABELS_DIR/"tira_keyphrases.txt"
+PHRASELIST_PATH = LABELS_DIR / "tira_keyphrases.txt"
+KEYPHRASE_CSV = LABELS_DIR / "tira_keyphrases.csv"
+
+PREDICTED_WORDS_CSV = Path("data/kws_predictions/most_predicted_word.csv")
 SIMILARITY_MATRIX_PATH = Path("data/similarity_matrix/similarity_matrix.pt")
 EMBEDDINGS_DIR = DATA_DIR/"tira_kws"/"embeddings"
 

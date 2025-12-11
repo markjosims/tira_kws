@@ -5,7 +5,7 @@ of the record with the highest speech-to-speech cosine similarity
 """
 
 import pandas as pd
-from constants import CSV_PATH, KEYPHRASE_PATH, SIMILARITY_MATRIX_PATH
+from constants import PREDICTED_WORDS_CSV, PHRASELIST_PATH, SIMILARITY_MATRIX_PATH
 from dataloading import load_tira_asr
 import torch
 from tqdm import tqdm
@@ -121,9 +121,9 @@ def main():
     df = df[rows_to_keep]
     df['duration'] = df['end'] - df['start']
 
-    df.to_csv(CSV_PATH, index_label='index')
+    df.to_csv(PREDICTED_WORDS_CSV, index_label='index')
 
-    with open(KEYPHRASE_PATH, 'w', encoding='utf-8') as f:
+    with open(PHRASELIST_PATH, 'w', encoding='utf-8') as f:
         f.write('\n'.join(transcription_list))
 
 if __name__ == "__main__":

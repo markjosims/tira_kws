@@ -39,8 +39,8 @@ from argparse import ArgumentParser
 import json
 import re
 from constants import (
-    SIMILARITY_MATRIX_PATH, CSV_PATH,
-    KEYPHRASE_PATH, MAX_KEYWORD_STR
+    SIMILARITY_MATRIX_PATH, PREDICTED_WORDS_CSV,
+    PHRASELIST_PATH, MAX_KEYWORD_STR
 )
 from encoding import add_sliding_window_args
 import pandas as pd
@@ -86,7 +86,7 @@ def get_output_json_path_with_window_size(window_size: float) -> str:
 def main():
     args = parse_args()
 
-    df = pd.read_csv(CSV_PATH, index_col='index')
+    df = pd.read_csv(PREDICTED_WORDS_CSV, index_col='index')
 
 
     # Load similarity matrices
@@ -111,7 +111,7 @@ def main():
     drz_matrix = drz_matrix[mask]
 
     # Load keyphrases
-    with open(KEYPHRASE_PATH, 'r', encoding='utf-8') as f:
+    with open(PHRASELIST_PATH, 'r', encoding='utf-8') as f:
         keyphrases = [line.strip() for line in f.readlines()]
 
     results = get_roc_auc_per_keyword(df, tira_matrix, drz_matrix, keyphrase_ids, keyphrases)
