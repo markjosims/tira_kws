@@ -28,12 +28,72 @@ TIRA_DRZ_PATH = DATA_DIR / "tira_drz"
 
 ## local data paths
 LABELS_DIR = Path("data/labels")
-PHRASELIST_PATH = LABELS_DIR / "tira_keyphrases.txt"
-KEYPHRASE_CSV = LABELS_DIR / "tira_keyphrases.csv"
 
-PREDICTED_WORDS_CSV = Path("data/kws_predictions/most_predicted_word.csv")
-SIMILARITY_MATRIX_PATH = Path("data/similarity_matrix/similarity_matrix.pt")
-EMBEDDINGS_DIR = DATA_DIR/"tira_kws"/"embeddings"
+"""
+### source data for KWS
+- MERGED_PHRASES_CSV: dataframe mapping `eaf_text` (raw string from
+    ELAN) to `fst_text` (string with most likely normalized form
+    using FST parser)
+- PHRASES.CSV: dataframe where each row is a unique phrase (only
+    uses FST-normalized text), including a column indicating what
+    phrases are used as keyphrase queries, token counts per
+    keyphrase, etc...
+- CER_MATRIX_PATH: matrix of CER values of keyphrases (rows) to all
+    phrases (columns)
+"""
+MERGED_PHRASES_CSV = LABELS_DIR / "keyphrases_rewritten_merges.csv"
+PHRASES_CSV = LABELS_DIR / "tira_phrases.csv"
+CER_MATRIX_PATH = LABELS_DIR / "cer_matrix.np"
+
+"""
+### KWS lists
+- PHRASE_PATH: all unique Tira phrases used for KWS
+- KEYPHRASE_PATH: indices of all Tira phrases used as keyphrase
+    queries
+- RECORD2PHRASE_PATH: phrase index for each record
+- KEYPHRASE_LIST: JSON list for all keyphrases including positive
+    and negative records. See below for JSON data structure.
+- CALIBRATION_LIST: JSON list with same structure as
+    `KEYPHRASE_LIST`. This list maps a balanced subset of
+    keyphrases to negative records, and is used for tuning the
+    detection threshold for KWS.
+
+```json
+[
+    {
+        'keyphrase': $str,
+        'keyphrase_idx': $int,
+        'record_idcs': [$int, $int, ...]
+        'easy': [$int, $int, ...]
+        'medium': [$int, $int, ...]
+        'hard': [$int, $int, ...]
+    },
+    ...
+]
+```
+
+Where the 'easy', 'medium' and 'hard' keys map to lists of
+record indices. This list maps all keyphrases to all positive
+and negative records.
+"""
+
+PHRASE_PATH = LABELS_DIR / "tira_phrases.txt"
+KEYPHRASE_CSV = LABELS_DIR / "keyphrases.csv"
+RECORD2PHRASE_PATH = LABELS_DIR / "record2phrase.txt"
+KEYPHRASE_LIST = LABELS_DIR / "keyphrase_list.json"
+CALIBRATION_LIST = LABELS_DIR = "calibration_list.json"
+
+"""
+### output files
+- KWS_PREDICTIONS: folder for storing predicted outputs from KWS
+- SIMILARITY_MATRICES: folder for storing similarity matrices for
+    embeddings used in KWS. See `README.md` inside for more info.
+- EMBEDDINGS: folder for storing embeddings used for KWS
+"""
+
+KWS_PREDICTIONS = Path("data/kws_predictions/most_predicted_word.csv")
+SIMILARITY_MATRICES = Path("data/similarity_matrix/similarity_matrix.pt")
+EMBEDDINGS = DATA_DIR/"tira_kws"/"embeddings"
 
 # keyword constants
 MAX_KEYWORD_STR = '$max'
