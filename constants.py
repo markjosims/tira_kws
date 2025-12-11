@@ -43,6 +43,7 @@ LABELS_DIR = Path("data/labels")
 """
 MERGED_PHRASES_CSV = LABELS_DIR / "keyphrases_rewritten_merges.csv"
 PHRASES_CSV = LABELS_DIR / "tira_phrases.csv"
+KEYPHRASE_CSV = LABELS_DIR / "keyphrases.csv"
 CER_MATRIX_PATH = LABELS_DIR / "cer_matrix.np"
 
 """
@@ -78,10 +79,10 @@ and negative records.
 """
 
 PHRASE_PATH = LABELS_DIR / "tira_phrases.txt"
-KEYPHRASE_CSV = LABELS_DIR / "keyphrases.csv"
+KEYPHRASE_PATH = LABELS_DIR / "tira_keyphrase_idcs.txt"
 RECORD2PHRASE_PATH = LABELS_DIR / "record2phrase.txt"
 KEYPHRASE_LIST = LABELS_DIR / "keyphrase_list.json"
-CALIBRATION_LIST = LABELS_DIR = "calibration_list.json"
+CALIBRATION_LIST = LABELS_DIR / "calibration_list.json"
 
 """
 ### output files
