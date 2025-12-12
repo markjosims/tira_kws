@@ -203,6 +203,10 @@ def cache_embeddings(argdict: Dict[str, Any]) -> Dict[str, torch.Tensor]:
         **argdict,
     )
 
+    embed_dir = os.path.dirname(mean_embed_path)
+    if not os.path.exists(embed_dir):
+        os.makedirs(embed_dir, exist_ok=True)
+
     print(f"Saving embeddings to {embeds_path}...")
     torch.save(embeds, embeds_path)
     print(f"Saving mean embedding to {mean_embed_path}...")
