@@ -12,7 +12,7 @@ Arguments:
 
 from argparse import ArgumentParser
 import os
-from constants import EMBEDDINGS_DIR
+from constants import EMBEDDINGS
 from dataloading import load_dataset, prepare_dataset, add_dataset_args
 from encoding import add_sliding_window_args, add_encoder_args
 import torch
@@ -60,7 +60,7 @@ def get_embed_path(
     else:
         embed_stem = "embeddings"
 
-    embed_dir = EMBEDDINGS_DIR / f"{dataset}_{encoder}_{encoder_size}"
+    embed_dir = EMBEDDINGS / f"{dataset}_{encoder}_{encoder_size}"
 
     if window_size is not None:
         window_size_str = str(window_size).replace('.', 'p')
