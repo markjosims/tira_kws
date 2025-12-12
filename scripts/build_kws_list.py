@@ -24,12 +24,13 @@ from argparse import ArgumentParser, Namespace
 from typing import List
 
 # local imports
-from dataloading import load_tira_asr
+from dataloading import load_tira_asr, load_tira_drz
 from constants import (
     PHRASE_PATH, KEYPHRASE_PATH, MERGED_PHRASES_CSV,
     PHRASES_CSV, KEYPHRASE_CSV, CER_MATRIX_PATH,
     CALIBRATION_LIST, KEYPHRASE_LIST, RECORD2PHRASE_PATH,
-    LABELS_DIR
+    LABELS_DIR, CALIBRATION_NUM_NEGATIVE, CALIBRATION_NUM_POSITIVE,
+    ENGLISH_CALIBRATION_LIST,
 )
 
 
@@ -254,8 +255,8 @@ def build_keyphrase_lists(
     record2phrase: np.ndarray,
     keyphrase_list_path: Path,
     calibration_list_path: Path,
-    calibration_num_negative: int = 50,
-    calibration_num_positive: int = 10,
+    calibration_num_negative: int = CALIBRATION_NUM_NEGATIVE,
+    calibration_num_positive: int = CALIBRATION_NUM_POSITIVE,
     random_seed: int = 1337
 ):
     """
@@ -263,6 +264,7 @@ def build_keyphrase_lists(
     positive/negative records.
 
     Structure:
+    ```json
     [
         {
             'keyphrase': str,
@@ -277,6 +279,10 @@ def build_keyphrase_lists(
         },
         ...
     ]
+    ```
+
+    CALIBRATION_LIST also contains an object with keyphrase "$eng"
+    mapping to random negative records from the DRZ dataset.
     """
     print("\nBuilding keyphrase lists...")
 
@@ -379,6 +385,35 @@ def build_keyphrase_lists(
     print(f"Saved calibration list to {calibration_list_path}")
     print(f"  Total keyphrases: {len(calibration_list)}")
 
+def build_english_calibration_list(
+    num_negative: int = CALIBRATION_NUM_NEGATIVE * 9,
+    output_path: Path = ENGLISH_CALIBRATION_LIST,
+) -> List[int]:
+    """
+    Build a calibration list entry for the English keyword.
+
+    This entry contains only negative samples randomly selected
+    from the DRZ dataset.
+
+    Number is based on 9x the standard calibration negative count,
+    such that when aggregated with the Tira keyphrases, the total
+    number of English negatives is greater than for Tira, given that
+    in real audio the majority of speech is expected to be non-target
+    language.
+    """
+    print("\nBuilding English calibration list...")
+
+    # Randomly select negative records from DRZ dataset
+    drz_ds = load_tira_drz()
+    num_drz_rows = len(drz_ds)
+    drz_rows = np.arange(num_drz_rows).tolist()
+    random_drz_negatives = random.sample(drz_rows, num_negative)
+
+    with open(output_path, 'w', encoding='utf8') as f:
+        for idx in random_drz_negatives:
+            f.write(f"{idx}\n")
+
+    return random_drz_negatives
 
 def main():
     args = get_parser()
@@ -431,7 +466,15 @@ def main():
         calibration_list_path=CALIBRATION_LIST,
         calibration_num_negative=args.calibration_num_negative,
         calibration_num_positive=args.calibration_num_positive,
-        random_seed=args.random_seed
+        random_seed=args.random_seed,
+    )
+
+    drz_ds = load_tira_drz()
+    num_drz_rows = len(drz_ds)
+    print(f"\nLoaded Tira DRZ dataset with {num_drz_rows} records")
+    build_english_calibration_list(
+        num_negative=args.calibration_num_negative * 9,
+        output_path=ENGLISH_CALIBRATION_LIST,
     )
 
     print("\n✓ All files built successfully!")
@@ -444,11 +487,15 @@ def get_parser() -> Namespace:
         help='Minimum token count for a phrase to be considered a keyphrase'
     )
     parser.add_argument(
-        '--calibration_num_negative', type=int, default=50,
+        '--calibration_num_negative',
+        type=int,
+        default=CALIBRATION_NUM_NEGATIVE,
         help='Number of negative samples per difficulty level for calibration'
     )
     parser.add_argument(
-        '--calibration_num_positive', type=int, default=10,
+        '--calibration_num_positive',
+        type=int,
+        default=CALIBRATION_NUM_POSITIVE,
         help='Number of positive samples for calibration'
     )
     parser.add_argument(

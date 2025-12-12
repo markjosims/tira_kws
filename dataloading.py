@@ -17,7 +17,7 @@ def add_dataset_optional_args(parser: ArgumentParser) -> ArgumentParser:
     """
     Add optional parameters for dataset loading to the argument parser.
     Keep separate from `add_dataset_args` to allow reuse in other scripts
-    where the `--dataset` arg isn't used, e.g. `lid_roc_auc.py` which
+    where the `--dataset` arg isn't used, e.g. `lid_eval.py` which
     uses `--in_domain` and `--out_domain` instead.
     """
     parser.add_argument(

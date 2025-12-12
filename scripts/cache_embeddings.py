@@ -1,7 +1,7 @@
 """
 Script to cache speech embeddings for a dataset. Saves embeddings, mean embedding, and std embedding to disk.
-Also saves whitened embeddings (z-score normalized) to disk. If a z-score dataset is provided, also saves embeddings
-whitened using the mean and std from that dataset.
+Also saves whitened embeddings (z-score normalized) to disk. If a z-score dataset is provided to
+--whitened_from_dataset, also saves embeddings whitened using the mean and std from that dataset.
 
 Arguments:
     --dataset: Name of the dataset to process.
@@ -18,12 +18,23 @@ from encoding import add_sliding_window_args, add_encoder_args
 import torch
 from typing import *
 
-def parse_args():
-    parser = ArgumentParser(description="Compute dataset similarity matrix")
+def add_cache_embeddings_args(parser: ArgumentParser) -> ArgumentParser:
+    """
+    Adds arguments relevant for caching embeddings to the given ArgumentParser.
+    Adds arg groups for dataset, sliding window, and encoder arguments, and adds
+    the --whitened_from_dataset/-z argument indicating the dataset from which to
+    normalize the current dataset's embeddings using the z-score.
+    """
     parser = add_dataset_args(parser)
-    parser.add_argument('--whitened_from_dataset', '-z', type=str, default=None, help='Name of dataset to use for z-score normalization.')
     parser = add_sliding_window_args(parser)
+    parser.add_argument('--whitened_from_dataset', '-z', type=str, default=None, help='Name of dataset to use for z-score normalization.')
     parser = add_encoder_args(parser)
+    return parser
+
+
+def parse_args():
+    parser = ArgumentParser(description="Compute embeddings for a dataset and cache them to disk.")
+    parser = add_cache_embeddings_args(parser)
     return parser.parse_args()
 
 def get_embed_path(
@@ -39,26 +50,25 @@ def get_embed_path(
 ) -> str:
     
     if whitened_from_dataset is not None and cross_whiten:
-        embed_type_str = f"whitened_from_{whitened_from_dataset}_embeddings"
+        embed_stem = f"whitened_from_{whitened_from_dataset}_embeddings"
     elif embedding_type == 'indices':
-        embed_type_str = "indices"
+        embed_stem = "indices"
     elif embedding_type == 'whitened':
-        embed_type_str = "whitened_embeddings"
+        embed_stem = "whitened_embeddings"
     elif embedding_type != 'regular':
-        embed_type_str = f"{embedding_type}_embedding"
+        embed_stem = f"{embedding_type}_embedding"
     else:
-        embed_type_str = "embeddings"
+        embed_stem = "embeddings"
 
-    embed_path_partial = EMBEDDINGS_DIR / f"{dataset}_{encoder}_{encoder_size}"
-    embed_path_partial = str(embed_path_partial)
-    
+    embed_dir = EMBEDDINGS_DIR / f"{dataset}_{encoder}_{encoder_size}"
+
     if window_size is not None:
-        window_size_str = str(window_size).replace('.', '_')
-        embed_path_partial += f"_ws{window_size_str}"
+        window_size_str = str(window_size).replace('.', 'p')
+        embed_stem += f"_ws{window_size_str}"
     if num_records is not None:
-        embed_path_partial += f"_nr{num_records}"
+        embed_stem += f"_nr{num_records}"
 
-    embed_path = embed_path_partial + f"_{embed_type_str}.pt"
+    embed_path = embed_dir / f"{embed_stem}.pt"
         
     return str(embed_path)
 
@@ -66,11 +76,12 @@ def get_all_embed_paths(argdict) -> Dict[str, str]:
     """
     Returns a dictionary of all relevant embedding paths for the given argument dictionary.
     """
-    paths = {}
-    paths['embeddings'] = get_embed_path(**argdict, embedding_type='regular')
-    paths['mean'] = get_embed_path(**argdict, embedding_type='mean')
-    paths['std'] = get_embed_path(**argdict, embedding_type='std')
-    paths['whitened'] = get_embed_path(**argdict, embedding_type='whitened')
+    paths = {
+        'embeddings': get_embed_path(**argdict, embedding_type='regular'),
+        'mean': get_embed_path(**argdict, embedding_type='mean'),
+        'std': get_embed_path(**argdict, embedding_type='std'),
+        'whitened': get_embed_path(**argdict, embedding_type='whitened')
+    }
     whitened_from_dataset = argdict.get('whitened_from_dataset', None)
     if whitened_from_dataset is not None:
         paths['cross_whitened'] = get_embed_path(
@@ -82,7 +93,7 @@ def get_all_embed_paths(argdict) -> Dict[str, str]:
         paths['indices'] = get_embed_path(**argdict, embedding_type='indices')
     return paths
 
-def load_embeddings(argdict, compute_if_not_found: bool = True) -> Dict[str, torch.Tensor]:
+def load_embeddings(argdict, compute_if_not_found: bool = True) -> Optional[Dict[str, torch.Tensor]]:
     """
     Loads all relevant embeddings for the given argument dictionary.
     If any embeddings are missing, computes and caches them first.
@@ -150,7 +161,7 @@ def compute_embeddings(
         window_size=window_size,
         window_hop=window_hop,
     )
-    embeds = ds_encoded['input_features'][:]
+    embeds: torch.Tensor = ds_encoded['input_features'][:]
     indices = None
     if window_size is not None:
         indices = ds_encoded['index'][:]

@@ -58,6 +58,8 @@ CER_MATRIX_PATH = LABELS_DIR / "cer_matrix.np"
     `KEYPHRASE_LIST`. This list maps a balanced subset of
     keyphrases to negative records, and is used for tuning the
     detection threshold for KWS.
+- ENGLISH_CALIBRATION_LIST: Indices of English keyphrases used for
+    KWS calibration.
 
 ```json
 [
@@ -83,6 +85,7 @@ KEYPHRASE_PATH = LABELS_DIR / "tira_keyphrase_idcs.txt"
 RECORD2PHRASE_PATH = LABELS_DIR / "record2phrase.txt"
 KEYPHRASE_LIST = LABELS_DIR / "keyphrase_list.json"
 CALIBRATION_LIST = LABELS_DIR / "calibration_list.json"
+ENGLISH_CALIBRATION_LIST = LABELS_DIR / "english_calibration_keyphrase_idcs.txt"
 
 """
 ### output files
@@ -92,12 +95,14 @@ CALIBRATION_LIST = LABELS_DIR / "calibration_list.json"
 - EMBEDDINGS: folder for storing embeddings used for KWS
 """
 
-KWS_PREDICTIONS = Path("data/kws_predictions/most_predicted_word.csv")
-SIMILARITY_MATRICES = Path("data/similarity_matrix/similarity_matrix.pt")
+KWS_PREDICTIONS = Path("data/kws_predictions/")
+SIMILARITY_MATRICES = Path("data/similarity_matrix/")
 EMBEDDINGS = DATA_DIR/"tira_kws"/"embeddings"
 
 # keyword constants
 MAX_KEYWORD_STR = '$max'
 MEAN_KEYWORD_STR = '$mean'
+CALIBRATION_NUM_NEGATIVE = 50
+CALIBRATION_NUM_POSITIVE = 10
 CLAP_IS_AVAILABLE = find_spec('clap') is not None
 SPEECHBRAIN_IS_AVAILABLE = find_spec('speechbrain') is not None
