@@ -82,12 +82,13 @@ def build_phrases_csv(eaf_unique_df, df, output_path):
     # Create dataframe with unique FST phrases
     unique_phrase_df = eaf_unique_df.drop(columns='eaf_text')
     unique_phrase_df = unique_phrase_df.drop_duplicates(subset='fst_text')
+    unique_phrase_df = unique_phrase_df.rename(columns={'fst_text':'keyphrase'})
 
     # Count occurrences of each phrase
     token_counts = df['fst_text'].value_counts()
 
     # Map token counts to phrases
-    unique_phrase_df = unique_phrase_df.set_index('fst_text')
+    unique_phrase_df = unique_phrase_df.set_index('keyphrase')
     unique_phrase_df['token_count'] = token_counts
     unique_phrase_df = unique_phrase_df.reset_index()
 
@@ -106,7 +107,7 @@ def build_phrase_list(unique_phrase_df, output_path):
     """
     print("\nBuilding phrase list...")
 
-    all_phrases = unique_phrase_df['fst_text'].tolist()
+    all_phrases = unique_phrase_df['keyphrase'].tolist()
 
     with open(output_path, 'w', encoding='utf8') as f:
         for phrase in all_phrases:
@@ -132,7 +133,7 @@ def define_keyphrases(unique_phrase_df, min_token_count=10, output_path: str = K
         all_keyphrases: List of keyphrase strings
     """
     keyphrase_mask = unique_phrase_df['token_count'] >= min_token_count
-    all_keyphrases = unique_phrase_df[keyphrase_mask]['fst_text'].tolist()
+    all_keyphrases = unique_phrase_df[keyphrase_mask]['keyphrase'].tolist()
 
     keyphrase_idcs = np.where(keyphrase_mask)[0].tolist()
     with open(output_path, 'w', encoding='utf8') as f:
@@ -201,7 +202,7 @@ def build_keyphrase_csv(unique_phrase_df, cer_matrix, all_keyphrases,
         medium_mask = (dists_to_keyphrase <= 0.67) & (dists_to_keyphrase > 0.33)
         hard_mask = (dists_to_keyphrase > 0) & (dists_to_keyphrase <= 0.33)
 
-        curr_keyphrase_mask = unique_phrase_df['fst_text'] == keyphrase
+        curr_keyphrase_mask = unique_phrase_df['keyphrase'] == keyphrase
         unique_phrase_df.loc[curr_keyphrase_mask, 'num_easy'] = easy_mask.sum()
         unique_phrase_df.loc[curr_keyphrase_mask, 'num_medium'] = medium_mask.sum()
         unique_phrase_df.loc[curr_keyphrase_mask, 'num_hard'] = hard_mask.sum()
@@ -243,14 +244,14 @@ def build_record2phrase(df, all_phrases, output_path):
     print(f"Saved record2phrase mapping to {output_path}")
     print(f"  Total records: {len(record2phrase)}")
 
-    return record2phrase
+    return np.array(record2phrase)
 
 
 def build_keyphrase_lists(
     unique_phrase_df: pd.DataFrame,
     cer_matrix: np.ndarray,
     all_keyphrases: List[str],
-    record2phrase: List[int],
+    record2phrase: np.ndarray,
     keyphrase_list_path: Path,
     calibration_list_path: Path,
     calibration_num_negative: int = 50,
@@ -258,7 +259,8 @@ def build_keyphrase_lists(
     random_seed: int = 1337
 ):
     """
-    Build KEYPHRASE_LIST and CALIBRATION_LIST: JSON files with positive/negative records.
+    Build KEYPHRASE_LIST and CALIBRATION_LIST: JSON files with
+    positive/negative records.
 
     Structure:
     [
@@ -288,20 +290,26 @@ def build_keyphrase_lists(
     has_negative = has_easy & has_medium & has_hard
     unique_phrase_df['in_calibration_set'] = has_negative
 
-    print(f"  Keyphrases in calibration set: {100*has_negative.sum()}/{keyphrase_mask.sum():.2f}%")
+    print(
+        "  Keyphrases in calibration set: "+\
+        f"{has_negative.sum()}/{keyphrase_mask.sum()}"
+    )
 
     # Build lists
     keyphrase_list = []
     calibration_list = []
 
-    for keyphrase_i, keyphrase in enumerate(tqdm(all_keyphrases, desc="Building lists")):
+    for _, row in tqdm(
+        unique_phrase_df[unique_phrase_df['is_keyphrase']].iterrows(),
+        total=len(all_keyphrases),
+        desc="Building lists",
+    ):
         # Get positive records (all records with this keyphrase)
-        positive_mask = record2phrase == keyphrase
+        row_i = row.name
+        keyphrase = row['keyphrase']
+        keyphrase_i = all_keyphrases.index(keyphrase)
+        positive_mask = record2phrase == row_i
         positive_record_idcs = np.where(positive_mask)[0].tolist()
-
-        # Get keyphrase metadata
-        keyphrase_df_mask = unique_phrase_df['fst_text'] == keyphrase
-        row = unique_phrase_df[keyphrase_df_mask].iloc[0]
 
         # Build negative sets by difficulty
         dists_to_keyphrase = cer_matrix[keyphrase_i, :]
@@ -313,7 +321,7 @@ def build_keyphrase_lists(
         # Create keyphrase object for full list
         keyphrase_obj = {
             'keyphrase': keyphrase,
-            'keyphrase_idx': keyphrase_i,
+            'keyphrase_idx': row_i,
             'record_idcs': positive_record_idcs,
             'easy': [],
             'medium': [],
@@ -334,7 +342,7 @@ def build_keyphrase_lists(
             calibration_positive_idcs = random.sample(positive_record_idcs, calibration_num_positive)
             calibration_obj = {
                 'keyphrase': keyphrase,
-                'keyphrase_idx': keyphrase_i,
+                'keyphrase_idx': row_i,
                 'record_idcs': calibration_positive_idcs,
                 'easy': [],
                 'medium': [],
@@ -343,7 +351,8 @@ def build_keyphrase_lists(
 
             # Sample negative records for calibration
             for difficulty in ['easy', 'medium', 'hard']:
-                all_negative_phrase_idcs = keyphrase_obj[difficulty]
+                all_negative_record_idcs = keyphrase_obj[difficulty]
+                all_negative_phrase_idcs = np.unique(record2phrase[all_negative_record_idcs]).tolist()
 
                 # Sample phrases first, then get their records
                 sampled_phrase_idcs = random.sample(
@@ -351,7 +360,7 @@ def build_keyphrase_lists(
                 )
                 sampled_record_idcs = []
                 for phrase_idx in sampled_phrase_idcs:
-                    phrase_records = np.where(np.array(record2phrase) == phrase_idx)[0].tolist()
+                    phrase_records = np.where(record2phrase == phrase_idx)[0].tolist()
                     # Take one random record per phrase if multiple exist
                     sampled_record_idcs.append(random.choice(phrase_records))
 
