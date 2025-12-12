@@ -121,8 +121,8 @@ def compute_roc_auc(args, run=None) -> pd.DataFrame:
     tira_argdict = vars(args).copy()
     eng_argdict = vars(args).copy()
 
-    tira_argdict['dataset'] = args.tira
-    eng_argdict['dataset'] = args.eng
+    tira_argdict['dataset'] = args.dataset
+    eng_argdict['dataset'] = args.drz_dataset
     # ignore whitening for now
     # TODO: define subset of embeddings to calculate z-score from
     # eng_argdict['whitened_from_dataset'] = args.tira
@@ -193,7 +193,7 @@ def main():
 def parse_args():
     parser = ArgumentParser(description="Compute AUROC for Tira KWS")
     parser = add_cache_embeddings_args(parser)
-    parser.add_argument("--dataset", type=str)
+    parser.add_argument('--drz-dataset', type=str, default='tira_drz')
     parser.add_argument(
         "--list_type", '-t', type=str, default='all',
         choices=['all', 'calibrated'],
