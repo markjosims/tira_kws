@@ -17,6 +17,7 @@ from torchmetrics.classification import BinaryAUROC, BinaryEER, BinaryROC
 from typing import *
 import wandb
 from dotenv import load_dotenv
+import os
 
 load_dotenv()
 EXPERIMENT_NAME_TEMPLATE = "tira_kws_auroc_ws_{encoder}_{window_size}"
@@ -176,7 +177,7 @@ def get_list_path(args):
 
 def main():
     args = parse_args()
-    with wandb.init() as run:
+    with wandb.init(project=os.environ.get('WANDB_PROJECT', None)) as run:
         experiment_name = get_experiment_name(args)
         run.name = experiment_name
         run.config.update(vars(args))
