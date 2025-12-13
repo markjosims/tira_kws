@@ -42,7 +42,7 @@ def get_embed_path(
         encoder: str,
         encoder_size: str,
         window_size: Optional[float] = None,
-        embedding_type: Literal['regular', 'mean', 'std', 'whitened', 'indices'] = 'regular',
+        embedding_type: Literal['regular', 'mean', 'std', 'whitened'] = 'regular',
         whitened_from_dataset: Optional[str] = None,
         cross_whiten: bool = False,
         num_records: Optional[int] = None,
@@ -51,8 +51,6 @@ def get_embed_path(
     
     if whitened_from_dataset is not None and cross_whiten:
         embed_stem = f"whitened_from_{whitened_from_dataset}_embeddings"
-    elif embedding_type == 'indices':
-        embed_stem = "indices"
     elif embedding_type == 'whitened':
         embed_stem = "whitened_embeddings"
     elif embedding_type != 'regular':
@@ -89,8 +87,6 @@ def get_all_embed_paths(argdict) -> Dict[str, str]:
             embedding_type='whitened',
             cross_whiten=True,
         )
-    if argdict.get('window_size', None) is not None:
-        paths['indices'] = get_embed_path(**argdict, embedding_type='indices')
     return paths
 
 def load_embeddings(argdict, compute_if_not_found: bool = True) -> Optional[Dict[str, torch.Tensor]]:
@@ -138,7 +134,9 @@ def compute_embeddings(
         window_size: Optional[float] = None,
         window_hop: Optional[float] = None,
         **_, # to allow for unused args
-    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    ) -> Tuple[
+        torch.Tensor, torch.Tensor, torch.Tensor,
+    ]:
     """
     Caches embeddings for the specified dataset using the given encoder.
 
@@ -162,20 +160,42 @@ def compute_embeddings(
         window_hop=window_hop,
     )
     embeds: torch.Tensor = ds_encoded['input_features'][:]
-    indices = None
-    if window_size is not None:
-        indices = ds_encoded['index'][:]
     mean_embed = embeds.mean(dim=0)
     std_embed = embeds.std(dim=0)
 
-    
-    return embeds, mean_embed, std_embed, indices
+    if window_size is not None:
+        # transform embeds into a tuple of tensors
+        # where each tensor is a sequence of window embeddings
+        # first get a tensor indicating which indices begin a new record
+        indices = ds_encoded['index'][:]
+        start_boundary = torch.tensor([1], device=indices.device)
+        boundary_indicators = indices.diff().ne(0)
+        boundary_indicators = torch.cat([start_boundary, boundary_indicators])
+        start_indices = torch.where(boundary_indicators)[0]
 
-def whiten_embeddings(embeds: torch.Tensor, mean_embed: torch.Tensor, std_embed: torch.Tensor) -> torch.Tensor:
+        # now we can use this to get a tensor indicating the number of windows
+        # per record
+        last_record_len = torch.tensor([embeds.shape[0] - start_indices[-1]])
+        record_lens = start_indices.diff()
+        record_lens = torch.concat([record_lens, last_record_len])
+
+        # we then use `record_lens` to split the embeds tensor
+        # into a tuple of tensors
+        embeds = torch.split(embeds, record_lens.tolist(), dim=0)
+
+    return embeds, mean_embed, std_embed
+
+def whiten_embeddings(
+        embeds: Union[torch.Tensor, Sequence[torch.Tensor]],
+        mean_embed: torch.Tensor,
+        std_embed: torch.Tensor
+) -> torch.Tensor:
     """
     Z-score normalizes the embeddings using the provided mean and std embeddings.
     """
-    return (embeds - mean_embed) / std_embed
+    if type(embeds) is torch.Tensor:
+        return (embeds - mean_embed) / std_embed
+    return tuple(whiten_embeddings(record, mean_embed, std_embed) for record in embeds)
 
 
 def cache_embeddings(argdict: Dict[str, Any]) -> Dict[str, torch.Tensor]:
@@ -192,7 +212,7 @@ def cache_embeddings(argdict: Dict[str, Any]) -> Dict[str, torch.Tensor]:
     """
     embed_dict = {}
 
-    embeds, mean_embed, std_embed, indices = compute_embeddings(**argdict)
+    embeds, mean_embed, std_embed = compute_embeddings(**argdict)
     embeds_path = get_embed_path(**argdict)
     mean_embed_path = get_embed_path(
         embedding_type='mean',
@@ -217,12 +237,6 @@ def cache_embeddings(argdict: Dict[str, Any]) -> Dict[str, torch.Tensor]:
     embed_dict['embeddings'] = embeds
     embed_dict['mean'] = mean_embed
     embed_dict['std'] = std_embed
-
-    if indices is not None:
-        indices_path = get_embed_path(embedding_type='indices', **argdict)
-        print(f"Saving indices to {indices_path}...")
-        torch.save(indices, indices_path)
-        embed_dict['indices'] = indices
 
     embeds_whitened = whiten_embeddings(embeds, mean_embed, std_embed)
     embeds_whitened_path = get_embed_path(
