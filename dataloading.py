@@ -130,9 +130,11 @@ def get_encoder_funct_w_sliding_window(
             num_windows_per_record.append(len(window_batch))
         windows = pad_sequence(windows, batch_first=True, padding_value=0.0)
         window_batchloader = DataLoader(windows, batch_size=batch_size)
-        for batch in tqdm(window_batchloader, total=len(window_batchloader)):
-            window_embeddings, _ = original_encoder_funct(batch, sr)
-            window_encodings.append(window_embeddings)
+        with tqdm(total=len(window_batchloader)*batch_size) as pbar:
+            for batch in window_batchloader:
+                window_embeddings, _ = original_encoder_funct(batch, sr)
+                window_encodings.append(window_embeddings)
+                pbar.update(batch_size)
         all_window_embeddings = torch.cat(window_encodings, dim=0)
         return all_window_embeddings, num_windows_per_record
     return encoder_funct
