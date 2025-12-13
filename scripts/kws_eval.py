@@ -57,7 +57,7 @@ def compute_metrics(
         negative_scores: torch.Tensor,
         case: str,
         index: int,
-) -> Tuple[float, float]:
+) -> Dict[str, float]:
     """
     Compute AUROC, EER, mAP and recall given positive and negative scores.
 
@@ -117,8 +117,8 @@ def evaluate_keyphrase(
         batch_positive_idcs = batch_positive_idcs[batch_positive_idcs != query_idx]
         batch_result = dict(keyphrase=keyphrase_object['keyphrase'], query_idx=query_idx)
 
+        positive_scores = tira_tira_scores[query_idx, batch_positive_idcs]
         for case in CASES:
-            positive_scores = tira_tira_scores[query_idx, batch_positive_idcs]
             
             if case == 'english':
                 negative_scores = tira_eng_scores[query_idx]
@@ -135,12 +135,14 @@ def evaluate_keyphrase(
         results.append(batch_result)
     return results
 
-def get_similarity_scores(
+def get_cosine_similarity(
         query_embeds: torch.Tensor,
         test_embeds: torch.Tensor,
 ) -> torch.Tensor:
     """
-    Compute cosine similarity scores between query embeddings and test embeddings.
+    Compute cosine similarity scores between query embeddings and test embeddings
+    where the (i,j)^th element is the cosine similarity between the i^th query
+    embedding and the j^th test embedding.
 
     Args:
         query_embeds: Tensor of shape (num_queries, embed_dim)
@@ -152,6 +154,35 @@ def get_similarity_scores(
     test_norm = test_embeds / test_embeds.norm(dim=1, keepdim=True)
     scores = torch.matmul(query_norm, test_norm.T)
     return scores
+
+def get_windowed_cosine_similarity(
+        query_embeds: torch.Tensor,
+        test_embeds: torch.Tensor,
+) -> torch.Tensor:
+    """
+    Computes cosine similarity scores between windowed query embeddings and test embeddings.
+    Returns a 4-d tensor where each (i,j)^th element is a similarity matrix between
+    the windowed embeddings from the i^th query and j^th test phrase.
+
+    Args:
+        query_embeds: Tensor of shape (num_queries, num_windows, embed_dim)
+        test_embeds: Tensor of shape (num_tests, num_windows, embed_dim)
+
+    Returns:
+        Tensor of shape (num_queries, num_tests, num_windows_query, num_windows_test)
+    """
+    query_norm = query_embeds / query_embeds.norm(dim=-1, keepdim=True)
+    test_norm = test_embeds / test_embeds.norm(dim=-1, keepdim=True)
+    # k = keyword index,    i = keyword window index,   d = embedding dim
+    # t = test index,       j = test window index,      d = embedding dim
+    scores = torch.einsum('kid,tjd->ktij', query_norm, test_norm)
+    return scores
+
+def get_segdtw_similarity(
+        query_embeds: torch.Tensor,
+        test_embeds: torch.Tensor,
+) -> torch.Tensor:
+
 
 def compute_roc_auc(args, run=None) -> pd.DataFrame:
     tira_argdict = vars(args).copy()
@@ -175,8 +206,8 @@ def compute_roc_auc(args, run=None) -> pd.DataFrame:
     if eng_idcs is not None:
         eng_embeds = eng_embeds[eng_idcs]
 
-    tira_tira_similarity = get_similarity_scores(tira_embeds, tira_embeds)
-    tira_eng_similarity = get_similarity_scores(tira_embeds, eng_embeds)
+    tira_tira_similarity = get_cosine_similarity(tira_embeds, tira_embeds)
+    tira_eng_similarity = get_cosine_similarity(tira_embeds, eng_embeds)
 
     results = []
     for keyphrase_object in tqdm(kws_list, desc='Evaluating keyphrases...'):
