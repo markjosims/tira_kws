@@ -189,39 +189,40 @@ def encode_speechbrain_audio(
     return speech_embed
 
 """
-## Similarity computation utilities
-- compute_cosine_similarity_matrix: Compute cosine similarity matrix between two sets of embeddings.
+## Distance computation utilities
+- compute_cosine_distance_matrix: Compute cosine distance matrix between two sets of embeddings.
 """
 
 
-def get_cosine_similarity(
+def get_cosine_distance(
         query_embeds: torch.Tensor,
         test_embeds: torch.Tensor,
 ) -> torch.Tensor:
     """
-    Compute cosine similarity scores between query embeddings and test embeddings
-    where the (i,j)^th element is the cosine similarity between the i^th query
+    Compute cosine distance scores between query embeddings and test embeddings
+    where the (i,j)^th element is the cosine distance between the i^th query
     embedding and the j^th test embedding.
 
     Args:
         query_embeds: Tensor of shape (num_queries, embed_dim)
         test_embeds: Tensor of shape (num_tests, embed_dim)
     Returns:
-        Tensor of shape (num_queries, num_tests) with cosine similarity scores
+        Tensor of shape (num_queries, num_tests) with cosine distance scores
     """
     query_norm = query_embeds / query_embeds.norm(dim=1, keepdim=True)
     test_norm = test_embeds / test_embeds.norm(dim=1, keepdim=True)
-    scores = torch.matmul(query_norm, test_norm.T)
-    return scores
+    similarity_scores = torch.matmul(query_norm, test_norm.T)
+    distance_scores = 1-similarity_scores
+    return distance_scores
 
 
-def get_windowed_cosine_similarity(
+def get_windowed_cosine_distance(
         query_embeds: torch.Tensor,
         test_embeds: torch.Tensor,
 ) -> torch.Tensor:
     """
-    Computes cosine similarity scores between windowed query embeddings and test embeddings.
-    Returns a 4-d tensor where each (i,j)^th element is a similarity matrix between
+    Computes cosine distance scores between windowed query embeddings and test embeddings.
+    Returns a 4-d tensor where each (i,j)^th element is a distance matrix between
     the windowed embeddings from the i^th query and j^th test phrase.
 
     Args:
@@ -238,5 +239,6 @@ def get_windowed_cosine_similarity(
     # scores = torch.einsum('kid,tjd->ktij', query_norm, test_norm)
     query_expanded = query_norm.unsqueeze(1)
     test_expanded = test_norm.transpose(-1, -2).unsqueeze(0)
-    scores = query_expanded @ test_expanded
-    return scores
+    similarity_scores = query_expanded @ test_expanded
+    distance_scores = 1-similarity_scores
+    return distance_scores

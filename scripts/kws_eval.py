@@ -11,7 +11,7 @@ from constants import (
     CALIBRATION_LIST, ENGLISH_CALIBRATION_LIST,
     DEVICE
 )
-from encoding import get_cosine_similarity
+from encoding import get_cosine_distance
 from scripts.cache_embeddings import add_cache_embeddings_args, load_embeddings
 import pandas as pd
 import torch
@@ -27,7 +27,7 @@ load_dotenv()
 EXPERIMENT_NAME_TEMPLATE = "tira_kws_auroc_ws_{encoder}_{window_size}"
 
 # easy, medium and hard refer to different splits of Tira keyphrases
-# based on string similarity with the keyphrase query, with dissimilar
+# based on string distance with the keyphrase query, with dissimilar
 # words in easy and similar words in hard
 # English indicates Tira/English LID, and is not binned by difficulty
 CASES = ['easy', 'medium', 'hard', 'english']
@@ -165,14 +165,14 @@ def compute_roc_auc(args, run=None) -> pd.DataFrame:
     if eng_idcs is not None:
         eng_embeds = eng_embeds[eng_idcs]
 
-    tira_tira_similarity = get_cosine_similarity(tira_embeds, tira_embeds)
-    tira_eng_similarity = get_cosine_similarity(tira_embeds, eng_embeds)
+    tira_tira_distance = get_cosine_distance(tira_embeds, tira_embeds)
+    tira_eng_distance = get_cosine_distance(tira_embeds, eng_embeds)
 
     results = []
     for keyphrase_object in tqdm(kws_list, desc='Evaluating keyphrases...'):
         keyphrase_results = evaluate_keyphrase(
-            tira_tira_scores=tira_tira_similarity,
-            tira_eng_scores=tira_eng_similarity,
+            tira_tira_scores=tira_tira_distance,
+            tira_eng_scores=tira_eng_distance,
             keyphrase_object=keyphrase_object,
         )
         results.extend(keyphrase_results)
