@@ -75,50 +75,50 @@ def test_encode_clap_audio():
 @pytest.mark.parametrize(
     "shape", [torch.randint(5, 20, (2,)).tolist() for _ in range(20)]
 )
-def test_cosine_similarity_matrix_shape(shape):
+def test_cosine_distance_matrix_shape(shape):
     n_records_a, n_records_b = shape
     emb_a = torch.randn(5, TEST_EMBED_DIM)
     emb_b = torch.randn(3, TEST_EMBED_DIM)
-    sim_matrix = get_cosine_similarity(emb_a, emb_b)
+    sim_matrix = get_cosine_distance(emb_a, emb_b)
     assert sim_matrix.shape == (5, 3)
 
 @pytest.mark.parametrize(
     "n_vectors", [torch.randint(5, 20, (1,)).item() for _ in range(20)]
 )
-def test_cosine_similarity_values(n_vectors):
+def test_cosine_distance_values(n_vectors):
     emb_a, emb_b = get_orthogonal_vectors()
-    matrix_a = get_cosine_similarity(emb_a, emb_a)
-    matrix_b = get_cosine_similarity(emb_b, emb_b)
-    matrix_ab = get_cosine_similarity(emb_a, emb_b)
+    matrix_a = get_cosine_distance(emb_a, emb_a)
+    matrix_b = get_cosine_distance(emb_b, emb_b)
+    matrix_ab = get_cosine_distance(emb_a, emb_b)
 
-    assert matrix_a.mean() > matrix_ab.mean()
-    assert matrix_b.mean() > matrix_ab.mean()
+    assert matrix_a.mean() < matrix_ab.mean()
+    assert matrix_b.mean() < matrix_ab.mean()
 
 @pytest.mark.parametrize(
     "shape", [torch.randint(5, 20, (4,)).tolist() for _ in range(20)]
 )
-def test_windowed_similarity_shape(shape):
+def test_windowed_distance_shape(shape):
     n_records_a, n_windows_a, n_records_b, n_windows_b = shape
 
     emb_a = torch.randn(n_records_a, n_windows_a, TEST_EMBED_DIM)
     emb_b = torch.randn(n_records_b, n_windows_b, TEST_EMBED_DIM)
 
-    windowed_similarity = get_windowed_cosine_similarity(emb_a, emb_b)
+    windowed_distance = get_windowed_cosine_distance(emb_a, emb_b)
 
-    assert windowed_similarity.shape == (n_records_a, n_records_b, n_windows_a, n_windows_b)
+    assert windowed_distance.shape == (n_records_a, n_records_b, n_windows_a, n_windows_b)
 
 @pytest.mark.parametrize(
     "n_windows", [torch.randint(5, 20, (2,)).tolist() for _ in range(20)]
 )
-def test_windowed_similarity_values(n_windows):
+def test_windowed_distance_values(n_windows):
     emb_a, emb_b = get_orthogonal_vectors(n_vectors=10, n_windows=n_windows)
 
-    windowed_similarity = get_windowed_cosine_similarity(emb_a, emb_b)
+    windowed_distance = get_windowed_cosine_distance(emb_a, emb_b)
 
-    for i in range(windowed_similarity.shape[0]):
-        for j in range(windowed_similarity.shape[1]):
-            record_sim_pred = windowed_similarity[i, j]
-            record_sim_expected = get_cosine_similarity(emb_a[i], emb_b[j])
+    for i in range(windowed_distance.shape[0]):
+        for j in range(windowed_distance.shape[1]):
+            record_sim_pred = windowed_distance[i, j]
+            record_sim_expected = get_cosine_distance(emb_a[i], emb_b[j])
             assert torch.isclose(record_sim_pred, record_sim_expected, atol=1e-06).all()
 
 @pytest.mark.parametrize(
@@ -128,15 +128,15 @@ def test_decode_single_wfst(batch_size, n_windows):
     emb_a, emb_b = get_orthogonal_vectors(n_vectors=batch_size, n_windows=(n_windows,n_windows))
     emb_a_trunc = emb_a[:,:n_windows//2,:]
     # emb_a_stacked = torch.concat([emb_a.clone(), emb_b])
-    windowed_similarity = get_windowed_cosine_similarity(emb_a_trunc, emb_a)
-    # `windowed_similarity` is shape Q*T*W_q*W_t
+    windowed_distance = get_windowed_cosine_distance(emb_a_trunc, emb_a)
+    # `windowed_distance` is shape Q*T*W_q*W_t
     # get T*W_q*W_t tensor indicating windowed hit probabilities for first keyword
-    first_query_similarity = windowed_similarity[0]
+    first_query_distance = windowed_distance[0]
     seq_lens = [randint(1, n_windows-1) for _ in range(batch_size)]
     # `decode_single_keyword` expects a tensor of shape T*W_t*W_q
-    # need to swap last two dimensions of `first_query_similarity`
-    first_query_similarity = first_query_similarity.transpose(1,2)
-    scores, labels = decode_single_keyword(first_query_similarity, seq_lens)
+    # need to swap last two dimensions of `first_query_distance`
+    first_query_distance = first_query_distance.transpose(1,2)
+    scores, labels = decode_single_keyword(first_query_distance, seq_lens)
     assert scores.shape == (batch_size,)
 
 @pytest.mark.parametrize(
@@ -148,11 +148,11 @@ def test_wfst_sim(n_windows):
     query_embeds = emb_a
     test_embeds = torch.concat([emb_a, emb_b])
 
-    windowed_similarity = get_windowed_cosine_similarity(query_embeds, test_embeds)
+    windowed_distance = get_windowed_cosine_distance(query_embeds, test_embeds)
     keyword_lens = torch.full((batch_size,), n_windows[0], dtype=torch.int64)
     seq_lens = torch.full((batch_size*2,), n_windows[1], dtype=torch.int64)
 
-    wfst_scores, labels = decode_keyword_batch(windowed_similarity, keyword_lens, seq_lens)
+    wfst_scores, labels = decode_keyword_batch(windowed_distance, keyword_lens, seq_lens)
     assert wfst_scores.shape == (batch_size, batch_size*2)
 
     for i in range(batch_size):
