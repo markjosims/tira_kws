@@ -41,7 +41,7 @@ def make_dense_fsa(
     distance_costs_sorted = 1-similarity_scores_sorted
     supervision_segments = torch.stack([seq_idcs_sorted, start_frames_sorted, durations_sorted], dim=1)
 
-    fsa = k2.DenseFsaVec(distance_costs_sorted, supervision_segments)
+    fsa = k2.DenseFsaVec(distance_costs_sorted, supervision_segments).to(DEVICE)
     return fsa
 
 def prepare_dense_fsa_batch(
@@ -160,9 +160,9 @@ def decode_single_keyword(
 
     Args:
         similarity_scores: tensor of similarity scores of shape
-            T * W_q * W_t, where T is the number of test phrases, W_q
-            is the padded sequence length of the query phrase
-            and W_t is the padded sequence length of the test phrases
+            T * W_t * W_q, where T is the number of test phrases, W_t
+            is the padded sequence length of the test phrases
+            and W_q is the length of the query phrase
         seq_lens: sequence of un-padded lengths of test phrases
 
     Returns:

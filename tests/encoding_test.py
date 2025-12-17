@@ -3,12 +3,11 @@ from tqdm import tqdm
 from encoding import *
 import librosa
 import torch
-from torch.nn.utils.rnn import pad_sequence
 from transformers import WhisperProcessor
 from constants import DEVICE, SAMPLE_RATE
 import pytest
-from tslearn.metrics import dtw_subsequence_path
-from wfst import decode_keyword_batch
+from wfst import decode_keyword_batch, decode_single_keyword
+from random import randint
 
 AILN_WAV = "data/ailn.wav"
 EXPECTED_CLAP_IPA_SIZE = {
@@ -123,7 +122,25 @@ def test_windowed_similarity_values(n_windows):
             assert torch.isclose(record_sim_pred, record_sim_expected, atol=1e-06).all()
 
 @pytest.mark.parametrize(
-    "n_windows", [[torch.randint(5, 20, (1,)).item()]*2 for _ in range(20)]
+    "batch_size,n_windows", [(randint(5, 20),randint(5, 20)) for _ in range(60)]
+)
+def test_decode_single_wfst(batch_size, n_windows):
+    emb_a, emb_b = get_orthogonal_vectors(n_vectors=batch_size, n_windows=(n_windows,n_windows))
+    emb_a_trunc = emb_a[:,:n_windows//2,:]
+    # emb_a_stacked = torch.concat([emb_a.clone(), emb_b])
+    windowed_similarity = get_windowed_cosine_similarity(emb_a_trunc, emb_a)
+    # `windowed_similarity` is shape Q*T*W_q*W_t
+    # get T*W_q*W_t tensor indicating windowed hit probabilities for first keyword
+    first_query_similarity = windowed_similarity[0]
+    seq_lens = [randint(1, n_windows-1) for _ in range(batch_size)]
+    # `decode_single_keyword` expects a tensor of shape T*W_t*W_q
+    # need to swap last two dimensions of `first_query_similarity`
+    first_query_similarity = first_query_similarity.transpose(1,2)
+    scores, labels = decode_single_keyword(first_query_similarity, seq_lens)
+    assert scores.shape == (batch_size,)
+
+@pytest.mark.parametrize(
+    "n_windows", [[randint(5, 20)]*2 for _ in range(60)]
 )
 def test_wfst_sim(n_windows):
     batch_size = 16
@@ -133,9 +150,9 @@ def test_wfst_sim(n_windows):
 
     windowed_similarity = get_windowed_cosine_similarity(query_embeds, test_embeds)
     keyword_lens = torch.full((batch_size,), n_windows[0], dtype=torch.int64)
-    seq_lens = torch.full((batch_size,), n_windows[1], dtype=torch.int64)
+    seq_lens = torch.full((batch_size*2,), n_windows[1], dtype=torch.int64)
 
-    wfst_scores = decode_keyword_batch(windowed_similarity, keyword_lens, seq_lens)
+    wfst_scores, labels = decode_keyword_batch(windowed_similarity, keyword_lens, seq_lens)
     assert wfst_scores.shape == (batch_size, batch_size*2)
 
     for i in range(batch_size):
