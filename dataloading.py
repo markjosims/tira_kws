@@ -171,9 +171,13 @@ def prepare_dataset(
             audio, speechbrain_encoder,
         ), None)
     else:
-        encoder_funct = lambda audio, sr: (processor(
-            audio, sampling_rate=sr, return_tensors='pt'
-        )['input_features'], None)
+        def encoder_funct(audio, sr):
+            if type(audio) is torch.Tensor:
+                audio = audio.numpy()
+            input_features = processor(
+                audio, sampling_rate=sr, return_tensors='pt'
+            )['input_features']
+            return input_features, None
 
     if isinstance(dataset, DatasetDict):
         colnames = dataset['train'].column_names

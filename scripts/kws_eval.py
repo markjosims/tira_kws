@@ -11,10 +11,11 @@ from constants import (
     CALIBRATION_LIST, ENGLISH_CALIBRATION_LIST,
     DEVICE
 )
+from encoding import get_cosine_similarity
 from scripts.cache_embeddings import add_cache_embeddings_args, load_embeddings
 import pandas as pd
 import torch
-from torchmetrics.classification import BinaryEER, BinaryROC
+from torchmetrics.classification import BinaryEER
 from torchmetrics.retrieval import RetrievalMAP, RetrievalRecall, RetrievalAUROC
 from typing import *
 import wandb
@@ -135,54 +136,12 @@ def evaluate_keyphrase(
         results.append(batch_result)
     return results
 
-def get_cosine_similarity(
-        query_embeds: torch.Tensor,
-        test_embeds: torch.Tensor,
-) -> torch.Tensor:
-    """
-    Compute cosine similarity scores between query embeddings and test embeddings
-    where the (i,j)^th element is the cosine similarity between the i^th query
-    embedding and the j^th test embedding.
-
-    Args:
-        query_embeds: Tensor of shape (num_queries, embed_dim)
-        test_embeds: Tensor of shape (num_tests, embed_dim)
-    Returns:
-        Tensor of shape (num_queries, num_tests) with cosine similarity scores
-    """
-    query_norm = query_embeds / query_embeds.norm(dim=1, keepdim=True)
-    test_norm = test_embeds / test_embeds.norm(dim=1, keepdim=True)
-    scores = torch.matmul(query_norm, test_norm.T)
-    return scores
-
-def get_windowed_cosine_similarity(
-        query_embeds: torch.Tensor,
-        test_embeds: torch.Tensor,
-) -> torch.Tensor:
-    """
-    Computes cosine similarity scores between windowed query embeddings and test embeddings.
-    Returns a 4-d tensor where each (i,j)^th element is a similarity matrix between
-    the windowed embeddings from the i^th query and j^th test phrase.
-
-    Args:
-        query_embeds: Tensor of shape (num_queries, num_windows, embed_dim)
-        test_embeds: Tensor of shape (num_tests, num_windows, embed_dim)
-
-    Returns:
-        Tensor of shape (num_queries, num_tests, num_windows_query, num_windows_test)
-    """
-    query_norm = query_embeds / query_embeds.norm(dim=-1, keepdim=True)
-    test_norm = test_embeds / test_embeds.norm(dim=-1, keepdim=True)
-    # k = keyword index,    i = keyword window index,   d = embedding dim
-    # t = test index,       j = test window index,      d = embedding dim
-    scores = torch.einsum('kid,tjd->ktij', query_norm, test_norm)
-    return scores
 
 def get_segdtw_similarity(
         query_embeds: torch.Tensor,
         test_embeds: torch.Tensor,
 ) -> torch.Tensor:
-
+    ...
 
 def compute_roc_auc(args, run=None) -> pd.DataFrame:
     tira_argdict = vars(args).copy()

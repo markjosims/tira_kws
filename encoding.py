@@ -193,19 +193,50 @@ def encode_speechbrain_audio(
 - compute_cosine_similarity_matrix: Compute cosine similarity matrix between two sets of embeddings.
 """
 
-def compute_cosine_similarity_matrix(
-    embeddings_a: torch.Tensor,
-    embeddings_b: torch.Tensor,
+
+def get_cosine_similarity(
+        query_embeds: torch.Tensor,
+        test_embeds: torch.Tensor,
 ) -> torch.Tensor:
     """
-    Compute cosine similarity matrix between two sets of embeddings.
+    Compute cosine similarity scores between query embeddings and test embeddings
+    where the (i,j)^th element is the cosine similarity between the i^th query
+    embedding and the j^th test embedding.
 
     Args:
-        embeddings_a (torch.Tensor): Tensor of shape (N, D)
-        embeddings_b (torch.Tensor): Tensor of shape (M, D)
+        query_embeds: Tensor of shape (num_queries, embed_dim)
+        test_embeds: Tensor of shape (num_tests, embed_dim)
+    Returns:
+        Tensor of shape (num_queries, num_tests) with cosine similarity scores
+    """
+    query_norm = query_embeds / query_embeds.norm(dim=1, keepdim=True)
+    test_norm = test_embeds / test_embeds.norm(dim=1, keepdim=True)
+    scores = torch.matmul(query_norm, test_norm.T)
+    return scores
+
+
+def get_windowed_cosine_similarity(
+        query_embeds: torch.Tensor,
+        test_embeds: torch.Tensor,
+) -> torch.Tensor:
+    """
+    Computes cosine similarity scores between windowed query embeddings and test embeddings.
+    Returns a 4-d tensor where each (i,j)^th element is a similarity matrix between
+    the windowed embeddings from the i^th query and j^th test phrase.
+
+    Args:
+        query_embeds: Tensor of shape (num_queries, num_windows, embed_dim)
+        test_embeds: Tensor of shape (num_tests, num_windows, embed_dim)
 
     Returns:
-        torch.Tensor: Cosine similarity matrix of shape (N, M)
+        Tensor of shape (num_queries, num_tests, num_windows_query, num_windows_test)
     """
-
-    return F.cosine_similarity(embeddings_a.unsqueeze(1), embeddings_b.unsqueeze(0), dim=-1)
+    query_norm = query_embeds / query_embeds.norm(dim=-1, p=2, keepdim=True)
+    test_norm = test_embeds / test_embeds.norm(dim=-1, p=2, keepdim=True)
+    # k = keyword index,    i = keyword window index,   d = embedding dim
+    # t = test index,       j = test window index,      d = embedding dim
+    # scores = torch.einsum('kid,tjd->ktij', query_norm, test_norm)
+    query_expanded = query_norm.unsqueeze(1)
+    test_expanded = test_norm.transpose(-1, -2).unsqueeze(0)
+    scores = query_expanded @ test_expanded
+    return scores

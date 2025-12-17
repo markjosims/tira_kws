@@ -2,14 +2,12 @@ from dataloading import *
 
 def test_tira_asr():
     tira_asr = load_tira_asr()
-    for split in ['train', 'validation', 'test']:
-        assert split in tira_asr
-        for expected_col in ['audio', 'transcription']:
-            assert expected_col in tira_asr[split].column_names
+    for expected_col in ['audio', 'transcription']:
+        assert expected_col in tira_asr.column_names
 
 def test_get_dataloader():
     tira_asr = load_tira_asr()
-    tira_asr = tira_asr['train'].select(range(300))  # use a small subset for testing
+    tira_asr = tira_asr.select(range(300))  # use a small subset for testing
     tira_asr = prepare_dataset(tira_asr)
     dataloader = get_audio_dataloader(tira_asr)
     
@@ -27,7 +25,7 @@ def test_get_dataloader():
 
 def test_sliding_window():
     ds_orig = load_tira_asr()
-    ds_orig = ds_orig['train'].select(range(4))  # use a small subset for testing
+    ds_orig = ds_orig.select(range(4))  # use a small subset for testing
     ds_sliding = prepare_dataset(ds_orig, window_size=1.0)
     assert len(ds_sliding) > len(ds_orig)
     for i in range(len(ds_sliding)):
@@ -36,7 +34,7 @@ def test_sliding_window():
 
 def test_sliding_window_clap():
     ds_orig = load_tira_asr()
-    ds_orig = ds_orig['train'].select(range(4))  # use a small subset for testing
+    ds_orig = ds_orig.select(range(4))  # use a small subset for testing
     ds_sliding = prepare_dataset(ds_orig, encoder='clap_ipa', window_size=1.0)
     assert len(ds_sliding) > len(ds_orig)
     for i in range(len(ds_sliding)):
