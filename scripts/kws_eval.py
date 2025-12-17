@@ -80,16 +80,46 @@ def compute_metrics(
         torch.ones_like(positive_scores),
         torch.zeros_like(negative_scores),
     ]).to(int)
-    scores = torch.cat([positive_scores, negative_scores])
-    indices = torch.full_like(scores, index, dtype=int)
+    distance_scores = torch.cat([positive_scores, negative_scores])
+    hit_scores = 1-distance_scores
+    indices = torch.full_like(hit_scores, index, dtype=int)
     
     for metric_name, metric_funct in METRICS[case].items():
         if metric_name in NON_RETRIEVAL_METRICS:
-            metric_args = (scores, labels)
+            metric_args = (hit_scores, labels)
         else:
-            metric_args = (scores, labels, indices)
+            metric_args = (hit_scores, labels, indices)
         batch_metrics[f"{case}/{metric_name}"] = metric_funct(*metric_args)
     return batch_metrics
+
+def evaluate_keyphrase_batch(
+        tira_embeddings: torch.Tensor,
+        eng_embeddings: torch.Tensor,
+        keyphrase_object: Dict,
+) -> List[Dict[str, float]]:
+    """
+    Get evaluation metrics for all tokens of the keyphrase indicates by `keyphrase_object`.
+    Wraps `evaluate_keyphrase`, which gets metrics for a single token.
+
+    Retrieves positive Tira embeddings using the 'record_idcs' key of `keyphrase_object`
+    and negative embeddings from 'easy', 'medium' and 'hard' keys.
+    Assumes `eng_embeddings` already contains only the relevant embeddings used for KWS
+    evaluation.
+
+    Args:
+        tira_embeddings: Tensor of shape (tira_corpus_size, embed_dim)
+        eng_embeddings: Tensor of shape (eng_corpus_size, embed_dim)
+        keyphrase_object: Dict with keys 'keyphrase', 'keyphrase_idx', 'record_idcs',
+            'easy', 'medium', 'hard'
+
+    Returns:
+        List of dicts with keyphrases and metric values
+    """
+    positive_idcs = keyphrase_object['record_idcs']
+    keyphrase_idx = keyphrase_object['keyphrase_idx']
+
+    # `score_dict` stores cost matrices
+    score_dict = {}
 
 def evaluate_keyphrase(
         tira_tira_scores: torch.Tensor,
@@ -105,8 +135,6 @@ def evaluate_keyphrase(
         tira_eng_scores: Tensor of shape (num_tira_records, num_eng_records)
         keyphrase_object: Dict with keys 'keyphrase', 'keyphrase_idx', 'record_idcs',
             'easy', 'medium', 'hard'
-        eng_idcs: Optional set of English keyphrase indices to use for
-            negative examples. If None, use all English keyphrases.
     Returns:
         List of dicts with keyphrases and metric values
     """
@@ -136,12 +164,6 @@ def evaluate_keyphrase(
         results.append(batch_result)
     return results
 
-
-def get_segdtw_similarity(
-        query_embeds: torch.Tensor,
-        test_embeds: torch.Tensor,
-) -> torch.Tensor:
-    ...
 
 def compute_roc_auc(args, run=None) -> pd.DataFrame:
     tira_argdict = vars(args).copy()
