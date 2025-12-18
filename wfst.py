@@ -182,7 +182,7 @@ def decode_single_keyword(
     return score, labels
 
 def decode_keyword_batch(
-        prob_matrices: torch.Tensor,
+        distance_tensor: torch.Tensor,
         keyword_lens: Sequence[int],
         seq_lens: Sequence[int],
 ):
@@ -195,7 +195,7 @@ def decode_keyword_batch(
     given the query phrase.
 
     Arguments:
-        prob_matrices: tensor of shape Q*T*W_q*W_t, where Q is the number of queries,
+        distance_tensor: tensor of shape Q*T*W_q*W_t, where Q is the number of queries,
             K the number of test phrases, W_q the number of padded windows in each
             query and W_t the number of padded windows in each test phrase
         keyword_lens: sequence of un-padded lengths of query phrases
@@ -207,10 +207,10 @@ def decode_keyword_batch(
         and distance scores, with each test phrase label sequence
         separated by a -1 label, which indicates final state.
     """
-    num_keywords = prob_matrices.shape[0]
-    batch_size = prob_matrices.shape[1]
+    num_keywords = distance_tensor.shape[0]
+    batch_size = distance_tensor.shape[1]
     query_fsa = prepare_query_graph(keyword_lens, batch_size)
-    dense_fsa = prepare_dense_fsa_batch(prob_matrices, seq_lens)
+    dense_fsa = prepare_dense_fsa_batch(distance_tensor, seq_lens)
 
     lattice = k2.intersect_dense(query_fsa, dense_fsa, output_beam=10.0)
     best_path = k2.shortest_path(lattice, use_double_scores=True)
