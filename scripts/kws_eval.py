@@ -12,6 +12,7 @@ from constants import (
     DEVICE
 )
 from encoding import get_cosine_distance
+from wfst import decode_embed_list
 from scripts.cache_embeddings import add_cache_embeddings_args, load_embeddings
 import pandas as pd
 import torch
@@ -118,8 +119,41 @@ def evaluate_keyphrase_batch(
     positive_idcs = keyphrase_object['record_idcs']
     keyphrase_idx = keyphrase_object['keyphrase_idx']
 
-    # `score_dict` stores cost matrices
-    score_dict = {}
+    # a 2d embedding matrix indicates non-windowed embeddings
+    # and a 3d matrix indicates windowed
+    if len(tira_embeddings.shape) == 2:
+        distance_funct = get_cosine_distance
+    elif len(tira_embeddings.shape) == 3:
+        # `decode_embed_list` returns both scores and labels
+        # we just want scores here
+        distance_funct = lambda *args: decode_embed_list(*args)[0]
+    else:
+        raise ValueError(f"Invalid embedding dimension {tira_embeddings.shape}, must be 2 or 3")
+
+    # calculate distance matrices w/in positive embeds
+    # between positive and negative Tira embeds
+    # (split between easy medium and hard)
+    # and between positive Tira embeds and negative English embeds
+    positive_embeds = tira_embeddings[positive_idcs]
+    positive_distance = distance_funct(positive_embeds, positive_embeds)
+    # ignore self-distance
+    positive_distance.fill_diagonal_(torch.nan)
+
+    negative_scores = {}
+
+    for case in CASES:
+        if case == 'english':
+            negative_embeds = eng_embeddings
+        else:
+            negative_idcs = keyphrase_object[case]
+            negative_embeds = tira_embeddings[negative_idcs]
+        negative_scores[case] = distance_funct(positive_embeds, negative_embeds)
+    
+    # now iterate through each positive embedding, index the appropriate scores
+    # and pass to `evaluate_keyphrase`
+    for i, positive_scores in enumerate(positive_distance):
+        positive_scores = positive_scores[~torch.isnan(positive_scores)]
+
 
 def evaluate_keyphrase(
         tira_tira_scores: torch.Tensor,
@@ -127,6 +161,9 @@ def evaluate_keyphrase(
         keyphrase_object: Dict[str, Any],
 ) -> Dict[str, float]:
     """
+    TODO: should take `positive_scores` and `negative_scores` as args
+    where `negative_scores` is a dict of score tensors for each case
+
     Get ROC AUC and EER for a single keyphrase, divided into easy, medium and hard
     for Tira>Tira KWS and a single score for Tira>English KWS.
 
