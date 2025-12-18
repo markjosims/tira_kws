@@ -2,6 +2,7 @@ import k2
 import torch
 from typing import *
 from constants import DEVICE
+from encoding import prepare_embed_lists_for_decoding
 
 """
 ## FSA builders
@@ -147,7 +148,7 @@ and test phrase distance scores.
 def decode_single_keyword(
         distance_scores: torch.Tensor,
         seq_lens: Sequence[int],
-) -> Tuple[torch.Tensor, List[torch.Tensor]]:
+) -> Tuple[torch.Tensor, torch.Tensor]:
     """
     Given a tensor of distance scores of test phrases to a
     query keyphrase, creates an FSA representing the distance
@@ -185,7 +186,7 @@ def decode_keyword_batch(
         distance_tensor: torch.Tensor,
         keyword_lens: Sequence[int],
         seq_lens: Sequence[int],
-):
+) -> Tuple[torch.Tensor, torch.Tensor]:
     """
     Given a tensor of distance scores of test phrases to a
     batch of query keyphrases, creates an FSA representing the distance
@@ -218,3 +219,26 @@ def decode_keyword_batch(
     score = score.reshape(num_keywords, batch_size)
     labels = best_path.labels
     return score, labels
+
+def decode_embed_list(
+        query_embeds: List[torch.Tensor],
+        test_embeds: List[torch.Tensor],
+        distance_metric: str,
+) -> Tuple[torch.Tensor, torch.Tensor]:
+    """
+    Wraps `encoding.prepare_embed_lists_for_decoding` and
+    `wfst.decode_keyword_batch`.
+
+    Args:
+        query_embeds: List of embeddings for query keyphrases.
+        test_embeds: List of embeddings for test phrases.
+        distance_metric: String indicating type of distance metric to use,
+            see `encoding.prepare_embed_lists_for_decoding` for more information.
+
+    Returns:
+        score, labels. See `wfst.decode_keyword_batch` for more information.
+    """
+    distance_tensor, keyword_lens, seq_lens = prepare_embed_lists_for_decoding(
+            query_embeds, test_embeds, distance_metric
+    )
+    return decode_keyword_batch(distance_tensor, keyword_lens, seq_lens)

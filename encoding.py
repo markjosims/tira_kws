@@ -2,7 +2,6 @@ from __future__ import annotations
 from typing import *
 import numpy as np
 import torch
-from torch.nn import functional as F
 from torch.nn.utils.rnn import pad_sequence
 from transformers import AutoProcessor
 from argparse import ArgumentParser
@@ -92,6 +91,41 @@ def get_sliding_window(
     windows.append(frame)
     
     return windows
+
+def prepare_embed_lists_for_decoding(
+        query_embeds: List[torch.Tensor],
+        test_embeds: List[torch.Tensor],
+        distance_metric: Literal['cosine'] = 'cosine'
+) -> Tuple[torch.Tensor, List[int], List[int]]:
+    """
+    Given a list of windowed embeddings for query and test phrases, pads
+    lists and computes distance scores between embeddings, and returns
+    lists of unpadded lengths (in number of windows) for each query and test phrase.
+    Note: the return values can be passed directly to `wfst.decode_keyword_batch`.
+
+    Args:
+        query_embeds: List of embeddings for query keyphrases
+        test_embeds: List of embeddings for test phrases
+        distance_metric: Type of distance metric to use.
+            For now only 'cosine' is supported
+
+    Returns: (distance_tensor, keyword_lens, seq_lens):
+        torch.Tensor indicating distance scores,
+        list of integers indicating unpadded query keyphrase lens
+        and list of integers indicating unpadded test phrase lens
+    """
+    if distance_metric == 'cosine':
+        distance_function = get_windowed_cosine_distance
+    else:
+        raise ValueError(f'Unknown distance metric: {distance_metric}')
+    query_embeds_padded = pad_sequence(query_embeds, batch_first=True, padding_value=0.0)
+    test_embeds_padded = pad_sequence(test_embeds, batch_first=True, padding_value=0.0)
+    distance_tensor = distance_function(query_embeds_padded, test_embeds_padded)
+
+    keyword_lens = [query.shape[0] for query in query_embeds]
+    seq_lens = [seq.shape[0] for seq in test_embeds_padded]
+
+    return distance_tensor, keyword_lens, seq_lens
 
 """
 ## CLAP IPA encoder utilities
