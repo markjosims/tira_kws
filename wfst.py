@@ -85,9 +85,9 @@ def get_query_fsa_str(keyword_len: int) -> str:
         curr = str(i)+" "
         nxt = str(i+1)+" "
         #           src_state   dest_state  label   score
-        self_arc=   curr +      curr +      curr +  "0.0\n"
+        # self_arc=   curr +      curr +      curr +  "0.0\n"
         arc=        curr +      nxt +       curr +  "0.0\n"
-        query_fsa_str+=self_arc
+        # query_fsa_str+=self_arc
         query_fsa_str+=arc
 
     penult = str(keyword_len-1)+" "
