@@ -1,9 +1,14 @@
+from __future__ import annotations
+
+from typing import List, Literal, Tuple
+
 import k2
 import torch
 from typing import *
+from torch.nn.utils.rnn import pad_sequence
 from constants import DEVICE, WFST_BATCH_SIZE
-from encoding import prepare_embed_lists_for_decoding
 from torch.utils.data import DataLoader
+from encoding import get_windowed_cosine_distance, pad_and_return_lengths
 
 """
 ## FSA builders
@@ -84,6 +89,8 @@ def get_query_fsa_str(keyword_len: int) -> str:
     for i in range(keyword_len-1):
         curr = str(i)+" "
         nxt = str(i+1)+" "
+        # suppressing self-arcs for now
+        # TODO: implement insertion and deletion arcs à-la Noise-Robust CTC (Xi et al 2025)
         #           src_state   dest_state  label   score
         # self_arc=   curr +      curr +      curr +  "0.0\n"
         arc=        curr +      nxt +       curr +  "0.0\n"
@@ -227,20 +234,45 @@ def decode_embed_list(
         distance_metric: str = 'cosine',
 ) -> Tuple[torch.Tensor, torch.Tensor]:
     """
-    Wraps `encoding.prepare_embed_lists_for_decoding` and
-    `wfst.decode_keyword_batch`.
+    Decodes a list of query and test phrase embeddings, handling batching
+    and padding.
 
     Args:
-        query_embeds: List of embeddings for query keyphrases.
-        test_embeds: List of embeddings for test phrases.
-        distance_metric: String indicating type of distance metric to use,
-            see `encoding.prepare_embed_lists_for_decoding` for more information.
+        query_embeds: List of embeddings for query keyphrases
+        test_embeds: List of embeddings for test phrases
+        distance_metric: Type of distance metric to use.
+            For now only 'cosine' is supported
 
-    Returns:
-        score, labels. See `wfst.decode_keyword_batch` for more information.
+    Returns: (scores, labels): torch.Tensors containing keyword hit scores
+        and shortest path labels for each test phrase in the batch
     """
+    if distance_metric == 'cosine':
+        distance_function = get_windowed_cosine_distance
+    else:
+        raise ValueError(f'Unknown distance metric: {distance_metric}')
 
-    distance_tensor, keyword_lens, seq_lens = prepare_embed_lists_for_decoding(
-            query_embeds, test_embeds, distance_metric
+    # get keyword lengths and pad
+    keyword_lens = [query.shape[0] for query in query_embeds]
+    query_embeds_padded = pad_sequence(query_embeds, batch_first=True, padding_value=0.0)
+    query_embeds_padded.to(DEVICE)
+
+    # test phrase padding is handled by DataLoader
+    dataloader = DataLoader(
+        test_embeds,
+        collate_fn=pad_and_return_lengths,
+        batch_size=WFST_BATCH_SIZE,
     )
-    return decode_keyword_batch(distance_tensor, keyword_lens, seq_lens)
+
+    score_list = []
+    label_list = []
+    for batch_test_embeds, batch_seq_lens in dataloader:
+        batch_distance = distance_function(query_embeds_padded, batch_test_embeds)
+        batch_scores, batch_labels = decode_keyword_batch(
+            batch_distance, keyword_lens, batch_seq_lens
+        )
+        score_list.append(batch_scores)
+        label_list.append(batch_labels)
+
+    scores = torch.cat(score_list, dim=1)
+    labels = torch.cat(label_list, dim=0)
+    return scores, labels

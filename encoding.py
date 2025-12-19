@@ -3,7 +3,6 @@ from typing import *
 import numpy as np
 import torch
 from torch.nn.utils.rnn import pad_sequence
-from torch.utils.data import DataLoader
 from transformers import AutoProcessor
 from argparse import ArgumentParser
 from constants import (
@@ -12,7 +11,7 @@ from constants import (
 )
 
 if CLAP_IS_AVAILABLE or TYPE_CHECKING:
-    from clap.encoders import SpeechEncoder, PhoneEncoder
+    from clap.encoders import SpeechEncoder
 if SPEECHBRAIN_IS_AVAILABLE or TYPE_CHECKING:
     from speechbrain.inference.classifiers import EncoderClassifier
 
@@ -105,62 +104,27 @@ def pad_and_return_lengths(
         embeddings for the current batch and a torch.Tensor containing
         the unpadded length of each sequence in the batch
     """
+
+    # # enforce pad length for whole sequence by zero-padding first element
+    # first_row_len = batch_embeds[0].shape[0]
+    # embed_dim = batch_embeds[0].shape[-1]
+    # first_row_padding = torch.zeros(pad_len-first_row_len, embed_dim)
+    # first_row_padded = torch.cat([batch_embeds[0], first_row_padding], dim=0)
+    # batch_embeds[0] = first_row_padded
+
     seq_lens = torch.tensor(
         [seq.shape[0] for seq in batch_embeds],
         dtype=int,
         device=DEVICE,
     )
-    padded_batch = pad_sequence(batch_embeds, batch_first=True, padding_value=0.0)
+    padded_batch = pad_sequence(
+        batch_embeds,
+        batch_first=True,
+        padding_value=0.0,
+
+    )
     padded_batch.to(DEVICE)
     return padded_batch, seq_lens
-
-def prepare_embed_lists_for_decoding(
-        query_embeds: List[torch.Tensor],
-        test_embeds: List[torch.Tensor],
-        distance_metric: Literal['cosine'] = 'cosine'
-) -> Tuple[torch.Tensor, List[int], List[int]]:
-    """
-    Given a list of windowed embeddings for query and test phrases, pads
-    lists and computes distance scores between embeddings, and returns
-    lists of unpadded lengths (in number of windows) for each query and test phrase.
-    Also handles batching test embeddings if num(test_embeds) > WFST_BATCH_SIZE.
-    Assuming for now that query embeds will never exceed WFST_BATCH_SIZE,
-    and so doesn't batch on query embeds.
-    Note: the return values can be passed directly to `wfst.decode_keyword_batch`.
-
-    Args:
-        query_embeds: List of embeddings for query keyphrases
-        test_embeds: List of embeddings for test phrases
-        distance_metric: Type of distance metric to use.
-            For now only 'cosine' is supported
-
-    Returns: (distance_tensor, keyword_lens, seq_lens):
-        torch.Tensor indicating distance scores,
-        list of integers indicating unpadded query keyphrase lens
-        and list of integers indicating unpadded test phrase lens
-    """
-    if distance_metric == 'cosine':
-        distance_function = get_windowed_cosine_distance
-    else:
-        raise ValueError(f'Unknown distance metric: {distance_metric}')
-
-    # get keyword lengths and pad
-    keyword_lens = [query.shape[0] for query in query_embeds]
-    query_embeds_padded = pad_sequence(query_embeds, batch_first=True, padding_value=0.0)
-    query_embeds_padded.to(DEVICE)
-
-    distance_tensor_list = []
-    seq_lens = []
-    dataloader = DataLoader(test_embeds, collate_fn=pad_and_return_lengths)
-    for batch_test_embeds, batch_seq_lens in dataloader:
-        batch_distance = distance_function(query_embeds_padded, batch_test_embeds)
-        distance_tensor_list.extend(batch_distance)
-        seq_lens.append(batch_seq_lens)
-
-    distance_tensor = torch.concat(distance_tensor_list, dim=1)
-    keyword_lens = torch.concat(seq_lens, dim=0)
-
-    return distance_tensor, keyword_lens, seq_lens
 
 """
 ## CLAP IPA encoder utilities
