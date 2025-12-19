@@ -120,21 +120,24 @@ def evaluate_keyphrase_batch(
     keyphrase_idx = keyphrase_object['keyphrase_idx']
 
     # a 2d embedding matrix indicates non-windowed embeddings
-    # and a 3d matrix indicates windowed
-    if len(tira_embeddings.shape) == 2:
+    # and a list of 2d matrices indicates windowed
+    if type(tira_embeddings) is torch.Tensor:
+        assert tira_embeddings.dim() == 2
         distance_funct = get_cosine_distance
-    elif len(tira_embeddings.shape) == 3:
+    else:
+        assert tira_embeddings[0].dim() == 2
         # `decode_embed_list` returns both scores and labels
         # we just want scores here
         distance_funct = lambda *args: decode_embed_list(*args)[0]
-    else:
-        raise ValueError(f"Invalid embedding dimension {tira_embeddings.shape}, must be 2 or 3")
 
     # calculate distance matrices w/in positive embeds
     # between positive and negative Tira embeds
     # (split between easy medium and hard)
     # and between positive Tira embeds and negative English embeds
-    positive_embeds = tira_embeddings[positive_idcs]
+
+    # use list comprehension for indexing in case `tira_embeddings`
+    # is a List or Tuple
+    positive_embeds = [tira_embeddings[i] for i in positive_idcs]
     positive_distance = distance_funct(positive_embeds, positive_embeds)
     # ignore self-distance
     positive_distance.fill_diagonal_(torch.nan)
@@ -151,55 +154,47 @@ def evaluate_keyphrase_batch(
     
     # now iterate through each positive embedding, index the appropriate scores
     # and pass to `evaluate_keyphrase`
+    batch_results = []
     for i, positive_scores in enumerate(positive_distance):
         positive_scores = positive_scores[~torch.isnan(positive_scores)]
+        batch_results.append(evaluate_keyphrase(
+            positive_scores, negative_scores, keyphrase_object,
+        ))
+    return batch_results
 
 
 def evaluate_keyphrase(
-        tira_tira_scores: torch.Tensor,
-        tira_eng_scores: torch.Tensor,
+        positive_scores: torch.Tensor,
+        negative_scores: Dict[str, torch.Tensor],
         keyphrase_object: Dict[str, Any],
 ) -> Dict[str, float]:
     """
-    TODO: should take `positive_scores` and `negative_scores` as args
-    where `negative_scores` is a dict of score tensors for each case
-
     Get ROC AUC and EER for a single keyphrase, divided into easy, medium and hard
     for Tira>Tira KWS and a single score for Tira>English KWS.
 
     Args:
-        tira_tira_scores: Tensor of shape (num_tira_records, num_tira_records)
-        tira_eng_scores: Tensor of shape (num_tira_records, num_eng_records)
-        keyphrase_object: Dict with keys 'keyphrase', 'keyphrase_idx', 'record_idcs',
-            'easy', 'medium', 'hard'
+        positive_scores: distance scores for query embedding vs. other positive keyphrases
+        negative_scores: dict containing distance score tensors for query embedding vs.
+            negative embeddings for all four cases (easy, medium and hard Tira, and English)
+        keyphrase_object: Dict with metadata for current keyphrase
     Returns:
         List of dicts with keyphrases and metric values
     """
-    positive_idcs = keyphrase_object['record_idcs']
-    keyphrase_idx = keyphrase_object['keyphrase_idx']
-    results = []
-    for query_idx in positive_idcs:
-        batch_positive_idcs = torch.tensor(positive_idcs)
-        batch_positive_idcs = batch_positive_idcs[batch_positive_idcs != query_idx]
-        batch_result = dict(keyphrase=keyphrase_object['keyphrase'], query_idx=query_idx)
+    result = dict(
+        keyphrase=keyphrase_object['keyphrase'],
+        query_idx=keyphrase_object['query_idx'],
+    )
 
-        positive_scores = tira_tira_scores[query_idx, batch_positive_idcs]
-        for case in CASES:
-            
-            if case == 'english':
-                negative_scores = tira_eng_scores[query_idx]
-            else:
-                negative_idcs = keyphrase_object[case]
-                negative_scores = tira_tira_scores[query_idx, negative_idcs]
-            batch_metrics = compute_metrics(
-                positive_scores,
-                negative_scores,
-                case,
-                keyphrase_idx,
-            )
-            batch_result.update(**batch_metrics)
-        results.append(batch_result)
-    return results
+    for case in CASES:
+        negative_scores_for_case = negative_scores[case]
+        metrics_for_case = compute_metrics(
+            positive_scores,
+            negative_scores_for_case,
+            case,
+            keyphrase_object['query_idx'],
+        )
+        result.update(**metrics_for_case)
+    return result
 
 
 def compute_roc_auc(args, run=None) -> pd.DataFrame:
@@ -224,28 +219,24 @@ def compute_roc_auc(args, run=None) -> pd.DataFrame:
     if eng_idcs is not None:
         eng_embeds = eng_embeds[eng_idcs]
 
-    tira_tira_distance = get_cosine_distance(tira_embeds, tira_embeds)
-    tira_eng_distance = get_cosine_distance(tira_embeds, eng_embeds)
-
     results = []
     for keyphrase_object in tqdm(kws_list, desc='Evaluating keyphrases...'):
-        keyphrase_results = evaluate_keyphrase(
-            tira_tira_scores=tira_tira_distance,
-            tira_eng_scores=tira_eng_distance,
-            keyphrase_object=keyphrase_object,
+        keyphrase_results = evaluate_keyphrase_batch(
+            tira_embeds,
+            eng_embeds,
+            keyphrase_object,
         )
         results.extend(keyphrase_results)
 
     df = pd.DataFrame(results)
     return df
 
-
-def load_eng_list(args):
+def load_eng_list(args) -> Optional[List[int]]:
     if args.list_type == 'all':
         return None
     # load english calibration keyphrase indices
     with open(ENGLISH_CALIBRATION_LIST, 'r') as f:
-        english_keyphrase_idcs = set([int(line.strip()) for line in f])
+        english_keyphrase_idcs = [int(line.strip()) for line in f]
     return english_keyphrase_idcs
 
 def load_kws_list(args):
@@ -275,7 +266,7 @@ def main():
 
         df = compute_roc_auc(args, run=run)
 
-        run.log({"roc_auc_results": wandb.Table(dataframe=df)})
+        run.log({"kws_eval_results": wandb.Table(dataframe=df)})
         for case, case_metrics in METRICS.items():
             print(f"Computing overall metrics for case {case}...")
             for metric_name, metric_obj in case_metrics.items():
@@ -284,10 +275,10 @@ def main():
 
     output_file = KWS_PREDICTIONS / f"{experiment_name}.csv"
     df.to_csv(output_file, index=False)
-    print(f"Saved KWS ROC AUC results to {output_file}")
+    print(f"Saved KWS eval results to {output_file}")
 
 def parse_args():
-    parser = ArgumentParser(description="Compute AUROC for Tira KWS")
+    parser = ArgumentParser(description="Compute AUROC, EER, mAP and related metrics for Tira KWS")
     parser = add_cache_embeddings_args(parser)
     parser.add_argument('--drz-dataset', type=str, default='tira_drz')
     parser.add_argument(

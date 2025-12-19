@@ -1,8 +1,9 @@
 import k2
 import torch
 from typing import *
-from constants import DEVICE
+from constants import DEVICE, WFST_BATCH_SIZE
 from encoding import prepare_embed_lists_for_decoding
+from torch.utils.data import DataLoader
 
 """
 ## FSA builders
@@ -223,7 +224,7 @@ def decode_keyword_batch(
 def decode_embed_list(
         query_embeds: List[torch.Tensor],
         test_embeds: List[torch.Tensor],
-        distance_metric: str,
+        distance_metric: str = 'cosine',
 ) -> Tuple[torch.Tensor, torch.Tensor]:
     """
     Wraps `encoding.prepare_embed_lists_for_decoding` and
@@ -238,6 +239,7 @@ def decode_embed_list(
     Returns:
         score, labels. See `wfst.decode_keyword_batch` for more information.
     """
+
     distance_tensor, keyword_lens, seq_lens = prepare_embed_lists_for_decoding(
             query_embeds, test_embeds, distance_metric
     )

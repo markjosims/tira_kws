@@ -157,6 +157,34 @@ def test_wfst_sim(n_windows):
 
     for i in range(batch_size):
         for j in range(batch_size):
-            in_domain_score = wfst_scores[i,j]
-            out_domain_score = wfst_scores[i,j+batch_size]
-            assert in_domain_score < out_domain_score
+            self_score = wfst_scores[i,j]
+            cross_score = wfst_scores[i,j+batch_size]
+            assert self_score < cross_score
+
+@pytest.mark.parametrize(
+    "n_windows", [[randint(5, 20)]*2 for _ in range(60)]
+)
+def test_wfst_sim_same_len(n_windows):
+    """
+    `decode_keyword_batch` needs to be able to handle inputs
+    where the test phrases have the same shape as the query phrases
+    """
+    batch_size = 16
+    emb_a, emb_b = get_orthogonal_vectors(n_vectors=batch_size, n_windows=n_windows)
+
+    self_distance = get_windowed_cosine_distance(emb_a, emb_a)
+    cross_distance = get_windowed_cosine_distance(emb_a, emb_b)
+    keyword_lens = torch.full((batch_size,), n_windows[0], dtype=torch.int64)
+    seq_lens = torch.full((batch_size,), n_windows[1], dtype=torch.int64)
+
+    self_scores, self_labels = decode_keyword_batch(self_distance, keyword_lens, seq_lens)
+    cross_scores, cross_labels = decode_keyword_batch(cross_distance, keyword_lens, seq_lens)
+    assert self_scores.shape == (batch_size, batch_size)
+    assert cross_scores.shape == (batch_size, batch_size)
+
+    assert self_scores.sum() != -torch.inf
+    assert cross_scores.sum() != -torch.inf
+
+    for i in range(batch_size):
+        for j in range(batch_size):
+            assert self_scores[i,j] < cross_scores[i,j]

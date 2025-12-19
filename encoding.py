@@ -3,6 +3,7 @@ from typing import *
 import numpy as np
 import torch
 from torch.nn.utils.rnn import pad_sequence
+from torch.utils.data import DataLoader
 from transformers import AutoProcessor
 from argparse import ArgumentParser
 from constants import (
@@ -92,6 +93,27 @@ def get_sliding_window(
     
     return windows
 
+def pad_and_return_lengths(
+        batch_embeds: List[torch.Tensor],
+) -> Tuple[torch.Tensor, torch.Tensor]:
+    """
+    Args:
+        batch_embeds: list of torch.Tensors indicating embedding tensors
+            for current batch
+
+    Returns: (padded_tensor,seq_lens) torch.Tensor containing padded
+        embeddings for the current batch and a torch.Tensor containing
+        the unpadded length of each sequence in the batch
+    """
+    seq_lens = torch.tensor(
+        [seq.shape[0] for seq in batch_embeds],
+        dtype=int,
+        device=DEVICE,
+    )
+    padded_batch = pad_sequence(batch_embeds, batch_first=True, padding_value=0.0)
+    padded_batch.to(DEVICE)
+    return padded_batch, seq_lens
+
 def prepare_embed_lists_for_decoding(
         query_embeds: List[torch.Tensor],
         test_embeds: List[torch.Tensor],
@@ -101,6 +123,9 @@ def prepare_embed_lists_for_decoding(
     Given a list of windowed embeddings for query and test phrases, pads
     lists and computes distance scores between embeddings, and returns
     lists of unpadded lengths (in number of windows) for each query and test phrase.
+    Also handles batching test embeddings if num(test_embeds) > WFST_BATCH_SIZE.
+    Assuming for now that query embeds will never exceed WFST_BATCH_SIZE,
+    and so doesn't batch on query embeds.
     Note: the return values can be passed directly to `wfst.decode_keyword_batch`.
 
     Args:
@@ -118,12 +143,22 @@ def prepare_embed_lists_for_decoding(
         distance_function = get_windowed_cosine_distance
     else:
         raise ValueError(f'Unknown distance metric: {distance_metric}')
-    query_embeds_padded = pad_sequence(query_embeds, batch_first=True, padding_value=0.0)
-    test_embeds_padded = pad_sequence(test_embeds, batch_first=True, padding_value=0.0)
-    distance_tensor = distance_function(query_embeds_padded, test_embeds_padded)
 
+    # get keyword lengths and pad
     keyword_lens = [query.shape[0] for query in query_embeds]
-    seq_lens = [seq.shape[0] for seq in test_embeds_padded]
+    query_embeds_padded = pad_sequence(query_embeds, batch_first=True, padding_value=0.0)
+    query_embeds_padded.to(DEVICE)
+
+    distance_tensor_list = []
+    seq_lens = []
+    dataloader = DataLoader(test_embeds, collate_fn=pad_and_return_lengths)
+    for batch_test_embeds, batch_seq_lens in dataloader:
+        batch_distance = distance_function(query_embeds_padded, batch_test_embeds)
+        distance_tensor_list.extend(batch_distance)
+        seq_lens.append(batch_seq_lens)
+
+    distance_tensor = torch.concat(distance_tensor_list, dim=1)
+    keyword_lens = torch.concat(seq_lens, dim=0)
 
     return distance_tensor, keyword_lens, seq_lens
 

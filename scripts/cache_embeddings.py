@@ -12,6 +12,9 @@ Arguments:
 
 from argparse import ArgumentParser
 import os
+
+from torch.nn.utils.rnn import pad_sequence
+
 from constants import EMBEDDINGS
 from dataloading import load_dataset, prepare_dataset, add_dataset_args
 from encoding import add_sliding_window_args, add_encoder_args
@@ -89,7 +92,11 @@ def get_all_embed_paths(argdict) -> Dict[str, str]:
         )
     return paths
 
-def load_embeddings(argdict, compute_if_not_found: bool = True) -> Optional[Dict[str, torch.Tensor]]:
+def load_embeddings(
+        argdict: Dict[str, Any],
+        compute_if_not_found: bool = True,
+        list_to_padded_tensor: bool = False,
+) -> Optional[Dict[str, torch.Tensor]]:
     """
     Loads all relevant embeddings for the given argument dictionary.
     If any embeddings are missing, computes and caches them first.
@@ -97,6 +104,8 @@ def load_embeddings(argdict, compute_if_not_found: bool = True) -> Optional[Dict
     Args:
         argdict (Dict[str, Any]): Dictionary of arguments including dataset, encoder, etc.  
         compute_if_not_found (bool): Whether to compute embeddings if not found on disk.
+        list_to_padded_tensor (bool): Whether to cast lists of windowed embeddings to a single
+            zero-padded tensor
     Returns:
         Dict[str, torch.Tensor]: Dictionary containing loaded embeddings.
     """
@@ -107,7 +116,11 @@ def load_embeddings(argdict, compute_if_not_found: bool = True) -> Optional[Dict
     if not embeds_exist and num_records is not None:
         argdict_no_nr = argdict.copy()
         argdict_no_nr['num_records'] = None
-        embeds_no_nr = load_embeddings(argdict_no_nr, compute_if_not_found=False)
+        embeds_no_nr = load_embeddings(
+            argdict_no_nr,
+            compute_if_not_found=False,
+            list_to_padded_tensor=list_to_padded_tensor,
+        )
         if embeds_no_nr is not None:
             print("Loading embeddings computed without num_records restriction...")
             for key in paths.keys():
@@ -116,13 +129,19 @@ def load_embeddings(argdict, compute_if_not_found: bool = True) -> Optional[Dict
 
     if not embeds_exist and compute_if_not_found:
         print("Embedding file not found, computing embeddings and caching...")
-        return cache_embeddings(argdict)
+        embed_dict = cache_embeddings(argdict)
     elif not embeds_exist:
-        return
+        raise FileNotFoundError("Embedding file not found")
+    else:
+        print("Loading embeddings from disk...")
+        for key, path in paths.items():
+            embed_dict[key] = torch.load(path)
 
-    print("Loading embeddings from disk...")
-    for key, path in paths.items():
-        embed_dict[key] = torch.load(path)
+    if list_to_padded_tensor:
+        for key, embed in embed_dict.items():
+            if type(embed) in (list, tuple):
+                embed_dict[key] = pad_sequence(embed, batch_first=True, padding_value=0.0)
+
     return embed_dict
 
 

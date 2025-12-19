@@ -100,6 +100,7 @@ SIMILARITY_MATRICES = Path("data/similarity_matrix/")
 EMBEDDINGS = DATA_DIR/"tira_kws"/"embeddings"
 
 # keyword constants
+WFST_BATCH_SIZE = 1024
 MAX_KEYWORD_STR = '$max'
 MEAN_KEYWORD_STR = '$mean'
 CALIBRATION_NUM_NEGATIVE = 50
