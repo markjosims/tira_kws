@@ -24,9 +24,10 @@ SPEECHBRAIN_LID_ENCODER_NAME = 'speechbrain/lang-id-voxlingua107-ecapa'
 # file paths
 
 ## dataset paths
-DATASETS_DIR = Path(os.environ.get("DATASETS", os.path.expanduser("~/datasets")))
-TIRA_ASR_PATH = DATASETS_DIR / "tira_asr"
-TIRA_DRZ_PATH = DATASETS_DIR / "tira_drz"
+DATA_DIR = Path(os.environ.get("DATASETS", os.path.expanduser("~/datasets")))
+TIRA_ASR_PATH = DATA_DIR / "tira_asr"
+TIRA_DRZ_PATH = DATA_DIR / "tira_drz"
+TIRA_ASR_URI = "css-kws-capstone/tira-asr"
 
 ## local data paths
 PROJECT_DIR = Path(__file__).parent
@@ -38,21 +39,29 @@ CONFIG_DIR = PROJECT_DIR / "config"
 ### source data for KWS
 - MERGED_PHRASES_CSV: dataframe mapping `eaf_text` (raw string from
     ELAN) to `fst_text` (string with most likely normalized form
-    using FST parser)
-- PHRASES.CSV: dataframe where each row is a unique phrase (only
-    uses FST-normalized text), including a column indicating what
-    phrases are used as keyphrase queries, token counts per
-    keyphrase, etc...
+    using FST parser).
+- PHRASES_CSV: dataframe where each row is a unique phrase (only
+    uses FST-normalized text) along with its token count.
+- KEYPHRASE_CSV: similar to `PHRASES_CSV` but also including columns
+    for which phrases are used as keyphrase queries and how many
+    easy/medium/hard negative records exist for a given phrase.
+- WORDS_CSV: similar to `PHRASES_CSV` except that each row is a unique
+    word rather than phrase
+- KEYWORDS_CSV: similar to `KEYPHRASE_CSV` for word queries
 - CER_MATRIX_PATH: matrix of CER values of keyphrases (rows) to all
-    phrases (columns)
+    phrases (columns).
 """
 MERGED_PHRASES_CSV = LABELS_DIR / "keyphrases_rewritten_merges.csv"
 PHRASES_CSV = LABELS_DIR / "tira_phrases.csv"
 KEYPHRASE_CSV = LABELS_DIR / "keyphrases.csv"
+WORDS_CSV = LABELS_DIR / "tira_words.csv"
+KEYWORDS_CSV = LABELS_DIR / "keywords.csv"
 CER_MATRIX_PATH = LABELS_DIR / "cer_matrix.np"
 
 """
-### KWS lists
+### Keyphrase lists
+Lists related to keyphrases, including 
+
 - PHRASE_PATH: all unique Tira phrases used for KWS
 - KEYPHRASE_PATH: indices of all Tira phrases used as keyphrase
     queries
