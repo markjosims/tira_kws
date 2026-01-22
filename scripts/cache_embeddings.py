@@ -182,7 +182,7 @@ def compute_embeddings(
     mean_embed = embeds.mean(dim=0)
     std_embed = embeds.std(dim=0)
 
-    if window_size is not None:
+    if (window_size is not None) or (encoder in ['xlsr', 'wav_lm']):
         # transform embeds into a tuple of tensors
         # where each tensor is a sequence of window embeddings
         # first get a tensor indicating which indices begin a new record

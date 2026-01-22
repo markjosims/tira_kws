@@ -1,0 +1,6 @@
+encoder: clap_ipa
+encoder_size: base
+list_type: calibrate
+dataset: tira_asr
+drz_dataset: tira_drz
+window_size: null

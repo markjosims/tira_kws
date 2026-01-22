@@ -3,6 +3,8 @@ import torch
 import os
 from pathlib import Path
 
+from wandb.env import DATA_DIR
+
 # audio and model constants
 
 ## hyperparameters
@@ -22,12 +24,15 @@ SPEECHBRAIN_LID_ENCODER_NAME = 'speechbrain/lang-id-voxlingua107-ecapa'
 # file paths
 
 ## dataset paths
-DATA_DIR = Path(os.environ.get("DATASETS", os.path.expanduser("~/datasets")))
-TIRA_ASR_PATH = DATA_DIR / "tira_asr"
-TIRA_DRZ_PATH = DATA_DIR / "tira_drz"
+DATASETS_DIR = Path(os.environ.get("DATASETS", os.path.expanduser("~/datasets")))
+TIRA_ASR_PATH = DATASETS_DIR / "tira_asr"
+TIRA_DRZ_PATH = DATASETS_DIR / "tira_drz"
 
 ## local data paths
-LABELS_DIR = Path("data/labels")
+PROJECT_DIR = Path(__file__).parent
+DATA_DIR = PROJECT_DIR / "data"
+LABELS_DIR = DATA_DIR / "labels"
+CONFIG_DIR = PROJECT_DIR / "config"
 
 """
 ### source data for KWS
@@ -95,11 +100,11 @@ ENGLISH_CALIBRATION_LIST = LABELS_DIR / "english_calibration_keyphrase_idcs.txt"
 - EMBEDDINGS: folder for storing embeddings used for KWS
 """
 
-KWS_PREDICTIONS = Path("data/kws_predictions/")
-SIMILARITY_MATRICES = Path("data/similarity_matrix/")
-EMBEDDINGS = DATA_DIR/"tira_kws"/"embeddings"
+KWS_PREDICTIONS = DATA_DIR / "kws_predictions"
+SIMILARITY_MATRICES = DATA_DIR / "similarity_matrix/"
+EMBEDDINGS = DATASETS_DIR / "tira_kws" / "embeddings"
 
-# keyword constants
+# model and inference constants
 WFST_BATCH_SIZE = 1024
 MAX_KEYWORD_STR = '$max'
 MEAN_KEYWORD_STR = '$mean'
@@ -107,3 +112,4 @@ CALIBRATION_NUM_NEGATIVE = 50
 CALIBRATION_NUM_POSITIVE = 10
 CLAP_IS_AVAILABLE = find_spec('clap') is not None
 SPEECHBRAIN_IS_AVAILABLE = find_spec('speechbrain') is not None
+WAV2VEC_DOWNSAMPLE_FACTOR = 320

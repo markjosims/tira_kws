@@ -8,7 +8,8 @@ from constants import BATCH_SIZE, TIRA_ASR_PATH, TIRA_DRZ_PATH
 from encoding import (
     load_clap_speech_encoder, load_clap_speech_processor, encode_clap_audio,
     load_speechbrain_encoder, encode_speechbrain_audio,
-    get_sliding_window,
+    get_sliding_window, load_ipaalign_speech_encoder,
+    load_xlsr, load_wavlm, encode_wav2vec
 )
 from typing import *
 from argparse import ArgumentParser
@@ -141,7 +142,9 @@ def get_encoder_funct_w_sliding_window(
 
 def prepare_dataset(
         dataset,
-        encoder: Literal['clap_ipa', None] = None,
+        encoder: Literal[
+            'clap_ipa', 'speechbrain', 'wavlm', 'xlsr',
+        ] = None,
         encoder_size: Literal['tiny', 'base', 'small'] = 'small',
         window_size: Optional[float] = None,
         window_hop: Optional[float] = None,
@@ -164,12 +167,25 @@ def prepare_dataset(
         encoder_funct = lambda audio, _: (encode_clap_audio(
             audio, speech_encoder, processor
         ), None)
+    elif encoder == 'ipa_align':
+        speech_encoder = load_ipaalign_speech_encoder(encoder_size)
+        speech_encoder.eval()
+        encoder_funct = lambda audio, _: (encode_clap_audio(
+            audio, speech_encoder, processor
+        ), None)
     elif encoder == 'speechbrain_lid':
         speechbrain_encoder = load_speechbrain_encoder()
         speechbrain_encoder.eval()
         encoder_funct = lambda audio, _: (encode_speechbrain_audio(
             audio, speechbrain_encoder,
         ), None)
+    elif encoder == 'wavlm':
+        encoder = load_wavlm(encoder_size)
+        encoder_funct = lambda audio, sr: encode_wav2vec(audio, sr, encoder)
+    elif encoder == 'xlsr':
+        encoder = load_xlsr(encoder_size)
+        encoder_funct = lambda audio, sr: encode_wav2vec(audio, sr, encoder)
+
     else:
         def encoder_funct(audio, sr):
             if type(audio) is torch.Tensor:
@@ -229,7 +245,6 @@ def prepare_dataset_batch(
     sr = batch['audio'][0]['sampling_rate']
     input_features, num_windows = encoder_funct(audio, sr)
     processed_batch['input_features'] = input_features
-
 
     transcription = batch['transcription']
     label_ids = processor.tokenizer(

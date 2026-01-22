@@ -1,0 +1,16 @@
+program: scripts/kws_eval.py
+method: grid
+parameters:
+  encoder:
+    values: [clap_ipa, ipa_align]
+  encoder_size:
+    values: [tiny, base, small]
+  window_size:
+    values: [null, 0.25, 0.5, 1.0, 2.0]
+  windowed_inference_type:
+    values: [dtw]
+command:
+  - ${env}
+  - python
+  - ${program}
+  - ${args_no_hyphens}

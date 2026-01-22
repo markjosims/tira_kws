@@ -5,9 +5,18 @@ import torch
 from torch.nn.utils.rnn import pad_sequence
 from transformers import AutoProcessor
 from argparse import ArgumentParser
+
+from torchaudio.pipelines import (
+    WAVLM_BASE, WAVLM_BASE_PLUS, WAVLM_LARGE,
+    WAV2VEC2_XLSR_300M, WAV2VEC2_XLSR53, WAV2VEC2_XLSR_1B, WAV2VEC2_XLSR_2B,
+)
+from torchaudio.models.wav2vec2.model import Wav2Vec2Model
+import librosa
+
 from constants import (
     CLAP_IS_AVAILABLE, SPEECHBRAIN_IS_AVAILABLE, DEVICE, SAMPLE_RATE,
-    SPEECHBRAIN_LID_ENCODER_NAME, CLAP_IPA_ENCODER_NAME,
+    SPEECHBRAIN_LID_ENCODER_NAME, CLAP_IPA_ENCODER_NAME, IPA_ALIGNER_ENCODER_NAME,
+    WAV2VEC_DOWNSAMPLE_FACTOR
 )
 
 if CLAP_IS_AVAILABLE or TYPE_CHECKING:
@@ -30,7 +39,11 @@ def add_sliding_window_args(parser):
 
 def add_encoder_args(parser: ArgumentParser):
     parser.add_argument(
-        '--encoder', '-e', type=str, default='clap_ipa', choices=['clap_ipa', 'speechbrain_lid'],
+        '--encoder',
+        '-e',
+        type=str,
+        default='clap_ipa',
+        choices=['clap_ipa', 'ipa_align', 'speechbrain_lid', 'wavlm', 'xlsr'],
         help='Encoder model to use for generating embeddings.'
     )
     parser.add_argument('--encoder_size', '-s', type=str, default='base', help='Size of CLAP speech encoder to use.')
@@ -126,9 +139,38 @@ def pad_and_return_lengths(
     padded_batch.to(DEVICE)
     return padded_batch, seq_lens
 
+def pool_embeds(
+        embed_list: List[torch.Tensor],
+        pooling_type: Literal['mean'] = 'mean',
+) -> torch.Tensor:
+    """
+    Given a list of 2d tensors of shape (record_len, embed_dim),
+    performs pooling on each record and returns as a 2d tensor
+    of shape (num_records, embed_dim).
+
+    Args:
+        embed_list: List of 2d embedding tensors
+        pooling_type: strategy for pooling each row of embeddings,
+            for now only mean pooling is supported
+
+    Returns:
+        pooled_embeds: torch.Tensor of shape (num_records, embed_dim)
+            containing pooled embedding tensors
+    """
+    if pooling_type == 'mean':
+        pooling_funct = lambda t: torch.mean(t, dim=0)
+    else:
+        raise ValueError(f'Pooling type {pooling_type} is not supported')
+
+    pooled_embeds = map(pooling_funct, embed_list)
+    pooled_embeds = torch.stack(list(pooled_embeds))
+
+    return pooled_embeds
+
 """
 ## CLAP IPA encoder utilities
 - load_clap_speech_encoder: Load a CLAP speech encoder model.
+- load_ipaalign_speech_encoder: Load an IPA-ALIGN speech encoder model.
 - load_clap_speech_processor: Load the corresponding audio processor.
 - encode_clap_audio: Encode a batch of audio samples into embeddings using the CLAP encoder and processor.
 """
@@ -142,8 +184,18 @@ def load_clap_speech_encoder(
     """
     encoder_name = CLAP_IPA_ENCODER_NAME.format(encoder_size=encoder_size)
     encoder = SpeechEncoder.from_pretrained(encoder_name)
-    encoder.to(DEVICE)
-    return encoder
+    return encoder.eval().to(DEVICE)
+
+def load_ipaalign_speech_encoder(
+        encoder_size: Literal['tiny', 'base', 'small'] = 'small'
+) -> SpeechEncoder:
+    """
+    Load an IPA-ALIGN speech encoder of the specified size.
+    Available sizes are 'tiny', 'base', and 'small'.
+    """
+    encoder_name = IPA_ALIGNER_ENCODER_NAME.format(encoder_size=encoder_size)
+    encoder = SpeechEncoder.from_pretrained(encoder_name)
+    return encoder.eval().to(DEVICE)
 
 def load_clap_speech_processor():
     """
@@ -182,6 +234,9 @@ def encode_clap_audio(
 
 """
 ## Speechbrain encoder utilities
+- load_speechbrain_encoder: Load a Speech brain encoder model.
+- encode_speechbrain_audio: Encode a batch of audio samples into embeddings
+    using the Speechbrain encoder
 """
 
 def load_speechbrain_encoder(
@@ -222,19 +277,113 @@ def encode_speechbrain_audio(
     return speech_embed
 
 """
-## Distance computation utilities
-- compute_cosine_distance_matrix: Compute cosine distance matrix between two sets of embeddings.
+## Wav2Vec family encoders
+- load_xlsr: Load XLSR model
+- load_wavlm: Load WavLM base-plus
+- encode_wav2vec: Encode a batch of audio samples into embeddings
 """
 
+def load_wavlm(
+        encoder_size: Literal['base', 'base_plus', 'large']
+) -> Wav2Vec2Model:
+    if encoder_size=='base':
+        encoder = WAVLM_BASE.get_model()
+    elif encoder_size=='base_plus':
+        encoder = WAVLM_BASE_PLUS.get_model()
+    elif encoder_size=='large':
+        encoder = WAVLM_LARGE.get_model()
+    else:
+        raise ValueError(f'Encoder size {encoder_size} is not supported.')
+    return encoder.eval().to(DEVICE)
+
+def load_xlsr(
+        encoder_size: Literal['300m', '53', '1B', '2B']
+) -> Wav2Vec2Model:
+    if encoder_size=='300m':
+        encoder = WAV2VEC2_XLSR_300M.get_model()
+    elif encoder_size=='53':
+        encoder = WAV2VEC2_XLSR53.get_model()
+    elif encoder_size=='1B':
+        encoder = WAV2VEC2_XLSR_1B.get_model()
+    elif encoder_size=='2B':
+        encoder = WAV2VEC2_XLSR_2B.get_model()
+    else:
+        raise ValueError(f'Encoder size {encoder_size} is not supported.')
+    return encoder.eval().to(DEVICE)
+
+def encode_wav2vec(
+        audio_batch: List[np.ndarray],
+        sample_rate: int,
+        encoder: Wav2Vec2Model,
+) -> Tuple[torch.Tensor, List[int]]:
+    if sample_rate!=SAMPLE_RATE:
+        audio_batch = [librosa.resample(
+            y=audio,
+            orig_sr=sample_rate,
+            target_sr=SAMPLE_RATE,
+        ) for audio in audio_batch]
+
+    # cast audio arrays to tensor and pad
+    audio_lens = [len(audio)//WAV2VEC_DOWNSAMPLE_FACTOR for audio in audio_batch]
+    audio_lens = torch.tensor(audio_lens)
+    audio_batch = [torch.tensor(audio) for audio in audio_batch]
+    audio_batch = pad_sequence(audio_batch, batch_first=True)
+    audio_batch = audio_batch.to(DEVICE)
+
+    with torch.no_grad():
+        features, _ = encoder.extract_features(
+            audio_batch,
+        )
+    last_layer = features[-1]
+    last_layer = last_layer.cpu()
+
+
+    # `prepare_dataset_batch` expects a 2d tensor
+    # of concatenated embeddings w/ padding removed
+    embeds = []
+    for i, audio_len in enumerate(audio_lens):
+        embeds.append(last_layer[i, :audio_len])
+    embeds_flat = torch.cat(embeds, dim=0)
+
+    # update audio_lens in case of off-by-one errors
+    audio_lens = torch.tensor([embed.shape[0] for embed in embeds])
+
+    return embeds_flat, audio_lens
+
+"""
+## similarity computation utilities
+- get_cosine_similarity: Compute cosine similarity matrix between two sets of embeddings.
+- get_cosine_distance: Compute cosine distance matrix between two sets of embeddings.
+- get_windowed_cosine_similarity:
+"""
+
+def get_cosine_similarity(
+        query_embeds: torch.Tensor,
+        test_embeds: torch.Tensor,
+) -> torch.Tensor:
+    """
+    Compute cosine similarity scores between query embeddings and test embeddings
+    where the (i,j)^th element is the cosine similarity between the i^th query
+    embedding and the j^th test embedding.
+
+    Args:
+        query_embeds: Tensor of shape (num_queries, embed_dim)
+        test_embeds: Tensor of shape (num_tests, embed_dim)
+    Returns:
+        Tensor of shape (num_queries, num_tests) with cosine similarity scores
+    """
+    query_norm = query_embeds / query_embeds.norm(dim=-1, keepdim=True)
+    test_norm = test_embeds / test_embeds.norm(dim=-1, keepdim=True)
+    similarity_scores = torch.matmul(query_norm, test_norm.T)
+    return similarity_scores
 
 def get_cosine_distance(
         query_embeds: torch.Tensor,
         test_embeds: torch.Tensor,
 ) -> torch.Tensor:
     """
-    Compute cosine distance scores between query embeddings and test embeddings
-    where the (i,j)^th element is the cosine distance between the i^th query
-    embedding and the j^th test embedding.
+    Computes cosine distance, i.e. 1-cosine similarity,
+    between query embeddings and test embeddings
 
     Args:
         query_embeds: Tensor of shape (num_queries, embed_dim)
@@ -242,25 +391,24 @@ def get_cosine_distance(
     Returns:
         Tensor of shape (num_queries, num_tests) with cosine distance scores
     """
-    query_norm = query_embeds / query_embeds.norm(dim=1, keepdim=True)
-    test_norm = test_embeds / test_embeds.norm(dim=1, keepdim=True)
-    similarity_scores = torch.matmul(query_norm, test_norm.T)
-    distance_scores = 1-similarity_scores
-    return distance_scores
+    return 1-get_cosine_similarity(query_embeds, test_embeds)
 
-
-def get_windowed_cosine_distance(
+def get_windowed_cosine_similarity(
         query_embeds: torch.Tensor,
         test_embeds: torch.Tensor,
+        fillna: bool = False,
 ) -> torch.Tensor:
     """
-    Computes cosine distance scores between windowed query embeddings and test embeddings.
-    Returns a 4-d tensor where each (i,j)^th element is a distance matrix between
+    Computes cosine similarity scores between windowed query embeddings and test embeddings.
+    Returns a 4-d tensor where each (i,j)^th element is a similarity matrix between
     the windowed embeddings from the i^th query and j^th test phrase.
 
     Args:
         query_embeds: Tensor of shape (num_queries, num_windows, embed_dim)
         test_embeds: Tensor of shape (num_tests, num_windows, embed_dim)
+        fillna: (bool) indicates whether to fill nan values in the resulting
+            similarity tensor. If True, fills nan values with 2.0 (i.e. maximum
+            similarity)
 
     Returns:
         Tensor of shape (num_queries, num_tests, num_windows_query, num_windows_test)
@@ -273,5 +421,8 @@ def get_windowed_cosine_distance(
     query_expanded = query_norm.unsqueeze(1)
     test_expanded = test_norm.transpose(-1, -2).unsqueeze(0)
     similarity_scores = query_expanded @ test_expanded
-    distance_scores = 1-similarity_scores
-    return distance_scores
+
+    if fillna:
+        similarity_scores = similarity_scores.nan_to_num(-1.0)
+
+    return similarity_scores
