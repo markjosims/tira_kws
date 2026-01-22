@@ -1,14 +1,11 @@
 #!/usr/bin/env python3
 """
-Build KWS (Keyword Spotting) lists and associated files.
+Build list for evaluating keyphrase search.
+Requires `text_preproc` to be run first!
 
 This script constructs the following files:
-- MERGED_PHRASES_CSV: mapping of EAF text to FST-normalized text
-- PHRASES_CSV: dataframe of unique phrases with statistics
 - CER_MATRIX_PATH: character error rate matrix between keyphrases and all phrases
-- PHRASE_PATH: text file with all unique phrases
 - KEYPHRASE_CSV: dataframe of keyphrases with difficulty statistics
-- RECORD2PHRASE_PATH: mapping of record indices to phrase indices
 - KEYPHRASE_LIST: JSON list of all keyphrases with positive/negative records
 - CALIBRATION_LIST: JSON list of balanced subset for threshold calibration
 """
@@ -32,92 +29,7 @@ from constants import (
     LABELS_DIR, CALIBRATION_NUM_NEGATIVE, CALIBRATION_NUM_POSITIVE,
     ENGLISH_CALIBRATION_LIST,
 )
-
-
-def build_merged_phrases_csv(df, output_path):
-    """
-    Build MERGED_PHRASES_CSV: mapping EAF text to FST-normalized text.
-
-    Finds instances where FST normalization caused several dissimilar
-    hand-transcribed sentences to merge.
-    """
-    print("Building merged phrases CSV...")
-
-    # Build mapping from FST text to EAF text variants
-    fst_to_eaf = {}
-    fst_unique = df['fst_text'].unique().tolist()
-    eaf_strs_encountered = set()
-
-    for fst_text in tqdm(fst_unique, desc="Processing FST texts"):
-        mask = df['fst_text'] == fst_text
-        eaf_text = df.loc[mask, 'eaf_text'].unique().tolist()
-        fst_to_eaf[fst_text] = eaf_text
-        # ensure only one FST str per EAF str
-        assert not any(eaf_str in eaf_strs_encountered for eaf_str in eaf_text)
-        eaf_strs_encountered.update(eaf_text)
-
-    # Create dataframe with unique EAF texts
-    eaf_unique_df = df.drop_duplicates(subset=['eaf_text'])
-    eaf_unique_df = eaf_unique_df.reset_index(drop=True)
-
-    eaf_unique_df['num_eaf_variants'] = eaf_unique_df['fst_text']\
-        .apply(fst_to_eaf.get)\
-        .apply(len)
-    eaf_unique_df = eaf_unique_df.sort_values('num_eaf_variants', ascending=False)
-
-    # Save to CSV
-    eaf_unique_df.to_csv(output_path, index_label='index')
-    print(f"Saved merged phrases CSV to {output_path}")
-    print(f"  Total unique FST texts: {len(fst_unique)}")
-    print(f"  Total unique EAF texts: {len(eaf_unique_df)}")
-
-    return eaf_unique_df
-
-
-def build_phrases_csv(eaf_unique_df, df, output_path):
-    """
-    Build PHRASES_CSV: dataframe with unique FST strings and token counts.
-    """
-    print("\nBuilding phrases CSV...")
-
-    # Create dataframe with unique FST phrases
-    unique_phrase_df = eaf_unique_df.drop(columns='eaf_text')
-    unique_phrase_df = unique_phrase_df.drop_duplicates(subset='fst_text')
-    unique_phrase_df = unique_phrase_df.rename(columns={'fst_text':'keyphrase'})
-
-    # Count occurrences of each phrase
-    token_counts = df['fst_text'].value_counts()
-
-    # Map token counts to phrases
-    unique_phrase_df = unique_phrase_df.set_index('keyphrase')
-    unique_phrase_df['token_count'] = token_counts
-    unique_phrase_df = unique_phrase_df.reset_index()
-
-    print(f"  Total unique phrases: {len(unique_phrase_df)}")
-    print(f"  Token count statistics:\n{unique_phrase_df['token_count'].describe()}")
-
-    unique_phrase_df.to_csv(output_path, index_label='index')
-    print(f"Saved phrases CSV to {output_path}")
-
-    return unique_phrase_df
-
-
-def build_phrase_list(unique_phrase_df, output_path):
-    """
-    Build PHRASE_PATH: text file with all unique phrases (one per line).
-    """
-    print("\nBuilding phrase list...")
-
-    all_phrases = unique_phrase_df['keyphrase'].tolist()
-
-    with open(output_path, 'w', encoding='utf8') as f:
-        for phrase in all_phrases:
-            f.write(phrase + '\n')
-
-    print(f"Saved phrase list to {output_path}")
-    print(f"  Total phrases: {len(all_phrases)}")
-
-    return all_phrases
+from scripts.text_preproc import build_merged_phrases_csv, build_phrase_list, build_phrases_csv, build_record2phrase
 
 
 def define_keyphrases(unique_phrase_df, min_token_count=10, output_path: str = KEYPHRASE_PATH):
@@ -209,13 +121,12 @@ def build_keyphrase_csv(unique_phrase_df, cer_matrix, all_keyphrases,
         unique_phrase_df.loc[curr_keyphrase_mask, 'num_hard'] = hard_mask.sum()
 
     # Save keyphrases to CSV
-    keyphrase_df = unique_phrase_df[keyphrase_mask].copy()
-    keyphrase_df.to_csv(output_path, index_label='index')
+    unique_phrase_df.to_csv(output_path, index_label='index')
 
     print(f"Saved keyphrase CSV to {output_path}")
-    print(f"  Average easy negatives: {keyphrase_df['num_easy'].mean():.1f}")
-    print(f"  Average medium negatives: {keyphrase_df['num_medium'].mean():.1f}")
-    print(f"  Average hard negatives: {keyphrase_df['num_hard'].mean():.1f}")
+    print(f"  Average easy negatives: {unique_phrase_df.loc[keyphrase_mask, 'num_easy'].mean():.1f}")
+    print(f"  Average medium negatives: {unique_phrase_df.loc[keyphrase_mask, 'num_medium'].mean():.1f}")
+    print(f"  Average hard negatives: {unique_phrase_df.loc[keyphrase_mask, 'num_hard'].mean():.1f}")
 
     # Also save full phrases CSV
     phrases_csv_path = PHRASES_CSV
@@ -223,29 +134,6 @@ def build_keyphrase_csv(unique_phrase_df, cer_matrix, all_keyphrases,
     print(f"Saved phrases CSV to {phrases_csv_path}")
 
     return unique_phrase_df
-
-
-def build_record2phrase(df, all_phrases, output_path):
-    """
-    Build RECORD2PHRASE_PATH: mapping of record index to phrase index.
-    """
-    print("\nBuilding record2phrase mapping...")
-
-    # Create mapping from phrase to index
-    phrase_to_idx = {phrase: idx for idx, phrase in enumerate(all_phrases)}
-
-    # Map each record to its phrase index
-    record2phrase = df['fst_text'].apply(phrase_to_idx.get).tolist()
-
-    # Save to file
-    with open(output_path, 'w', encoding='utf8') as f:
-        for phrase_idx in record2phrase:
-            f.write(f"{phrase_idx}\n")
-
-    print(f"Saved record2phrase mapping to {output_path}")
-    print(f"  Total records: {len(record2phrase)}")
-
-    return np.array(record2phrase)
 
 
 def build_keyphrase_lists(
@@ -418,35 +306,24 @@ def build_english_calibration_list(
 def main():
     args = get_parser()
 
-    # Ensure output directory exists
-    LABELS_DIR.mkdir(parents=True, exist_ok=True)
+    # Load files generated by `text_preproc.py`
+    with open(PHRASE_PATH, encoding='utf8') as f:
+        all_phrases = f.readlines()
 
-    print("Loading Tira ASR dataset...")
-    ds = load_tira_asr()
-    print(f"Loaded dataset with {len(ds)} records")
-
-    # Prepare dataframe
-    print("\nPreparing dataframe...")
-    colmap = {'transcription': 'eaf_text', 'rewritten_transcript': 'fst_text'}
-    cols_to_drop = set(ds.column_names) - set(colmap.keys())
-    ds_noaudio = ds.remove_columns(list(cols_to_drop))
-    df = ds_noaudio.to_pandas()
-    df = df.rename(columns=colmap)
-    print(f"DataFrame shape: {df.shape}")
+    with open(RECORD2PHRASE_PATH) as f:
+        record2phrase = f.readlines()
+    record2phrase = [int(line) for line in record2phrase]
+    
+    unique_phrase_df = pd.read_csv(PHRASES_CSV)
 
     # Build all files
-    eaf_unique_df = build_merged_phrases_csv(df, MERGED_PHRASES_CSV)
-
-    unique_phrase_df = build_phrases_csv(eaf_unique_df, df, PHRASES_CSV)
-
-    all_phrases = build_phrase_list(unique_phrase_df, PHRASE_PATH)
     keyphrase_mask, all_keyphrases = define_keyphrases(unique_phrase_df, args.min_token_count)
 
     cer_matrix, all_keyphrases, keyphrase_mask = build_cer_matrix(
         keyphrase_mask=keyphrase_mask,
         all_keyphrases=all_keyphrases,
         all_phrases=all_phrases,
-        output_path=CER_MATRIX_PATH,
+        output_path=str(CER_MATRIX_PATH),
         min_token_count=args.min_token_count
     )
 
@@ -454,8 +331,6 @@ def main():
         unique_phrase_df, cer_matrix, all_keyphrases,
         keyphrase_mask, KEYPHRASE_CSV
     )
-
-    record2phrase = build_record2phrase(df, all_phrases, RECORD2PHRASE_PATH)
 
     build_keyphrase_lists(
         unique_phrase_df=unique_phrase_df,
