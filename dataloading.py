@@ -1,10 +1,10 @@
-from datasets import Dataset, DatasetDict, load_from_disk, concatenate_datasets
+import datasets
 import torch
 from torch.utils.data import DataLoader
 from torch.nn.utils.rnn import pad_sequence
 from tqdm import tqdm
 from transformers import WhisperProcessor
-from constants import BATCH_SIZE, TIRA_ASR_PATH, TIRA_DRZ_PATH
+from constants import BATCH_SIZE, TIRA_ASR_PATH, TIRA_ASR_URI, TIRA_DRZ_PATH
 from encoding import (
     load_clap_speech_encoder, load_clap_speech_processor, encode_clap_audio,
     load_speechbrain_encoder, encode_speechbrain_audio,
@@ -12,6 +12,7 @@ from encoding import (
 )
 from typing import *
 from argparse import ArgumentParser
+import os
 
 def add_dataset_optional_args(parser: ArgumentParser) -> ArgumentParser:
     """
@@ -38,15 +39,18 @@ def add_dataset_args(parser: ArgumentParser) -> ArgumentParser:
     add_dataset_optional_args(parser)
     return parser
 
-def load_tira_asr() -> Dataset:
+def load_tira_asr() -> datasets.Dataset:
     """
     Load the Tira ASR dataset from disk and combine train, validation, and test splits
     (since the KWS experiment doesn't involve training).
     """
-    dataset = load_from_disk(TIRA_ASR_PATH)
+    if os.path.exists(TIRA_ASR_PATH):
+        dataset = datasets.load_from_disk(TIRA_ASR_PATH)
+    else:
+        dataset = datasets.load_dataset(TIRA_ASR_URI)
 
     # combine train, validation, and test splits
-    dataset = concatenate_datasets([
+    dataset = datasets.concatenate_datasets([
         dataset['train'],
         dataset['validation'],
         dataset['test'],
@@ -54,12 +58,12 @@ def load_tira_asr() -> Dataset:
 
     return dataset
 
-def load_tira_drz() -> Dataset:
+def load_tira_drz() -> datasets.Dataset:
     """
     Load the Tira Diarization dataset from disk, filter non-English rows
     and return the 'train' (only) subset. 
     """
-    dataset = load_from_disk(TIRA_DRZ_PATH)
+    dataset = datasets.load_from_disk(TIRA_DRZ_PATH)
     dataset = dataset.rename_columns({'text': 'transcription'})
     dataset = dataset['train']
 
@@ -67,7 +71,7 @@ def load_tira_drz() -> Dataset:
     dataset = dataset.filter(lambda example: example['transcription'].lower() == 'eng')
     return dataset
 
-def load_dataset(dataset_name: str, num_records: Optional[int] = None) -> Dataset:
+def load_dataset(dataset_name: str, num_records: Optional[int] = None) -> datasets.Dataset:
     """
     Load dataset by name.
     - `tira_asr`: Tira ASR dataset
@@ -146,7 +150,7 @@ def prepare_dataset(
         window_size: Optional[float] = None,
         window_hop: Optional[float] = None,
         batch_size: int = BATCH_SIZE,
-    ) -> Dataset:
+    ) -> datasets.Dataset:
     """
     Applies audio preprocessing and, optionally, encoding to the dataset.
     If no `encoder` is specified, audio is preprocessed using the WhisperProcessor only.
@@ -209,11 +213,11 @@ def prepare_dataset(
     return dataset
 
 def prepare_dataset_batch(
-        batch: Dataset,
+        batch: datasets.Dataset,
         index: int,
         processor: WhisperProcessor,
         encoder_funct: Callable,
-) -> Dataset:
+) -> datasets.Dataset:
     """
     Helper function for `prepare_dataset`. Prepare a batch of dataset by encoding audio and
     processing labels. `encoder_funct` is a function that takes in a batch of audio samples
@@ -270,7 +274,7 @@ def expand_col(num_windows, col):
     return col
 
 def get_audio_dataloader(
-        dataset: Dataset,
+        dataset: datasets.Dataset,
         batch_size: int = BATCH_SIZE,
     ) -> DataLoader:
     """
