@@ -67,6 +67,7 @@ Lists related to keyphrases, including
 - KEYPHRASE_PATH: indices of all Tira phrases used as keyphrase
     queries
 - RECORD2PHRASE_PATH: phrase index for each record
+- WORD2PHRASE_PATH: indices of phrases containing each word
 - KEYPHRASE_LIST: JSON list for all keyphrases including positive
     and negative records. See below for JSON data structure.
 - CALIBRATION_LIST: JSON list with same structure as
@@ -96,9 +97,10 @@ and negative records.
 """
 
 PHRASE_PATH = LABELS_DIR / "tira_phrases.txt"
-WORD_PATH = LABELS_DIR / "tira_phrases.txt"
+WORD_PATH = LABELS_DIR / "tira_words.txt"
 KEYPHRASE_PATH = LABELS_DIR / "tira_keyphrase_idcs.txt"
 RECORD2PHRASE_PATH = LABELS_DIR / "record2phrase.txt"
+WORD2PHRASE_PATH = LABELS_DIR / "word2phrase.txt"
 KEYPHRASE_LIST = LABELS_DIR / "keyphrase_list.json"
 CALIBRATION_LIST = LABELS_DIR / "calibration_list.json"
 ENGLISH_CALIBRATION_LIST = LABELS_DIR / "english_calibration_keyphrase_idcs.txt"

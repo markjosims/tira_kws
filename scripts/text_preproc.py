@@ -10,7 +10,7 @@ from tqdm import tqdm
 import numpy as np
 from constants import (
     LABELS_DIR, MERGED_PHRASES_CSV, PHRASES_CSV,
-    PHRASE_PATH, RECORD2PHRASE_PATH, WORD_PATH, WORDS_CSV
+    PHRASE_PATH, RECORD2PHRASE_PATH, WORD2PHRASE_PATH, WORD_PATH, WORDS_CSV
 )
 from dataloading import load_tira_asr
 import pandas as pd
@@ -170,6 +170,30 @@ def build_record2phrase(df, all_phrases, output_path):
 
     return np.array(record2phrase)
 
+def build_word2phrase(all_words, unique_phrase_df, output_path):
+    """
+    Build WORD2PHRASE_PATH: mapping of word index to indices
+    of phrases containing the word.
+    """
+    print("\nBuilding word2phrase mapping...")
+
+    # Create mapping from word to phrase indices
+    word2phrases = []
+    for word in all_words:
+        phrase_mask = unique_phrase_df['phrase'].str.contains(word)
+        phrase_indices = unique_phrase_df.index[phrase_mask].tolist()
+        word2phrases.append(phrase_indices)
+
+    # Save to file
+    with open(output_path, 'w', encoding='utf8') as f:
+        for phrase_idx in word2phrases:
+            f.write(f"{phrase_idx}\n")
+
+    print(f"Saved word2phrase mapping to {output_path}")
+    print(f"  Total records: {len(word2phrases)}")
+
+    return np.array(word2phrases)
+
 def main():
     # Ensure output directory exists
     LABELS_DIR.mkdir(parents=True, exist_ok=True)
@@ -191,11 +215,13 @@ def main():
     eaf_unique_df = build_merged_phrases_csv(df, MERGED_PHRASES_CSV)
 
     unique_phrase_df = build_phrases_csv(eaf_unique_df, df, PHRASES_CSV)
-    words_df = build_words_csv(unique_phrase_df, WORDS_CSV)
-    all_words = build_word_list(words_df, WORD_PATH)
 
     all_phrases = build_phrase_list(unique_phrase_df, PHRASE_PATH)
     record2phrase = build_record2phrase(df, all_phrases, RECORD2PHRASE_PATH)
+
+    words_df = build_words_csv(unique_phrase_df, WORDS_CSV)
+    all_words = build_word_list(words_df, WORD_PATH)
+    word2phrases = build_word2phrase(all_words, unique_phrase_df, WORD2PHRASE_PATH)
 
 if __name__ == '__main__':
     main()
