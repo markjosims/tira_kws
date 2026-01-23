@@ -76,6 +76,9 @@ def build_keyword_list(
 
     # apply unidecode so that combining diacritics don't affect length
     unidecode_words = word_df['word'].apply(unidecode)
+    # ŋ character is two chars in unidecode, so we need to account for that
+    unidecode_words = unidecode_words.str.replace('ng', 'ŋ')
+
     length_mask = unidecode_words.str.len() >= min_keyword_length
     print(f" Words with length >= {min_keyword_length}: {length_mask.sum()}")
 
