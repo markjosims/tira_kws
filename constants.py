@@ -62,7 +62,8 @@ CER_MATRIX_PATH = LABELS_DIR / "cer_matrix.np"
 ### Keyphrase lists
 Lists related to keyphrases, including 
 
-- PHRASE_PATH: all unique Tira phrases used for KWS
+- PHRASE_PATH: all unique Tira phrases
+- WORD_PATH: all unique Tira words
 - KEYPHRASE_PATH: indices of all Tira phrases used as keyphrase
     queries
 - RECORD2PHRASE_PATH: phrase index for each record
@@ -95,6 +96,7 @@ and negative records.
 """
 
 PHRASE_PATH = LABELS_DIR / "tira_phrases.txt"
+WORD_PATH = LABELS_DIR / "tira_phrases.txt"
 KEYPHRASE_PATH = LABELS_DIR / "tira_keyphrase_idcs.txt"
 RECORD2PHRASE_PATH = LABELS_DIR / "record2phrase.txt"
 KEYPHRASE_LIST = LABELS_DIR / "keyphrase_list.json"

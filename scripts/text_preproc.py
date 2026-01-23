@@ -10,7 +10,7 @@ from tqdm import tqdm
 import numpy as np
 from constants import (
     LABELS_DIR, MERGED_PHRASES_CSV, PHRASES_CSV,
-    PHRASE_PATH, RECORD2PHRASE_PATH, WORDS_CSV
+    PHRASE_PATH, RECORD2PHRASE_PATH, WORD_PATH, WORDS_CSV
 )
 from dataloading import load_tira_asr
 import pandas as pd
@@ -64,13 +64,13 @@ def build_phrases_csv(eaf_unique_df, df, output_path):
     # Create dataframe with unique FST phrases
     unique_phrase_df = eaf_unique_df.drop(columns='eaf_text')
     unique_phrase_df = unique_phrase_df.drop_duplicates(subset='fst_text')
-    unique_phrase_df = unique_phrase_df.rename(columns={'fst_text':'keyphrase'})
+    unique_phrase_df = unique_phrase_df.rename(columns={'fst_text':'phrase'})
 
     # Count occurrences of each phrase
     token_counts = df['fst_text'].value_counts()
 
     # Map token counts to phrases
-    unique_phrase_df = unique_phrase_df.set_index('keyphrase')
+    unique_phrase_df = unique_phrase_df.set_index('phrase')
     unique_phrase_df['token_count'] = token_counts
     unique_phrase_df = unique_phrase_df.reset_index()
 
@@ -89,7 +89,7 @@ def build_phrase_list(unique_phrase_df, output_path):
     """
     print("\nBuilding phrase list...")
 
-    all_phrases = unique_phrase_df['keyphrase'].tolist()
+    all_phrases = unique_phrase_df['phrase'].tolist()
 
     with open(output_path, 'w', encoding='utf8') as f:
         for phrase in all_phrases:
@@ -108,13 +108,13 @@ def build_words_csv(unique_phrase_df, output_path):
 
     # Get all unique words
     unique_words = set()
-    unique_phrase_df['keyphrase'].str.split().apply(unique_words.update)
+    unique_phrase_df['phrase'].str.split().apply(unique_words.update)
 
 
     # Get token counts per word
     word_rows = []
     for word in unique_words:
-        word_mask = unique_phrase_df['keyphrase'].str.contains(word)
+        word_mask = unique_phrase_df['phrase'].str.contains(word)
         token_count = unique_phrase_df.loc[word_mask, 'token_count'].sum()
         word_rows.append({
             'word': word,
@@ -126,10 +126,27 @@ def build_words_csv(unique_phrase_df, output_path):
     print(f"  Total unique words: {len(word_df)}")
     print(f"  Token count statistics:\n{word_df['token_count'].describe()}")
 
-    unique_phrase_df.to_csv(output_path, index_label='index')
+    word_df.to_csv(output_path, index_label='index')
     print(f"Saved words CSV to {output_path}")
 
-    return unique_phrase_df
+    return word_df
+
+def build_word_list(word_df, output_path):
+    """
+    Build WORD_PATH: text file with all unique words (one per line).
+    """
+    print("\nBuilding word list...")
+
+    all_words = word_df['word'].tolist()
+
+    with open(output_path, 'w', encoding='utf8') as f:
+        for word in all_words:
+            f.write(word + '\n')
+
+    print(f"Saved wordlist to {output_path}")
+    print(f"  Total words: {len(all_words)}")
+
+    return all_words
 
 def build_record2phrase(df, all_phrases, output_path):
     """
@@ -175,9 +192,9 @@ def main():
 
     unique_phrase_df = build_phrases_csv(eaf_unique_df, df, PHRASES_CSV)
     words_df = build_words_csv(unique_phrase_df, WORDS_CSV)
+    all_words = build_word_list(words_df, WORD_PATH)
 
     all_phrases = build_phrase_list(unique_phrase_df, PHRASE_PATH)
-
     record2phrase = build_record2phrase(df, all_phrases, RECORD2PHRASE_PATH)
 
 if __name__ == '__main__':
