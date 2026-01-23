@@ -186,13 +186,14 @@ def build_word2phrase(all_words, unique_phrase_df, output_path):
 
     # Save to file
     with open(output_path, 'w', encoding='utf8') as f:
-        for phrase_idx in word2phrases:
-            f.write(f"{phrase_idx}\n")
+        for phrase_indices in word2phrases:
+            phrase_indices_str = ' '.join(map(str, phrase_indices))
+            f.write(phrase_indices_str+"\n")
 
     print(f"Saved word2phrase mapping to {output_path}")
     print(f"  Total records: {len(word2phrases)}")
 
-    return np.array(word2phrases)
+    return word2phrases
 
 def main():
     # Ensure output directory exists
