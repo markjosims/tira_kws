@@ -47,7 +47,6 @@ CONFIG_DIR = PROJECT_DIR / "config"
     easy/medium/hard negative records exist for a given phrase.
 - WORDS_CSV: similar to `PHRASES_CSV` except that each row is a unique
     word rather than phrase
-- KEYWORDS_CSV: similar to `KEYPHRASE_CSV` for word queries
 - CER_MATRIX_PATH: matrix of CER values of keyphrases (rows) to all
     phrases (columns).
 - PHRASE_PATH: all unique Tira phrases
@@ -59,7 +58,6 @@ MERGED_PHRASES_CSV = LABELS_DIR / "keyphrases_rewritten_merges.csv"
 PHRASES_CSV = LABELS_DIR / "tira_phrases.csv"
 KEYPHRASE_CSV = LABELS_DIR / "keyphrases.csv"
 WORDS_CSV = LABELS_DIR / "tira_words.csv"
-KEYWORDS_CSV = LABELS_DIR / "keywords.csv"
 CER_MATRIX_PATH = LABELS_DIR / "cer_matrix.np"
 PHRASE_PATH = LABELS_DIR / "tira_phrases.txt"
 WORD_PATH = LABELS_DIR / "tira_words.txt"
