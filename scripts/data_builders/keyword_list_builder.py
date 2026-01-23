@@ -89,6 +89,7 @@ def build_keyword_list(
     keyword_list = []
 
     for index, word in keyword_df['word'].items(): # type: ignore
+
         index: int
         phrase_idcs = word2phrase[index]
 
@@ -104,6 +105,9 @@ def build_keyword_list(
             'keyword_record_idcs': query_phrase_idcs,
             'positive_record_idcs': positive_phrase_idcs,
         })
+
+    print(" Sampled keywords:")
+    print("\n".join(keyword_df['word'].tolist()))
 
     return keyword_list
 
