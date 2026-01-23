@@ -30,7 +30,7 @@ TIRA_DRZ_PATH = DATA_DIR / "tira_drz"
 TIRA_ASR_URI = "css-kws-capstone/tira-asr"
 
 ## local data paths
-PROJECT_DIR = Path(__file__).parent
+PROJECT_DIR = Path(__file__).parent.parent
 DATA_DIR = PROJECT_DIR / "data"
 LABELS_DIR = DATA_DIR / "labels"
 CONFIG_DIR = PROJECT_DIR / "config"
