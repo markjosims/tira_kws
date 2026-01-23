@@ -102,7 +102,8 @@ def build_phrase_list(unique_phrase_df, output_path):
 
 def build_words_csv(unique_phrase_df, output_path):
     """
-    Build WORDS_CSV: dataframe with unique FST-normalize words and token counts.
+    Build WORDS_CSV: dataframe with unique FST-normalize words alongside
+    token and phrase counts.
     """
     print("\nBuilding words CSV...")
 
@@ -111,21 +112,22 @@ def build_words_csv(unique_phrase_df, output_path):
     unique_phrase_df['phrase'].str.split().apply(unique_words.update)
 
 
-    # Get token counts per word
+    # Get token and phrase counts per word
     word_rows = []
     for word in unique_words:
         word_mask = unique_phrase_df['phrase'].str.contains(word)
         token_count = unique_phrase_df.loc[word_mask, 'token_count'].sum()
         word_rows.append({
             'word': word,
-            'token_count': token_count
+            'token_count': token_count,
+            'phrase_count': word_mask.sum(),
         })
 
     word_df = pd.DataFrame(data=word_rows)
 
     print(f"  Total unique words: {len(word_df)}")
     print(f"  Token count statistics:\n{word_df['token_count'].describe()}")
-
+    print(f"  Phrase count statistics:\n{word_df['phrase_count'].describe()}")
     word_df.to_csv(output_path, index_label='index')
     print(f"Saved words CSV to {output_path}")
 
