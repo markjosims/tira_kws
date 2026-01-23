@@ -85,8 +85,6 @@ def build_keyword_list(
         query_phrase_idcs = phrase_idcs[:split_idx]
         positive_phrase_idcs = phrase_idcs[split_idx:]
 
-        keyword_df.at[index, 'keyword_record_idcs'] = query_phrase_idcs
-        keyword_df.at[index, 'positive_record_idcs'] = positive_phrase_idcs
         keyword_list.append({
             'keyword': word,
             'keyword_record_idcs': query_phrase_idcs,
