@@ -104,7 +104,7 @@ def build_words_csv(unique_phrase_df, output_path):
     """
     Build WORDS_CSV: dataframe with unique FST-normalize words and token counts.
     """
-    print("\nBuilding phrases CSV...")
+    print("\nBuilding words CSV...")
 
     # Get all unique words
     unique_words = set()

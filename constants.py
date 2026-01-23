@@ -111,7 +111,7 @@ ENGLISH_CALIBRATION_LIST = LABELS_DIR / "english_calibration_keyphrase_idcs.txt"
 
 KWS_PREDICTIONS = DATA_DIR / "kws_predictions"
 SIMILARITY_MATRICES = DATA_DIR / "similarity_matrix/"
-EMBEDDINGS = DATASETS_DIR / "tira_kws" / "embeddings"
+EMBEDDINGS = DATA_DIR / "tira_kws" / "embeddings"
 
 # model and inference constants
 WFST_BATCH_SIZE = 1024
