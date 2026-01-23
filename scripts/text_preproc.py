@@ -8,11 +8,11 @@
 
 from tqdm import tqdm
 import numpy as np
-from constants import (
+from src.constants import (
     LABELS_DIR, MERGED_PHRASES_CSV, PHRASES_CSV,
     PHRASE_PATH, RECORD2PHRASE_PATH, WORD2PHRASE_PATH, WORD_PATH, WORDS_CSV
 )
-from dataloading import load_tira_asr
+from src.dataloading import load_tira_asr
 import pandas as pd
 
 def build_merged_phrases_csv(df, output_path):

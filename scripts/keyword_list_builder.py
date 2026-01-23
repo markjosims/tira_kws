@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 """
-Build list for evaluating keyphrase search.
+Build list for evaluating keyword search.
 Requires `text_preproc` to be run first!
 
 This script constructs the following files:
-- CER_MATRIX_PATH: character error rate matrix between keyphrases and all phrases
-- KEYPHRASE_CSV: dataframe of keyphrases with difficulty statistics
-- KEYPHRASE_LIST: JSON list of all keyphrases with positive/negative records
-- CALIBRATION_LIST: JSON list of balanced subset for threshold calibration
+- KEYWORD_CSV: dataframe of keyphrases with difficulty statistics
+- KEYWORD_LIST: JSON list of all keyphrases with positive/negative records
 """
 
 import pandas as pd

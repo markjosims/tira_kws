@@ -8,14 +8,14 @@ import json
 
 import numpy as np
 
-from constants import (
+from src.constants import (
     KWS_PREDICTIONS, KEYPHRASE_LIST,
     CALIBRATION_LIST, ENGLISH_CALIBRATION_LIST,
     DEVICE, CONFIG_DIR
 )
-from encoding import get_cosine_similarity, pool_embeds
-from wfst import decode_embed_list
-from dtw import pairwise_dtw
+from src.encoding import get_cosine_similarity, pool_embeds
+from src.wfst import decode_embed_list
+from src.dtw import pairwise_dtw
 from scripts.cache_embeddings import add_cache_embeddings_args, load_embeddings
 import pandas as pd
 import torch

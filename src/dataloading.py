@@ -4,8 +4,8 @@ from torch.utils.data import DataLoader
 from torch.nn.utils.rnn import pad_sequence
 from tqdm import tqdm
 from transformers import WhisperProcessor
-from constants import BATCH_SIZE, TIRA_ASR_PATH, TIRA_ASR_URI, TIRA_DRZ_PATH
-from encoding import (
+from src.constants import BATCH_SIZE, TIRA_ASR_PATH, TIRA_ASR_URI, TIRA_DRZ_PATH
+from src.encoding import (
     load_clap_speech_encoder, load_clap_speech_processor, encode_clap_audio,
     load_speechbrain_encoder, encode_speechbrain_audio,
     get_sliding_window, load_ipaalign_speech_encoder,

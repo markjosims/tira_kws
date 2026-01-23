@@ -1,6 +1,6 @@
 from tslearn.metrics import dtw_path_from_metric
 import torch
-from encoding import get_cosine_distance
+from src.encoding import get_cosine_distance
 from typing import List
 from tslearn.backend import instantiate_backend
 from tslearn.utils import to_time_series

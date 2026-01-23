@@ -50,6 +50,10 @@ CONFIG_DIR = PROJECT_DIR / "config"
 - KEYWORDS_CSV: similar to `KEYPHRASE_CSV` for word queries
 - CER_MATRIX_PATH: matrix of CER values of keyphrases (rows) to all
     phrases (columns).
+- PHRASE_PATH: all unique Tira phrases
+- WORD_PATH: all unique Tira words
+- RECORD2PHRASE_PATH: phrase index for each record
+- WORD2PHRASE_PATH: indices of phrases containing each word
 """
 MERGED_PHRASES_CSV = LABELS_DIR / "keyphrases_rewritten_merges.csv"
 PHRASES_CSV = LABELS_DIR / "tira_phrases.csv"
@@ -57,17 +61,38 @@ KEYPHRASE_CSV = LABELS_DIR / "keyphrases.csv"
 WORDS_CSV = LABELS_DIR / "tira_words.csv"
 KEYWORDS_CSV = LABELS_DIR / "keywords.csv"
 CER_MATRIX_PATH = LABELS_DIR / "cer_matrix.np"
+PHRASE_PATH = LABELS_DIR / "tira_phrases.txt"
+WORD_PATH = LABELS_DIR / "tira_words.txt"
+RECORD2PHRASE_PATH = LABELS_DIR / "record2phrase.txt"
+WORD2PHRASE_PATH = LABELS_DIR / "word2phrase.txt"
+
+
+"""
+### Keyword lists
+Lists related to keyword queries for the Interspeech 2026 experiment.
+
+- KEYWORD_LIST: JSON list for all keywords. See below for JSON data structure.
+```json
+[
+    {
+        'keyword': $str,
+        'keyword_idcs': [$int, $int, ... ],
+        'record_idcs': [$int, $int, ...]
+    },
+    ...
+]
+```
+Where the 'keyword_idcs' key maps to list of indices
+
+"""
+KEYWORD_LIST = LABELS_DIR / "keyword_list.json"
 
 """
 ### Keyphrase lists
-Lists related to keyphrases, including 
+Lists related to keyphrases used for the Sparse Annotation Filling experiment.
 
-- PHRASE_PATH: all unique Tira phrases
-- WORD_PATH: all unique Tira words
 - KEYPHRASE_PATH: indices of all Tira phrases used as keyphrase
     queries
-- RECORD2PHRASE_PATH: phrase index for each record
-- WORD2PHRASE_PATH: indices of phrases containing each word
 - KEYPHRASE_LIST: JSON list for all keyphrases including positive
     and negative records. See below for JSON data structure.
 - CALIBRATION_LIST: JSON list with same structure as
@@ -96,11 +121,7 @@ record indices. This list maps all keyphrases to all positive
 and negative records.
 """
 
-PHRASE_PATH = LABELS_DIR / "tira_phrases.txt"
-WORD_PATH = LABELS_DIR / "tira_words.txt"
 KEYPHRASE_PATH = LABELS_DIR / "tira_keyphrase_idcs.txt"
-RECORD2PHRASE_PATH = LABELS_DIR / "record2phrase.txt"
-WORD2PHRASE_PATH = LABELS_DIR / "word2phrase.txt"
 KEYPHRASE_LIST = LABELS_DIR / "keyphrase_list.json"
 CALIBRATION_LIST = LABELS_DIR / "calibration_list.json"
 ENGLISH_CALIBRATION_LIST = LABELS_DIR / "english_calibration_keyphrase_idcs.txt"

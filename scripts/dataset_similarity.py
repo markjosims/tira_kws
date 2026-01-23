@@ -4,9 +4,9 @@ Currently only supports within-dataset similarity for Tira ASR dataset.
 TODO: Extend to cross-dataset similarity between Tira ASR and Tira DRZ datasets.
 """
 
-from constants import DEVICE
-from dataloading import load_tira_asr, load_tira_drz, get_audio_dataloader, prepare_dataset
-from encoding import (
+from src.constants import DEVICE
+from src.dataloading import load_tira_asr, load_tira_drz, get_audio_dataloader, prepare_dataset
+from src.encoding import (
     encode_clap_audio, compute_cosine_similarity_matrix,
     load_clap_speech_encoder, load_clap_speech_processor,
 )
