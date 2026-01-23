@@ -15,6 +15,7 @@ import random
 import json
 from argparse import ArgumentParser, Namespace
 from typing import Dict, List, Union
+from unidecode import unidecode
 
 # local imports
 from src.constants import (
@@ -27,6 +28,7 @@ def build_keyword_list(
         word2phrase: List[List[int]],
         token_count: int=10,
         num_keywords: int=30,
+        min_keyword_length: int=5,
         random_seed: int=1337,
     ) -> List[Dict[str, Union[str, List[int]]]]:
     """
@@ -61,6 +63,7 @@ def build_keyword_list(
         word2phrase: Mapping from words to phrases containing the word
         token_count: Number of tokens for each keyword.
         num_keywords: Number of keywords to select.
+        min_keyword_length: Minimum length of each keyword in characters.
         random_seed: Random seed for reproducibility.
     Returns:
         keyword_list: List of keyword dicts
@@ -68,7 +71,18 @@ def build_keyword_list(
     # multiply token count by 2 to account for sampling both
     # queries and positive targets
     token_mask = word_df['token_count'] >= token_count*2
-    keyword_df = word_df[token_mask].sample(
+    print(f" Words with >= {token_count*2} tokens: {token_mask.sum()}")
+
+    # apply unidecode so that combining diacritics don't affect length
+    unidecode_words = word_df['word'].apply(unidecode)
+    length_mask = unidecode_words.str.len() >= min_keyword_length
+    print(f" Words with length >= {min_keyword_length}: {length_mask.sum()}")
+
+    candidate_mask = token_mask & length_mask
+    print(f" Candidate words: {candidate_mask.sum()}")
+    print(f" Sampling {num_keywords} keywords...")
+
+    keyword_df = word_df[candidate_mask].sample(
         n=num_keywords,
         random_state=random_seed,
     )
@@ -112,6 +126,7 @@ def main():
         word2phrase,
         token_count=args.token_count,
         num_keywords=args.num_keywords,
+        min_keyword_length=args.min_keyword_length,
         random_seed=args.random_seed,
     )
 
@@ -130,6 +145,10 @@ def get_args() -> Namespace:
     )
     parser.add_argument(
         '--num_keywords', type=int, default=30,
+    )
+    parser.add_argument(
+        '--min_keyword_length', type=int, default=5,
+        help='Minimum length of each keyword in characters.'
     )
     parser.add_argument(
         '--random_seed', type=int, default=1337,
