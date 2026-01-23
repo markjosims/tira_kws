@@ -46,7 +46,7 @@ def define_keyphrases(unique_phrase_df, min_token_count=10, output_path: str = K
         all_keyphrases: List of keyphrase strings
     """
     keyphrase_mask = unique_phrase_df['token_count'] >= min_token_count
-    all_keyphrases = unique_phrase_df[keyphrase_mask]['keyphrase'].tolist()
+    all_keyphrases = unique_phrase_df[keyphrase_mask]['phrase'].tolist()
 
     keyphrase_idcs = np.where(keyphrase_mask)[0].tolist()
     with open(output_path, 'w', encoding='utf8') as f:
@@ -115,7 +115,7 @@ def build_keyphrase_csv(unique_phrase_df, cer_matrix, all_keyphrases,
         medium_mask = (dists_to_keyphrase <= 0.67) & (dists_to_keyphrase > 0.33)
         hard_mask = (dists_to_keyphrase > 0) & (dists_to_keyphrase <= 0.33)
 
-        curr_keyphrase_mask = unique_phrase_df['keyphrase'] == keyphrase
+        curr_keyphrase_mask = unique_phrase_df['phrase'] == keyphrase
         unique_phrase_df.loc[curr_keyphrase_mask, 'num_easy'] = easy_mask.sum()
         unique_phrase_df.loc[curr_keyphrase_mask, 'num_medium'] = medium_mask.sum()
         unique_phrase_df.loc[curr_keyphrase_mask, 'num_hard'] = hard_mask.sum()
@@ -200,7 +200,7 @@ def build_keyphrase_lists(
     ):
         # Get positive records (all records with this keyphrase)
         row_i = row.name
-        keyphrase = row['keyphrase']
+        keyphrase = row['phrase']
         keyphrase_i = all_keyphrases.index(keyphrase)
         positive_mask = record2phrase == row_i
         positive_record_idcs = np.where(positive_mask)[0].tolist()
@@ -313,6 +313,7 @@ def main():
     with open(RECORD2PHRASE_PATH) as f:
         record2phrase = f.readlines()
     record2phrase = [int(line) for line in record2phrase]
+    record2phrase = np.array(record2phrase)
     
     unique_phrase_df = pd.read_csv(PHRASES_CSV)
 
