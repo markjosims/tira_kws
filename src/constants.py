@@ -71,13 +71,13 @@ Lists related to keyword queries for the Interspeech 2026 experiment.
 
 - KEYWORD_LIST: JSON list for all keywords. See `keyword_list_builder.py`
     and `make_keyword_ds.py` for details.
-- KEYWORD_TESTPHRASE_RECORDS: indices of all Tira records used as test phrases
-- KEYWORD_QUERY_RECORDS: indices of all Tira records used as keyword queries
+- KEYWORD_NEGATIVE_RECORDS: indices of all Tira records used as negative phrases
+- KEYWORD_POSITIVE_RECORDS: indices of all Tira records used as positive phrases
 
 """
 KEYWORD_LIST = LABELS_DIR / "keyword_list.json"
-KEYWORD_TESTPHRASE_RECORDS = LABELS_DIR / "keyword_testphrase_idcs.txt"
-KEYWORD_QUERY_RECORDS = LABELS_DIR / "keyword_query_idcs.txt"
+KEYWORD_NEGATIVE_RECORDS = LABELS_DIR / "keyword_negative_idcs.txt"
+KEYWORD_POSITIVE_RECORDS = LABELS_DIR / "keyword_positive_idcs.txt"
 
 """
 ### Keyphrase lists
