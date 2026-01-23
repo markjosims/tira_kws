@@ -27,7 +27,7 @@ from src.constants import (
     LABELS_DIR, CALIBRATION_NUM_NEGATIVE, CALIBRATION_NUM_POSITIVE,
     ENGLISH_CALIBRATION_LIST,
 )
-from scripts.text_preproc import build_merged_phrases_csv, build_phrase_list, build_phrases_csv, build_record2phrase
+from scripts.data_builders.text_preproc import build_merged_phrases_csv, build_phrase_list, build_phrases_csv, build_record2phrase
 
 
 def define_keyphrases(unique_phrase_df, min_token_count=10, output_path: str = KEYPHRASE_PATH):
