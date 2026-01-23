@@ -71,18 +71,8 @@ WORD2PHRASE_PATH = LABELS_DIR / "word2phrase.txt"
 ### Keyword lists
 Lists related to keyword queries for the Interspeech 2026 experiment.
 
-- KEYWORD_LIST: JSON list for all keywords. See below for JSON data structure.
-```json
-[
-    {
-        'keyword': $str,
-        'keyword_idcs': [$int, $int, ... ],
-        'record_idcs': [$int, $int, ...]
-    },
-    ...
-]
-```
-Where the 'keyword_idcs' key maps to list of indices
+- KEYWORD_LIST: JSON list for all keywords. See `keyword_list_builder.py`
+    and `make_keyword_ds.py` for details.
 
 """
 KEYWORD_LIST = LABELS_DIR / "keyword_list.json"
