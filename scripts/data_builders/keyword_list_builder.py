@@ -3,374 +3,136 @@
 Build list for evaluating keyword search.
 Requires `text_preproc` to be run first!
 
-This script constructs the following files:
-- KEYWORD_CSV: dataframe of keyphrases with difficulty statistics
-- KEYWORD_LIST: JSON list of all keyphrases with positive/negative records
+This script constructs the KEYWORD_LIST JSON file, which contains
+information about keywords used for the Interspeech 2026 KWS experiment.
+See `build_keyword_list` for JSON data structure.
 """
 
+import os
 import pandas as pd
 from tqdm import tqdm
 import random
 import json
-import numpy as np
-from jiwer import cer
-from pathlib import Path
 from argparse import ArgumentParser, Namespace
-from typing import List
+from typing import Dict, List, Union
 
 # local imports
-from src.dataloading import load_tira_asr, load_tira_drz
 from src.constants import (
-    PHRASE_PATH, KEYPHRASE_PATH, MERGED_PHRASES_CSV,
-    PHRASES_CSV, KEYPHRASE_CSV, CER_MATRIX_PATH,
-    CALIBRATION_LIST, KEYPHRASE_LIST, RECORD2PHRASE_PATH,
-    LABELS_DIR, CALIBRATION_NUM_NEGATIVE, CALIBRATION_NUM_POSITIVE,
-    ENGLISH_CALIBRATION_LIST,
+    KEYWORDS_CSV, WORD2PHRASE_PATH, KEYWORD_LIST
 )
 from scripts.data_builders.text_preproc import build_merged_phrases_csv, build_phrase_list, build_phrases_csv, build_record2phrase
 
 
-def define_keyphrases(unique_phrase_df, min_token_count=10, output_path: str = KEYPHRASE_PATH):
+def build_keyword_list(
+        word_df: pd.DataFrame,
+        word2phrase: List[List[int]],
+        token_count: int=10,
+        num_keywords: int=30,
+        random_seed: int=1337,
+    ) -> List[Dict[str, Union[str, List[int]]]]:
     """
-    Define keyphrases based on minimum token count threshold.
-
-    Args:
-        unique_phrase_df: DataFrame with unique phrases and token counts
-        min_token_count: Minimum number of occurrences for a phrase to be a keyphrase
-        output_path: Path to save keyphrase indices
-
-    Returns:
-        keyphrase_mask: Boolean mask indicating which phrases are keyphrases
-        all_keyphrases: List of keyphrase strings
-    """
-    keyphrase_mask = unique_phrase_df['token_count'] >= min_token_count
-    all_keyphrases = unique_phrase_df[keyphrase_mask]['phrase'].tolist()
-
-    keyphrase_idcs = np.where(keyphrase_mask)[0].tolist()
-    with open(output_path, 'w', encoding='utf8') as f:
-        for idx in keyphrase_idcs:
-            f.write(f"{idx}\n")
-
-    return keyphrase_mask, all_keyphrases
-
-
-def build_cer_matrix(
-        all_phrases: List[str],
-        keyphrase_mask: pd.Series,
-        all_keyphrases: List[str],
-        output_path: str,
-        min_token_count=10
-):
-    """
-    Build CER_MATRIX_PATH: matrix of character error rates between keyphrases and all phrases.
-    """
-    print("\nBuilding CER matrix...")
-
-    print(f"  Keyphrases (>={min_token_count} occurrences): {len(all_keyphrases)}")
-    print(f"  Total phrases: {len(all_phrases)}")
-    print(f"  Matrix shape: ({len(all_keyphrases)}, {len(all_phrases)})")
-
-    # Compute CER matrix
-    cer_matrix = np.zeros((len(all_keyphrases), len(all_phrases)), dtype=float)
-
-    for i, phrase1 in tqdm(enumerate(all_keyphrases),
-                           total=len(all_keyphrases),
-                           desc="Computing CER"):
-        for j, phrase2 in enumerate(all_phrases):
-            dist = cer(phrase1, phrase2)
-            cer_matrix[i, j] = dist
-
-    # Save matrix
-    np.save(output_path, cer_matrix)
-    print(f"Saved CER matrix to {output_path}")
-
-    return cer_matrix, all_keyphrases, keyphrase_mask
-
-
-def build_keyphrase_csv(unique_phrase_df, cer_matrix, all_keyphrases,
-                        keyphrase_mask, output_path):
-    """
-    Build KEYPHRASE_CSV: dataframe of keyphrases with difficulty statistics.
-
-    For each keyphrase, count negative examples by difficulty:
-    - easy: CER > 0.67
-    - medium: 0.33 < CER <= 0.67
-    - hard: 0 < CER <= 0.33
-    """
-    print("\nBuilding keyphrase CSV...")
-
-    unique_phrase_df['is_keyphrase'] = keyphrase_mask
-    unique_phrase_df['num_easy'] = 0
-    unique_phrase_df['num_medium'] = 0
-    unique_phrase_df['num_hard'] = 0
-
-    for keyphrase_idx, keyphrase in tqdm(enumerate(all_keyphrases),
-                                         total=len(all_keyphrases),
-                                         desc="Computing difficulty stats"):
-        dists_to_keyphrase = cer_matrix[keyphrase_idx, :]
-
-        easy_mask = dists_to_keyphrase > 0.67
-        medium_mask = (dists_to_keyphrase <= 0.67) & (dists_to_keyphrase > 0.33)
-        hard_mask = (dists_to_keyphrase > 0) & (dists_to_keyphrase <= 0.33)
-
-        curr_keyphrase_mask = unique_phrase_df['phrase'] == keyphrase
-        unique_phrase_df.loc[curr_keyphrase_mask, 'num_easy'] = easy_mask.sum()
-        unique_phrase_df.loc[curr_keyphrase_mask, 'num_medium'] = medium_mask.sum()
-        unique_phrase_df.loc[curr_keyphrase_mask, 'num_hard'] = hard_mask.sum()
-
-    # Save keyphrases to CSV
-    unique_phrase_df.to_csv(output_path, index_label='index')
-
-    print(f"Saved keyphrase CSV to {output_path}")
-    print(f"  Average easy negatives: {unique_phrase_df.loc[keyphrase_mask, 'num_easy'].mean():.1f}")
-    print(f"  Average medium negatives: {unique_phrase_df.loc[keyphrase_mask, 'num_medium'].mean():.1f}")
-    print(f"  Average hard negatives: {unique_phrase_df.loc[keyphrase_mask, 'num_hard'].mean():.1f}")
-
-    # Also save full phrases CSV
-    phrases_csv_path = PHRASES_CSV
-    unique_phrase_df.to_csv(phrases_csv_path, index_label='index')
-    print(f"Saved phrases CSV to {phrases_csv_path}")
-
-    return unique_phrase_df
-
-
-def build_keyphrase_lists(
-    unique_phrase_df: pd.DataFrame,
-    cer_matrix: np.ndarray,
-    all_keyphrases: List[str],
-    record2phrase: np.ndarray,
-    keyphrase_list_path: Path,
-    calibration_list_path: Path,
-    calibration_num_negative: int = CALIBRATION_NUM_NEGATIVE,
-    calibration_num_positive: int = CALIBRATION_NUM_POSITIVE,
-    random_seed: int = 1337
-):
-    """
-    Build KEYPHRASE_LIST and CALIBRATION_LIST: JSON files with
-    positive/negative records.
-
-    Structure:
+    Samples a set of keywords from the word DataFrame with specified token
+    count and number of keywords, and maps keywords to audio records from
+    the Tira ASR dataset. Returns a list of keyword dicts with the following
+    structure:
     ```json
     [
         {
-            'keyphrase': str,
-            'keyphrase_idx': int,
-            'record_idcs': [int, ...],  # positive records
-            'easy': {
-                'phrase_idcs': [int, ...],
-                'record_idcs': [int, ...]
-            },
-            'medium': {...},
-            'hard': {...}
+            'keyword': $str,
+            'keyword_idcs': [$int, $int, ... ], # added by `make_keyword_ds.py`
+            'keyword_record_idcs': [$int, $int, ...]
+            'positive_record_idcs': [$int, $int, ...]
         },
         ...
     ]
     ```
+    - The 'keyword' key gives the string of the keyword
+    - The 'keyword_record_idcs' key maps to the indices of records that query
+        recordings are sampled from.
+    - The 'positive_record_idcs' key maps to the indices of records that contain the
+        keyword (i.e., positive examples) used as targets (rather than queries)
+        during KWS evaluation.
+    - The key 'keyword_idcs' maps to the indices of all query tokens for the given
+        keyword in the keyword dataset (built using `make_keyword_ds.py`). This key
+        is NOT built in this function but is added later.
+    
 
-    CALIBRATION_LIST also contains an object with keyphrase "$eng"
-    mapping to random negative records from the DRZ dataset.
+    Args:
+        word_df: DataFrame with unique phrases and token counts
+        word2phrase: Mapping from words to phrases containing the word
+        token_count: Number of tokens for each keyword.
+        num_keywords: Number of keywords to select.
+        random_seed: Random seed for reproducibility.
+    Returns:
+        keyword_list: List of keyword dicts
     """
-    print("\nBuilding keyphrase lists...")
-
-    random.seed(random_seed)
-
-    # Determine which keyphrases have enough negatives for calibration
-    keyphrase_mask = unique_phrase_df['is_keyphrase']
-    has_easy = unique_phrase_df['num_easy'] >= calibration_num_negative
-    has_medium = unique_phrase_df['num_medium'] >= calibration_num_negative
-    has_hard = unique_phrase_df['num_hard'] >= calibration_num_negative
-    has_negative = has_easy & has_medium & has_hard
-    unique_phrase_df['in_calibration_set'] = has_negative
-
-    print(
-        "  Keyphrases in calibration set: "+\
-        f"{has_negative.sum()}/{keyphrase_mask.sum()}"
+    # multiply token count by 2 to account for sampling both
+    # queries and positive targets
+    token_mask = word_df['token_count'] >= token_count*2
+    keyword_df = word_df[token_mask].sample(
+        n=num_keywords,
+        random_state=random_seed,
     )
+    keyword_list = []
 
-    # Build lists
-    keyphrase_list = []
-    calibration_list = []
+    for index, word in keyword_df['word'].items(): # type: ignore
+        index: int
+        phrase_idcs = word2phrase[index]
 
-    for _, row in tqdm(
-        unique_phrase_df[unique_phrase_df['is_keyphrase']].iterrows(),
-        total=len(all_keyphrases),
-        desc="Building lists",
-    ):
-        # Get positive records (all records with this keyphrase)
-        row_i = row.name
-        keyphrase = row['phrase']
-        keyphrase_i = all_keyphrases.index(keyphrase)
-        positive_mask = record2phrase == row_i
-        positive_record_idcs = np.where(positive_mask)[0].tolist()
+        # split phrases into query and positive sets
+        random.Random(random_seed).shuffle(phrase_idcs)
+        phrase_idcs = phrase_idcs[:token_count*2]
+        split_idx = len(phrase_idcs) // 2
+        query_phrase_idcs = phrase_idcs[:split_idx]
+        positive_phrase_idcs = phrase_idcs[split_idx:]
 
-        # Build negative sets by difficulty
-        dists_to_keyphrase = cer_matrix[keyphrase_i, :]
+        keyword_df.at[index, 'keyword_record_idcs'] = query_phrase_idcs
+        keyword_df.at[index, 'positive_record_idcs'] = positive_phrase_idcs
+        keyword_list.append({
+            'keyword': word,
+            'keyword_record_idcs': query_phrase_idcs,
+            'positive_record_idcs': positive_phrase_idcs,
+        })
 
-        easy_mask = dists_to_keyphrase > 0.67
-        medium_mask = (dists_to_keyphrase <= 0.67) & (dists_to_keyphrase > 0.33)
-        hard_mask = (dists_to_keyphrase > 0) & (dists_to_keyphrase <= 0.33)
-
-        # Create keyphrase object for full list
-        keyphrase_obj = {
-            'keyphrase': keyphrase,
-            'keyphrase_idx': row_i,
-            'record_idcs': positive_record_idcs,
-            'easy': [],
-            'medium': [],
-            'hard': [],
-        }
-
-        # Add negative examples for each difficulty
-        for mask, difficulty in [(easy_mask, 'easy'), (medium_mask, 'medium'), (hard_mask, 'hard')]:
-            negative_phrase_idcs = np.where(mask)[0].tolist()
-            negative_record_mask = np.isin(record2phrase, negative_phrase_idcs)
-            negative_record_idcs = np.where(negative_record_mask)[0].tolist()
-            keyphrase_obj[difficulty] = negative_record_idcs
-
-        keyphrase_list.append(keyphrase_obj)
-
-        # Build calibration list (subset with balanced samples)
-        if row['in_calibration_set']:
-            calibration_positive_idcs = random.sample(positive_record_idcs, calibration_num_positive)
-            calibration_obj = {
-                'keyphrase': keyphrase,
-                'keyphrase_idx': row_i,
-                'record_idcs': calibration_positive_idcs,
-                'easy': [],
-                'medium': [],
-                'hard': [],
-            }
-
-            # Sample negative records for calibration
-            for difficulty in ['easy', 'medium', 'hard']:
-                all_negative_record_idcs = keyphrase_obj[difficulty]
-                all_negative_phrase_idcs = np.unique(record2phrase[all_negative_record_idcs]).tolist()
-
-                # Sample phrases first, then get their records
-                sampled_phrase_idcs = random.sample(
-                    all_negative_phrase_idcs, calibration_num_negative
-                )
-                sampled_record_idcs = []
-                for phrase_idx in sampled_phrase_idcs:
-                    phrase_records = np.where(record2phrase == phrase_idx)[0].tolist()
-                    # Take one random record per phrase if multiple exist
-                    sampled_record_idcs.append(random.choice(phrase_records))
-
-                calibration_obj[difficulty] = sampled_record_idcs
-
-            calibration_list.append(calibration_obj)
-
-    # Save JSON files
-    with open(keyphrase_list_path, 'w', encoding='utf8') as f:
-        json.dump(keyphrase_list, f, indent=2, ensure_ascii=False)
-    print(f"Saved keyphrase list to {keyphrase_list_path}")
-    print(f"  Total keyphrases: {len(keyphrase_list)}")
-
-    with open(calibration_list_path, 'w', encoding='utf8') as f:
-        json.dump(calibration_list, f, indent=2, ensure_ascii=False)
-    print(f"Saved calibration list to {calibration_list_path}")
-    print(f"  Total keyphrases: {len(calibration_list)}")
-
-def build_english_calibration_list(
-    num_negative: int = CALIBRATION_NUM_NEGATIVE * 9,
-    output_path: Path = ENGLISH_CALIBRATION_LIST,
-) -> List[int]:
-    """
-    Build a calibration list entry for the English keyword.
-
-    This entry contains only negative samples randomly selected
-    from the DRZ dataset.
-
-    Number is based on 9x the standard calibration negative count,
-    such that when aggregated with the Tira keyphrases, the total
-    number of English negatives is greater than for Tira, given that
-    in real audio the majority of speech is expected to be non-target
-    language.
-    """
-    print("\nBuilding English calibration list...")
-
-    # Randomly select negative records from DRZ dataset
-    drz_ds = load_tira_drz()
-    num_drz_rows = len(drz_ds)
-    drz_rows = np.arange(num_drz_rows).tolist()
-    random_drz_negatives = random.sample(drz_rows, num_negative)
-
-    with open(output_path, 'w', encoding='utf8') as f:
-        for idx in random_drz_negatives:
-            f.write(f"{idx}\n")
-
-    return random_drz_negatives
+    return keyword_list
 
 def main():
-    args = get_parser()
+    args = get_args()
 
     # Load files generated by `text_preproc.py`
-    with open(PHRASE_PATH, encoding='utf8') as f:
-        all_phrases = f.readlines()
+    word_df = pd.read_csv(KEYWORDS_CSV)
+    print(f"Loaded {len(word_df)} unique words from {KEYWORDS_CSV}")
 
-    with open(RECORD2PHRASE_PATH) as f:
-        record2phrase = f.readlines()
-    record2phrase = [int(line) for line in record2phrase]
-    record2phrase = np.array(record2phrase)
-    
-    unique_phrase_df = pd.read_csv(PHRASES_CSV)
+    with open(WORD2PHRASE_PATH, 'r', encoding='utf8') as f:
+        word2phrase = [list(map(int, line.strip().split())) for line in f.readlines()]
+    print(f"Loaded word2phrase mapping from {WORD2PHRASE_PATH}")
 
-    # Build all files
-    keyphrase_mask, all_keyphrases = define_keyphrases(unique_phrase_df, args.min_token_count)
+    print(f"Building keyword list with token_count={args.token_count} and num_keywords={args.num_keywords}...")
 
-    cer_matrix, all_keyphrases, keyphrase_mask = build_cer_matrix(
-        keyphrase_mask=keyphrase_mask,
-        all_keyphrases=all_keyphrases,
-        all_phrases=all_phrases,
-        output_path=str(CER_MATRIX_PATH),
-        min_token_count=args.min_token_count
-    )
-
-    unique_phrase_df = build_keyphrase_csv(
-        unique_phrase_df, cer_matrix, all_keyphrases,
-        keyphrase_mask, KEYPHRASE_CSV
-    )
-
-    build_keyphrase_lists(
-        unique_phrase_df=unique_phrase_df,
-        cer_matrix=cer_matrix,
-        all_keyphrases=all_keyphrases,
-        record2phrase=record2phrase,
-        keyphrase_list_path=KEYPHRASE_LIST,
-        calibration_list_path=CALIBRATION_LIST,
-        calibration_num_negative=args.calibration_num_negative,
-        calibration_num_positive=args.calibration_num_positive,
+    # Build keyword list
+    keyword_list = build_keyword_list(
+        word_df,
+        word2phrase,
+        token_count=args.token_count,
+        num_keywords=args.num_keywords,
         random_seed=args.random_seed,
     )
 
-    drz_ds = load_tira_drz()
-    num_drz_rows = len(drz_ds)
-    print(f"\nLoaded Tira DRZ dataset with {num_drz_rows} records")
-    build_english_calibration_list(
-        num_negative=args.calibration_num_negative * 9,
-        output_path=ENGLISH_CALIBRATION_LIST,
-    )
+    print(f"Saving keyword list with {len(keyword_list)} keywords to {KEYWORD_LIST}...")
+    with open(KEYWORD_LIST, 'w', encoding='utf8') as f:
+        json.dump(keyword_list, f, indent=4, ensure_ascii=False)
 
-    print("\n✓ All files built successfully!")
+    print("\n✓ Keyword list built successfully!")
 
 
-def get_parser() -> Namespace:
+def get_args() -> Namespace:
     parser = ArgumentParser(description='Build KWS lists and associated files')
     parser.add_argument(
-        '--min_token_count', type=int, default=10,
-        help='Minimum token count for a phrase to be considered a keyphrase'
+        '--token_count', type=int, default=10,
+        help='Number of tokens to be used for keywords.'
     )
     parser.add_argument(
-        '--calibration_num_negative',
-        type=int,
-        default=CALIBRATION_NUM_NEGATIVE,
-        help='Number of negative samples per difficulty level for calibration'
-    )
-    parser.add_argument(
-        '--calibration_num_positive',
-        type=int,
-        default=CALIBRATION_NUM_POSITIVE,
-        help='Number of positive samples for calibration'
+        '--num_keywords', type=int, default=30,
     )
     parser.add_argument(
         '--random_seed', type=int, default=1337,
