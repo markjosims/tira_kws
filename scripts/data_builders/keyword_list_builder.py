@@ -17,7 +17,8 @@ from unidecode import unidecode
 
 # local imports
 from src.constants import (
-    WORDS_CSV, WORD2PHRASE_PATH, KEYWORD_LIST, RECORD2PHRASE_PATH,
+    WORDS_CSV, WORD2PHRASE_PATH, KEYWORD_LIST,
+    RECORD2PHRASE_PATH, PHRASE_PATH,
     KEYWORD_QUERY_RECORDS, KEYWORD_TESTPHRASE_RECORDS,
 )
 
@@ -114,7 +115,7 @@ def build_keyword_list(
 def get_test_phrase_idcs(
         keywords: List[str],
         keyword_list: List[Dict[str, Union[str, List[int]]]],
-        word_df: pd.DataFrame,
+        phrase_list: List[str],
         record2phrase: List[List[int]],
         negative_phrase_count: int=700,
         random_seed: int=1337,
@@ -127,7 +128,7 @@ def get_test_phrase_idcs(
     args:
         keywords: List of keyword strings
         keyword_list: List of keyword dicts
-        word_df: DataFrame with unique phrases and token counts
+        phrase_list: List of all phrases
         record2phrase: Mapping from records to phrases contained in the record
         negative_phrase_count: Number of negative phrases to sample
         random_seed: Random seed for reproducibility
@@ -140,11 +141,15 @@ def get_test_phrase_idcs(
         all_positive_idcs.extend(keyword_dict['positive_record_idcs'])
     all_positive_idcs = set(all_positive_idcs)
 
-    no_keyword_mask = ~word_df['word'].isin(keywords)
-    negative_candidate_df = word_df[no_keyword_mask]
-    print(f" Negative candidate phrases: {len(negative_candidate_df)}")
+    print(" Collecting phrases that do not contain any keywords...")
+    negative_phrase_idcs = []
+    for idx, phrase in enumerate(phrase_list):
+        if any(keyword in phrase for keyword in keywords):
+            continue
+        negative_phrase_idcs.append(idx)
+    print(f" Negative candidate phrases: {len(negative_phrase_idcs)}")
 
-    negative_phrase_idcs = negative_candidate_df.index.tolist()
+    print(" Collecting records for negative phrases...")
     negative_record_idcs = []
 
     for idx in negative_phrase_idcs:
@@ -198,7 +203,11 @@ def main():
         record2phrase = [list(map(int, line.strip().split())) for line in f.readlines()]
     print(f"Loaded record2phrase mapping from {RECORD2PHRASE_PATH}")
 
-    print(f"Building keyword list with token_count={args.token_count} and num_keywords={args.num_keywords}...")
+    with open(PHRASE_PATH, 'r', encoding='utf8') as f:
+        phrase_list = [line.strip() for line in f.readlines()]
+    print(f"Loaded {len(phrase_list)} phrases from {PHRASE_PATH}")
+
+    print(f"\nBuilding keyword list with token_count={args.token_count} and num_keywords={args.num_keywords}...")
 
     # Build keyword list
     keyword_list, keywords = build_keyword_list(
@@ -214,7 +223,7 @@ def main():
     test_phrase_idcs = get_test_phrase_idcs(
         keywords,
         keyword_list,
-        word_df,
+        phrase_list,
         record2phrase,
         negative_phrase_count=args.negative_phrase_count,
         random_seed=args.random_seed,
