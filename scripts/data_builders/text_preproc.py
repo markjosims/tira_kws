@@ -114,12 +114,25 @@ def build_words_csv(unique_phrase_df, output_path):
         lemmata = row['lemmata'].split()
         for word, lemma in zip(words, lemmata):
             if word in word2lemma:
-                assert word2lemma[word] == lemma, f"Conflict for word '{word}': '{word2lemma[word]}' vs '{lemma}'"
+                # concatenate lemmata
+                lemma_parts = word2lemma[word].split(', ')
+                lemma_parts = list(map(str.strip, lemma_parts))
+                if lemma in lemma_parts:
+                    continue
+                word2lemma[word] = ', '.join(lemma_parts+[lemma])
             else:
                 word2lemma[word] = lemma
     unique_phrase_df.apply(update_word2lemma, axis=1)
 
     unique_words = list(word2lemma.keys())
+    unique_lemmata = set(word2lemma.values())
+
+    lemma2words = {
+        lemma: [
+            word for word, inner_lemma in word2lemma.items() if inner_lemma == lemma
+        ] for lemma in unique_lemmata
+    }
+    avg_words_per_lemma = len(unique_words) / len(unique_lemmata)
 
     # Get token and phrase counts per word
     word_rows = []
@@ -136,6 +149,8 @@ def build_words_csv(unique_phrase_df, output_path):
     word_df = pd.DataFrame(data=word_rows)
 
     print(f"  Total unique words: {len(word_df)}")
+    print(f"  Total unique lemmata: {len(unique_lemmata)}")
+    print(f"  Avg words per lemma: {avg_words_per_lemma}")
     print(f"  Token count statistics:\n{word_df['token_count'].describe()}")
     print(f"  Phrase count statistics:\n{word_df['phrase_count'].describe()}")
     word_df.to_csv(output_path, index_label='index')
