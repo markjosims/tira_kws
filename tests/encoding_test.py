@@ -1,13 +1,13 @@
 from sqlalchemy.orm import query_expression
 from tqdm import tqdm
 
-from encoding import *
+from src.encoding import *
 import librosa
 import torch
 from transformers import WhisperProcessor
-from constants import DEVICE, SAMPLE_RATE
+from src.constants import DEVICE, SAMPLE_RATE
 import pytest
-from wfst import decode_keyword_batch, decode_single_keyword, decode_embed_list
+from src.wfst import decode_keyword_batch, decode_single_keyword, decode_embed_list
 from random import randint
 from tslearn.metrics import dtw_path_from_metric
 

@@ -1,4 +1,4 @@
-from dataloading import *
+from src.dataloading import *
 
 def test_tira_asr():
     tira_asr = load_tira_asr()

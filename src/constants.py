@@ -30,7 +30,7 @@ TIRA_DRZ_PATH = DATA_DIR / "tira_drz"
 TIRA_ASR_URI = "css-kws-capstone/tira-asr"
 
 ## local data paths
-PROJECT_DIR = Path(__file__).parent
+PROJECT_DIR = Path(__file__).parent.parent
 DATA_DIR = PROJECT_DIR / "data"
 LABELS_DIR = DATA_DIR / "labels"
 CONFIG_DIR = PROJECT_DIR / "config"
@@ -47,26 +47,44 @@ CONFIG_DIR = PROJECT_DIR / "config"
     easy/medium/hard negative records exist for a given phrase.
 - WORDS_CSV: similar to `PHRASES_CSV` except that each row is a unique
     word rather than phrase
-- KEYWORDS_CSV: similar to `KEYPHRASE_CSV` for word queries
 - CER_MATRIX_PATH: matrix of CER values of keyphrases (rows) to all
     phrases (columns).
+- PHRASE_PATH: all unique Tira phrases
+- WORD_PATH: all unique Tira words
+- RECORD2PHRASE_PATH: phrase index for each record
+- WORD2PHRASE_PATH: indices of phrases containing each word
 """
 MERGED_PHRASES_CSV = LABELS_DIR / "keyphrases_rewritten_merges.csv"
 PHRASES_CSV = LABELS_DIR / "tira_phrases.csv"
 KEYPHRASE_CSV = LABELS_DIR / "keyphrases.csv"
 WORDS_CSV = LABELS_DIR / "tira_words.csv"
-KEYWORDS_CSV = LABELS_DIR / "keywords.csv"
 CER_MATRIX_PATH = LABELS_DIR / "cer_matrix.np"
+PHRASE_PATH = LABELS_DIR / "tira_phrases.txt"
+WORD_PATH = LABELS_DIR / "tira_words.txt"
+RECORD2PHRASE_PATH = LABELS_DIR / "record2phrase.txt"
+WORD2PHRASE_PATH = LABELS_DIR / "word2phrase.txt"
+
+
+"""
+### Keyword lists
+Lists related to keyword queries for the Interspeech 2026 experiment.
+
+- KEYWORD_LIST: JSON list for all keywords. See `keyword_list_builder.py`
+    and `make_keyword_ds.py` for details.
+- KEYWORD_NEGATIVE_RECORDS: indices of all Tira records used as negative phrases
+- KEYWORD_POSITIVE_RECORDS: indices of all Tira records used as positive phrases
+
+"""
+KEYWORD_LIST = LABELS_DIR / "keyword_list.json"
+KEYWORD_NEGATIVE_RECORDS = LABELS_DIR / "keyword_negative_idcs.txt"
+KEYWORD_POSITIVE_RECORDS = LABELS_DIR / "keyword_positive_idcs.txt"
 
 """
 ### Keyphrase lists
-Lists related to keyphrases, including 
+Lists related to keyphrases used for the Sparse Annotation Filling experiment.
 
-- PHRASE_PATH: all unique Tira phrases
-- WORD_PATH: all unique Tira words
 - KEYPHRASE_PATH: indices of all Tira phrases used as keyphrase
     queries
-- RECORD2PHRASE_PATH: phrase index for each record
 - KEYPHRASE_LIST: JSON list for all keyphrases including positive
     and negative records. See below for JSON data structure.
 - CALIBRATION_LIST: JSON list with same structure as
@@ -95,10 +113,7 @@ record indices. This list maps all keyphrases to all positive
 and negative records.
 """
 
-PHRASE_PATH = LABELS_DIR / "tira_phrases.txt"
-WORD_PATH = LABELS_DIR / "tira_phrases.txt"
 KEYPHRASE_PATH = LABELS_DIR / "tira_keyphrase_idcs.txt"
-RECORD2PHRASE_PATH = LABELS_DIR / "record2phrase.txt"
 KEYPHRASE_LIST = LABELS_DIR / "keyphrase_list.json"
 CALIBRATION_LIST = LABELS_DIR / "calibration_list.json"
 ENGLISH_CALIBRATION_LIST = LABELS_DIR / "english_calibration_keyphrase_idcs.txt"
@@ -113,7 +128,7 @@ ENGLISH_CALIBRATION_LIST = LABELS_DIR / "english_calibration_keyphrase_idcs.txt"
 
 KWS_PREDICTIONS = DATA_DIR / "kws_predictions"
 SIMILARITY_MATRICES = DATA_DIR / "similarity_matrix/"
-EMBEDDINGS = DATASETS_DIR / "tira_kws" / "embeddings"
+EMBEDDINGS = DATA_DIR / "tira_kws" / "embeddings"
 
 # model and inference constants
 WFST_BATCH_SIZE = 1024

@@ -13,7 +13,7 @@ from torchaudio.pipelines import (
 from torchaudio.models.wav2vec2.model import Wav2Vec2Model
 import librosa
 
-from constants import (
+from src.constants import (
     CLAP_IS_AVAILABLE, SPEECHBRAIN_IS_AVAILABLE, DEVICE, SAMPLE_RATE,
     SPEECHBRAIN_LID_ENCODER_NAME, CLAP_IPA_ENCODER_NAME, IPA_ALIGNER_ENCODER_NAME,
     WAV2VEC_DOWNSAMPLE_FACTOR

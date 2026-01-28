@@ -5,8 +5,8 @@ of the record with the highest speech-to-speech cosine similarity
 """
 
 import pandas as pd
-from constants import PREDICTED_WORDS_CSV, PHRASELIST_PATH, SIMILARITY_MATRIX_PATH
-from dataloading import load_tira_asr
+from src.constants import PREDICTED_WORDS_CSV, PHRASELIST_PATH, SIMILARITY_MATRIX_PATH
+from src.dataloading import load_tira_asr
 import torch
 from tqdm import tqdm
 from pynini.lib.edit_transducer import LevenshteinDistance

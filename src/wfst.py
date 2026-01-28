@@ -6,9 +6,9 @@ import k2
 import torch
 from typing import *
 from torch.nn.utils.rnn import pad_sequence
-from constants import DEVICE, WFST_BATCH_SIZE
+from src.constants import DEVICE, WFST_BATCH_SIZE
 from torch.utils.data import DataLoader
-from encoding import get_windowed_cosine_similarity, pad_and_return_lengths
+from src.encoding import get_windowed_cosine_similarity, pad_and_return_lengths
 
 SELF_WEIGHT = torch.tensor(1).log()
 SKIP_WEIGHT = torch.tensor(1).log()
