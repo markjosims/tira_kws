@@ -106,10 +106,19 @@ def build_words_csv(unique_phrase_df, output_path):
     """
     print("\nBuilding phrases CSV...")
 
-    # Get all unique words
-    unique_words = set()
-    unique_phrase_df['phrase'].str.split().apply(unique_words.update)
+    # Map words to lemmata
+    word2lemma = {}
+    def update_word2lemma(row):
+        words = row['phrase'].split()
+        lemmata = row['lemmata'].split()
+        for word, lemma in zip(words, lemmata):
+            if word in word2lemma:
+                assert word2lemma[word] == lemma, f"Conflict for word '{word}': '{word2lemma[word]}' vs '{lemma}'"
+            else:
+                word2lemma[word] = lemma
+    unique_phrase_df.apply(update_word2lemma, axis=1)
 
+    unique_words = list(word2lemma.keys())
 
     # Get token counts per word
     word_rows = []
@@ -118,7 +127,8 @@ def build_words_csv(unique_phrase_df, output_path):
         token_count = unique_phrase_df.loc[word_mask, 'token_count'].sum()
         word_rows.append({
             'word': word,
-            'token_count': token_count
+            'token_count': token_count,
+            'lemma': word2lemma[word],
         })
 
     word_df = pd.DataFrame(data=word_rows)
@@ -180,7 +190,12 @@ def main():
 
     # Prepare dataframe
     print("\nPreparing dataframe...")
-    colmap = {'transcription': 'eaf_text', 'rewritten_transcript': 'fst_text'}
+    colmap = {
+        'transcription': 'eaf_text',
+        'rewritten_transcript': 'fst_text',
+        'gloss': 'gloss',
+        'root': 'lemmata',
+    }
     cols_to_drop = set(ds.column_names) - set(colmap.keys())
     ds_noaudio = ds.remove_columns(list(cols_to_drop))
     df: pd.DataFrame = ds_noaudio.to_pandas() # type: ignore
