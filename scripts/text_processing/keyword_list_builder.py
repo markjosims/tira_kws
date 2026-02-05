@@ -8,7 +8,6 @@ information about keywords used for the Interspeech 2026 KWS experiment.
 See `build_keyword_list` for JSON data structure.
 """
 
-from collections import defaultdict
 import pandas as pd
 import random
 import json
@@ -19,7 +18,7 @@ from unidecode import unidecode
 # local imports
 from src.constants import (
     WORDS_CSV, WORD2PHRASE_PATH, KEYWORD_LIST,
-    KEYWORD_CSV, KEYWORDS_DIR,
+    KEYWORD_SENTENCES, KEYWORDS_DIR, KEYWORDS_CSV,
     PHRASE2RECORDS_PATH, PHRASES_CSV
 )
 
@@ -33,7 +32,7 @@ def build_keyword_list(
         num_keywords: int=30,
         min_keyword_length: int=5,
         random_seed: int=1337,
-    ) -> Tuple[List[Dict[str, Union[str, List[int]]]], List[str]]:
+    ) -> Tuple[List[Dict[str, Union[str, List[int]]]], pd.DataFrame]:
     """
     Samples a set of keywords from the word DataFrame with specified token
     count and number of keywords, and maps keywords to audio records from
@@ -71,7 +70,7 @@ def build_keyword_list(
         random_seed: Random seed for reproducibility.
     Returns:
         keyword_list: List of keyword dicts
-        keywords: List of keyword strings
+        keywords: pd.DataFrame containing only the keywords selected for the experiment
     """
     phrase_mask = word_df['phrase_count'] >= phrase_count
     print(f" Words with >= {phrase_count} phrases: {phrase_mask.sum()}")
@@ -157,7 +156,7 @@ def build_keyword_list(
     keywords = keyword_df['word'].tolist()
     print("\n".join(keywords))
 
-    return keyword_list, keywords
+    return keyword_list, keyword_df
 
 def get_all_phrase_idcs(
         keywords: List[str],
@@ -259,7 +258,7 @@ def main():
     KEYWORDS_DIR.mkdir(parents=True, exist_ok=True)
 
     # Build keyword list
-    keyword_list, keywords = build_keyword_list(
+    keyword_list, keyword_df = build_keyword_list(
         word_df,
         word2phrase,
         phrase2records,
@@ -268,6 +267,10 @@ def main():
         min_keyword_length=args.min_keyword_length,
         random_seed=args.random_seed,
     )
+    keywords = keyword_df['word'].tolist()
+
+    print(f"\nSaving keywords to {KEYWORDS_CSV}...")
+    keyword_df.to_csv(KEYWORDS_CSV, index_label='word_idx')
 
     # Get test phrase indices (positive + negative)
     unique_phrase_df = pd.read_csv(PHRASES_CSV)
@@ -285,8 +288,8 @@ def main():
     with open(KEYWORD_LIST, 'w', encoding='utf8') as f:
         json.dump(keyword_list, f, indent=4, ensure_ascii=False)
 
-    print(f"Saving keyword positive and negative phrase indices to {KEYWORD_CSV}...")
-    all_phrase_data.to_csv(KEYWORD_CSV, index=False)
+    print(f"Saving keyword positive and negative phrase indices to {KEYWORD_SENTENCES}...")
+    all_phrase_data.to_csv(KEYWORD_SENTENCES, index=False)
 
     print("\n✓ All keyword datafiles built successfully!")
 

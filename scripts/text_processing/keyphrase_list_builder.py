@@ -42,15 +42,15 @@ import os
 # local imports
 from src.dataloading import load_tira_asr, load_tira_drz
 from src.constants import (
-    KEYPHRASE_PATH, PHRASES_CSV, KEYPHRASE_CSV, CER_MATRIX_PATH,
+    PHRASES_CSV, KEYPHRASE_CSV, CER_MATRIX_PATH,
     CALIBRATION_LIST, KEYPHRASE_LIST, PHRASE2RECORDS_PATH,
     CALIBRATION_NUM_NEGATIVE, CALIBRATION_NUM_POSITIVE,
     ENGLISH_CALIBRATION_LIST,
 )
-from scripts.data_builders.text_preproc import build_merged_phrases_csv, build_phrase_list, build_phrases_csv, build_phrase2records
+from scripts.text_processing.get_words_and_phrases import build_merged_phrases_csv, build_phrases_csv, build_phrase2records
 
 
-def define_keyphrases(unique_phrase_df, min_token_count=10, output_path: os.PathLike = KEYPHRASE_PATH):
+def define_keyphrases(unique_phrase_df, min_token_count=10):
     """
     Define keyphrases based on minimum token count threshold.
 

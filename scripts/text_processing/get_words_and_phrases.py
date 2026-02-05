@@ -217,16 +217,11 @@ def main():
 
     # Build all files
     eaf_unique_df = build_merged_phrases_csv(df, MERGED_PHRASES_CSV)
-
     unique_phrase_df = build_phrases_csv(eaf_unique_df, df, PHRASES_CSV)
-    all_phrases = unique_phrase_df['phrase'].tolist()
-
-    record2phrase = build_phrase2records(df, unique_phrase_df, PHRASE2RECORDS_PATH)
-
     words_df = build_words_csv(unique_phrase_df, WORDS_CSV)
-    all_words = words_df['word'].tolist()
 
-    word2phrases = build_word2phrase(words_df, unique_phrase_df, WORD2PHRASE_PATH)
+    build_phrase2records(df, unique_phrase_df, PHRASE2RECORDS_PATH)
+    build_word2phrase(words_df, unique_phrase_df, WORD2PHRASE_PATH)
 
 if __name__ == '__main__':
     main()
