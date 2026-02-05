@@ -1,16 +1,26 @@
 #!/usr/bin/env python3
 """
+# text_preproc.py
+Depends on:
+- TIRA_ASR dataset loaded via `src.dataloading.load_tira_asr` with columns:
+    - `transcription` (raw text from ELAN)
+    - `rewritten_transcript` (FST-normalized text)
+    - `gloss` (gloss of the transcription)
+    - `root` (lemmata of the transcription)
+
+Generates:
 - MERGED_PHRASES_CSV: mapping of EAF text to FST-normalized text
-- PHRASE_PATH: text file with all unique phrases
 - RECORD2PHRASE_PATH: mapping of record indices to phrase indices
-- PHRASES_CSV: dataframe of unique phrases with token counts
+- PHRASES_CSV: dataframe of unique phrases with token counts, gloss, and lemmata
+- WORDS_CSV: dataframe of unique words with token counts, gloss and lemmata
+- WORD2PHRASE_PATH: mapping of word indices to phrase indices containing them
 """
 
 from tqdm import tqdm
 import numpy as np
 from src.constants import (
-    LABELS_DIR, MERGED_PHRASES_CSV, PHRASES_CSV,
-    PHRASE_PATH, RECORD2PHRASE_PATH, WORD2PHRASE_PATH, WORD_PATH, WORDS_CSV
+    WORDS_DIR, PHRASES_DIR, MERGED_PHRASES_CSV, PHRASES_CSV,
+    PHRASE2RECORDS_PATH, WORD2PHRASE_PATH, WORDS_CSV
 )
 from src.dataloading import load_tira_asr
 import pandas as pd
@@ -82,24 +92,6 @@ def build_phrases_csv(eaf_unique_df, df, output_path):
 
     return unique_phrase_df
 
-
-def build_phrase_list(unique_phrase_df, output_path):
-    """
-    Build PHRASE_PATH: text file with all unique phrases (one per line).
-    """
-    print("\nBuilding phrase list...")
-
-    all_phrases = unique_phrase_df['phrase'].tolist()
-
-    with open(output_path, 'w', encoding='utf8') as f:
-        for phrase in all_phrases:
-            f.write(phrase + '\n')
-
-    print(f"Saved phrase list to {output_path}")
-    print(f"  Total phrases: {len(all_phrases)}")
-
-    return all_phrases
-
 def build_words_csv(unique_phrase_df, output_path):
     """
     Build WORDS_CSV: dataframe with unique FST-normalize words alongside
@@ -127,11 +119,6 @@ def build_words_csv(unique_phrase_df, output_path):
     unique_words = list(word2lemma.keys())
     unique_lemmata = set(word2lemma.values())
 
-    lemma2words = {
-        lemma: [
-            word for word, inner_lemma in word2lemma.items() if inner_lemma == lemma
-        ] for lemma in unique_lemmata
-    }
     avg_words_per_lemma = len(unique_words) / len(unique_lemmata)
 
     # Get token and phrase counts per word
@@ -158,46 +145,28 @@ def build_words_csv(unique_phrase_df, output_path):
 
     return word_df
 
-def build_word_list(word_df, output_path):
-    """
-    Build WORD_PATH: text file with all unique words (one per line).
-    """
-    print("\nBuilding word list...")
-
-    all_words = word_df['word'].tolist()
-
-    with open(output_path, 'w', encoding='utf8') as f:
-        for word in all_words:
-            f.write(word + '\n')
-
-    print(f"Saved wordlist to {output_path}")
-    print(f"  Total words: {len(all_words)}")
-
-    return all_words
-
-def build_record2phrase(df, all_phrases, output_path):
+def build_phrase2records(df, unique_phrase_df, output_path) -> pd.DataFrame:
     """
     Build RECORD2PHRASE_PATH: mapping of record index to phrase index.
     """
     print("\nBuilding record2phrase mapping...")
 
     # Create mapping from phrase to index
-    phrase_to_idx = {phrase: idx for idx, phrase in enumerate(all_phrases)}
+    phrase_to_idx = {phrase: idx for idx, phrase in unique_phrase_df['phrase'].items()}
 
     # Map each record to its phrase index
     record2phrase = df['fst_text'].apply(phrase_to_idx.get).tolist()
 
-    # Save to file
-    with open(output_path, 'w', encoding='utf8') as f:
-        for phrase_idx in record2phrase:
-            f.write(f"{phrase_idx}\n")
+    # Save to dataframe
+    record2phrase_df = pd.DataFrame(record2phrase, columns=['phrase_idx'])
+    record2phrase_df.to_csv(output_path, index_label='record_idx')
 
     print(f"Saved record2phrase mapping to {output_path}")
     print(f"  Total records: {len(record2phrase)}")
 
-    return np.array(record2phrase)
+    return record2phrase
 
-def build_word2phrase(all_words, unique_phrase_df, output_path):
+def build_word2phrase(words_df, unique_phrase_df, output_path) -> pd.DataFrame:
     """
     Build WORD2PHRASE_PATH: mapping of word index to indices
     of phrases containing the word.
@@ -205,26 +174,28 @@ def build_word2phrase(all_words, unique_phrase_df, output_path):
     print("\nBuilding word2phrase mapping...")
 
     # Create mapping from word to phrase indices
-    word2phrases = []
-    for word in all_words:
+    rows = []
+    for index, word in words_df['word'].items():
         phrase_mask = unique_phrase_df['phrase'].str.contains(word)
         phrase_indices = unique_phrase_df.index[phrase_mask].tolist()
-        word2phrases.append(phrase_indices)
+        rows.extend({
+            'word_idx': index,
+            'phrase_idx': phrase_idx
+        } for phrase_idx in phrase_indices)
+    word2phrase_df = pd.DataFrame(rows)
 
     # Save to file
-    with open(output_path, 'w', encoding='utf8') as f:
-        for phrase_indices in word2phrases:
-            phrase_indices_str = ' '.join(map(str, phrase_indices))
-            f.write(phrase_indices_str+"\n")
+    word2phrase_df.to_csv(output_path, index=False)
 
     print(f"Saved word2phrase mapping to {output_path}")
-    print(f"  Total records: {len(word2phrases)}")
+    print(f"  Total records: {len(word2phrase_df)}")
 
-    return word2phrases
+    return word2phrase_df
 
 def main():
     # Ensure output directory exists
-    LABELS_DIR.mkdir(parents=True, exist_ok=True)
+    WORDS_DIR.mkdir(parents=True, exist_ok=True)
+    PHRASES_DIR.mkdir(parents=True, exist_ok=True)
 
     print("Loading Tira ASR dataset...")
     ds = load_tira_asr()
@@ -248,13 +219,14 @@ def main():
     eaf_unique_df = build_merged_phrases_csv(df, MERGED_PHRASES_CSV)
 
     unique_phrase_df = build_phrases_csv(eaf_unique_df, df, PHRASES_CSV)
+    all_phrases = unique_phrase_df['phrase'].tolist()
 
-    all_phrases = build_phrase_list(unique_phrase_df, PHRASE_PATH)
-    record2phrase = build_record2phrase(df, all_phrases, RECORD2PHRASE_PATH)
+    record2phrase = build_phrase2records(df, unique_phrase_df, PHRASE2RECORDS_PATH)
 
     words_df = build_words_csv(unique_phrase_df, WORDS_CSV)
-    all_words = build_word_list(words_df, WORD_PATH)
-    word2phrases = build_word2phrase(all_words, unique_phrase_df, WORD2PHRASE_PATH)
+    all_words = words_df['word'].tolist()
+
+    word2phrases = build_word2phrase(words_df, unique_phrase_df, WORD2PHRASE_PATH)
 
 if __name__ == '__main__':
     main()

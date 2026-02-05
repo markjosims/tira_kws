@@ -19,14 +19,16 @@ from unidecode import unidecode
 # local imports
 from src.constants import (
     WORDS_CSV, WORD2PHRASE_PATH, KEYWORD_LIST,
-    RECORD2PHRASE_PATH, PHRASE_PATH,
-    KEYWORD_POSITIVE_RECORDS, KEYWORD_NEGATIVE_RECORDS,
+    KEYWORD_CSV, KEYWORDS_DIR,
+    PHRASE2RECORDS_PATH, PHRASES_CSV
 )
+
+ASYLLABIC_VERB_ROOTS = ['p', 't̪(1)', 't̪(2)', 'n']
 
 def build_keyword_list(
         word_df: pd.DataFrame,
-        word2phrase: List[List[int]],
-        phrase2records: List[List[int]],
+        word2phrase: pd.DataFrame,
+        phrase2records: pd.DataFrame,
         phrase_count: int=10,
         num_keywords: int=30,
         min_keyword_length: int=5,
@@ -82,20 +84,46 @@ def build_keyword_list(
     length_mask = unidecode_words.str.len() >= min_keyword_length
     print(f" Words with length >= {min_keyword_length}: {length_mask.sum()}")
 
-    candidate_mask = phrase_mask & length_mask
+    # exclude asyllabic verb roots
+    asyllabic_mask = ~word_df['lemma'].isin(ASYLLABIC_VERB_ROOTS)
+    print(f" Words excluding asyllabic verb roots: {asyllabic_mask.sum()}")
+
+    candidate_mask = phrase_mask & length_mask & asyllabic_mask
     print(f" Candidate words: {candidate_mask.sum()}")
     print(f" Sampling {num_keywords} keywords...")
 
-    keyword_df = word_df[candidate_mask].sample(
-        n=num_keywords,
-        random_state=random_seed,
-    )
+    keyword_indices = []
+    i = 0
+    while len(keyword_indices) < num_keywords:
+        if candidate_mask.sum() == 0:
+            raise ValueError(
+                f"Not enough candidate words to sample {num_keywords} keywords "
+                f"with phrase_count={phrase_count} and min_keyword_length={min_keyword_length}. "
+                f"Consider lowering these thresholds."
+            )
+
+
+        # sample keyword row
+        sampled_keyword = random.Random(random_seed+i).choice(
+            word_df[candidate_mask].index.tolist()
+        )
+
+        # block out all words with the same lemma
+        lemma = word_df.loc[sampled_keyword, 'lemma']
+        lemma_mask = word_df['lemma'] == lemma
+        candidate_mask = candidate_mask & ~lemma_mask
+
+        # append index and increment i
+        keyword_indices.append(sampled_keyword)
+        i+=1
+        
+    keyword_df = word_df.loc[keyword_indices]
     keyword_list = []
 
     for index, word in keyword_df['word'].items(): # type: ignore
 
         index: int
-        phrase_idcs = word2phrase[index]
+        phrase_idcs = word2phrase[word2phrase['word_idx'] == index]['phrase_idx'].tolist()
         # sanity check to make sure we have enough phrases
         if len(phrase_idcs) < phrase_count:
             raise ValueError(
@@ -110,7 +138,7 @@ def build_keyword_list(
         # get one positive record for each phrase
         positive_record_idcs = []
         for phrase_idx in positive_phrase_idcs:
-            records = phrase2records[phrase_idx]
+            records = phrase2records[phrase2records['phrase_idx'] == phrase_idx]['record_idx'].tolist()
             if len(records) == 0:
                 raise ValueError(
                     f"No records found for phrase index {phrase_idx} "
@@ -135,10 +163,10 @@ def get_all_phrase_idcs(
         keywords: List[str],
         keyword_list: List[Dict[str, Union[str, List[int]]]],
         phrase_list: List[str],
-        phrase2records: List[List[int]],
+        phrase2records: pd.DataFrame,
         negative_phrase_count: int=700,
         random_seed: int=1337,
-    ) -> Tuple[List[int], List[int]]:
+    ) -> pd.DataFrame:
     """
     Get all positive and negative phrase indices for the given keywords.
     Positive indices are specified by `keyword_list`, negative indices are
@@ -148,7 +176,7 @@ def get_all_phrase_idcs(
         keywords: List of keyword strings
         keyword_list: List of keyword dicts
         phrase_list: List of all phrases
-        phrase2records: Mapping from phrases to records containing the phrase
+        phrase2records: pd.DataFrame mapping phrases to records
         negative_phrase_count: Number of negative phrases to sample
         random_seed: Random seed for reproducibility
     returns:
@@ -182,7 +210,7 @@ def get_all_phrase_idcs(
     negative_record_idcs = []
 
     for idx in negative_phrase_idcs:
-        record_idcs = phrase2records[idx]
+        record_idcs = phrase2records[phrase2records['phrase_idx'] == idx]['record_idx'].tolist()
         record_idx = random.Random(random_seed).choice(record_idcs)
         negative_record_idcs.append(record_idx)
 
@@ -196,30 +224,23 @@ def get_all_phrase_idcs(
         k=negative_phrase_count,
     )
     print(f" Sampled {len(sampled_negative_idcs)} negative records.")
-    return list(positive_phrase_idcs), sampled_negative_idcs
+    
+    positive_data = pd.DataFrame({
+        'phrase_idx': list(positive_phrase_idcs),
+        'record_idx': list(positive_record_idcs),
+        'is_positive': True,
+    })
+    negative_data = pd.DataFrame({
+        'phrase_idx': negative_phrase_idcs,
+        'record_idx': negative_record_idcs,
+        'is_positive': False,
+    })
+    # filter out only sampled negative records
+    negative_data = negative_data[negative_data['record_idx'].isin(sampled_negative_idcs)]
 
-def get_phrase2records(
-        record2phrase: List[int],
-) -> List[List[int]]:
-    """
-    Build mapping from phrase to records containing the phrase.
-    Args:
-        record2phrase: Mapping from records to phrase contained in the record
-    Returns:
-        phrase2records: Mapping from phrases to records containing the phrase
-    """
-    phrase2records: Dict[int, List[int]] = defaultdict(list)
-    for record_idx, phrase_idx in enumerate(record2phrase):
-        phrase2records[phrase_idx].append(record_idx)
-
-    # convert to list of lists
-    max_phrase_idx = max(phrase2records.keys())
-    phrase2records_list: List[List[int]] = []
-    for phrase_idx in range(max_phrase_idx + 1):
-        records = phrase2records.get(phrase_idx, [])
-        phrase2records_list.append(records)
-
-    return phrase2records_list
+    all_data = pd.concat([positive_data, negative_data], ignore_index=True)
+    print(f" Total test phrases (positive + negative): {len(all_data)}")
+    return all_data
 
 def main():
     args = get_args()
@@ -228,22 +249,14 @@ def main():
     word_df = pd.read_csv(WORDS_CSV)
     print(f"Loaded {len(word_df)} unique words from {WORDS_CSV}")
 
-    with open(WORD2PHRASE_PATH, 'r', encoding='utf8') as f:
-        word2phrase = [list(map(int, line.strip().split())) for line in f.readlines()]
+    word2phrase = pd.read_csv(WORD2PHRASE_PATH)
     print(f"Loaded word2phrase mapping from {WORD2PHRASE_PATH}")
 
-    with open(RECORD2PHRASE_PATH, 'r', encoding='utf8') as f:
-        record2phrase = [int(line.strip()) for line in f.readlines()]
-    print(f"Loaded record2phrase mapping from {RECORD2PHRASE_PATH}")
-
-    phrase2records = get_phrase2records(record2phrase)
-    print("Built phrase2records mapping.")
-
-    with open(PHRASE_PATH, 'r', encoding='utf8') as f:
-        phrase_list = [line.strip() for line in f.readlines()]
-    print(f"Loaded {len(phrase_list)} phrases from {PHRASE_PATH}")
+    phrase2records = pd.read_csv(PHRASE2RECORDS_PATH)
+    print(f"Loaded phrase2records mapping from {PHRASE2RECORDS_PATH}")
 
     print(f"\nBuilding keyword list with phrase_count={args.phrase_count} and num_keywords={args.num_keywords}...")
+    KEYWORDS_DIR.mkdir(parents=True, exist_ok=True)
 
     # Build keyword list
     keyword_list, keywords = build_keyword_list(
@@ -257,28 +270,23 @@ def main():
     )
 
     # Get test phrase indices (positive + negative)
-    positive_phrase_idcs, negative_phrase_idcs = get_all_phrase_idcs(
+    unique_phrase_df = pd.read_csv(PHRASES_CSV)
+
+    all_phrase_data = get_all_phrase_idcs(
         keywords,
         keyword_list,
-        phrase_list,
+        phrase_list=unique_phrase_df['phrase'].tolist(),
         phrase2records=phrase2records,
         negative_phrase_count=args.negative_phrase_count,
         random_seed=args.random_seed,
     )
-    print(f" Total positive phrases: {len(positive_phrase_idcs)}")
-    print(f" Total negative phrases: {len(negative_phrase_idcs)}")
 
     print(f"Saving keyword list with {len(keyword_list)} keywords to {KEYWORD_LIST}...")
     with open(KEYWORD_LIST, 'w', encoding='utf8') as f:
         json.dump(keyword_list, f, indent=4, ensure_ascii=False)
 
-    print(f"Saving keyword negative phrase indices to {KEYWORD_NEGATIVE_RECORDS}...")
-    with open(KEYWORD_NEGATIVE_RECORDS, 'w', encoding='utf8') as f:
-        f.write("\n".join(map(str, negative_phrase_idcs)))
-
-    print(f"Saving keyword positive phrase indices to {KEYWORD_POSITIVE_RECORDS}...")
-    with open(KEYWORD_POSITIVE_RECORDS, 'w', encoding='utf8') as f:
-        f.write("\n".join(map(str, positive_phrase_idcs)))
+    print(f"Saving keyword positive and negative phrase indices to {KEYWORD_CSV}...")
+    all_phrase_data.to_csv(KEYWORD_CSV, index=False)
 
     print("\n✓ All keyword datafiles built successfully!")
 
