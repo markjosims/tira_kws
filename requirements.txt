@@ -9,4 +9,5 @@ transformers
 scikit-learn
 torchaudio
 librosa
-
+soundfile
+torchcodec
