@@ -1,0 +1,12 @@
+tslearn
+jiwer
+torch
+tqdm
+pandas
+numpy
+datasets
+transformers
+scikit-learn
+torchaudio
+librosa
+
