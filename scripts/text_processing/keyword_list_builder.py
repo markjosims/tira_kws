@@ -92,7 +92,9 @@ def build_keyword_list(
     print(f" Sampling {num_keywords} keywords...")
 
     keyword_indices = []
+    keyword_list = []
     i = 0
+
     while len(keyword_indices) < num_keywords:
         if candidate_mask.sum() == 0:
             raise ValueError(
@@ -103,26 +105,23 @@ def build_keyword_list(
 
 
         # sample keyword row
-        sampled_keyword = random.Random(random_seed+i).choice(
+        sampled_keyword_index = random.Random(random_seed+i).choice(
             word_df[candidate_mask].index.tolist()
         )
-
-        # block out all words with the same lemma
-        lemma = word_df.loc[sampled_keyword, 'lemma']
-        lemma_mask = word_df['lemma'] == lemma
-        candidate_mask = candidate_mask & ~lemma_mask
-
-        # append index and increment i
-        keyword_indices.append(sampled_keyword)
-        i+=1
+        word = word_df.loc[sampled_keyword_index, 'word']
         
-    keyword_df = word_df.loc[keyword_indices]
-    keyword_list = []
+        phrase_idcs = word2phrase[
+            word2phrase['word_idx'] == sampled_keyword_index
+        ]['phrase_idx'].tolist()
 
-    for index, word in keyword_df['word'].items(): # type: ignore
+        # filter out phrases that contain any already selected keywords
+        # (to ensure negative examples are clean)
+        for idx in keyword_indices:
+            existing_phrases = word2phrase[
+                word2phrase['word_idx'] == idx
+            ]['phrase_idx'].tolist()
+            phrase_idcs = [idx for idx in phrase_idcs if idx not in existing_phrases]
 
-        index: int
-        phrase_idcs = word2phrase[word2phrase['word_idx'] == index]['phrase_idx'].tolist()
         # sanity check to make sure we have enough phrases
         if len(phrase_idcs) < phrase_count:
             raise ValueError(
@@ -146,14 +145,25 @@ def build_keyword_list(
             record_idx = random.Random(random_seed).choice(records)
             positive_record_idcs.append(record_idx)
 
+        # block out all words with the same lemma
+        lemma = word_df.loc[sampled_keyword_index, 'lemma']
+        lemma_mask = word_df['lemma'] == lemma
+        candidate_mask = candidate_mask & ~lemma_mask
+
+        # append index and increment i
+        keyword_indices.append(sampled_keyword_index)
+        i+=1
+
         keyword_list.append({
             'keyword': word,
             'positive_phrase_idcs': positive_phrase_idcs,
             'positive_record_idcs': positive_record_idcs,
         })
 
-    print(" Sampled keywords:")
+    keyword_df = word_df.loc[keyword_indices]
     keywords = keyword_df['word'].tolist()
+
+    print(" Sampled keywords:")
     print("\n".join(keywords))
 
     return keyword_list, keyword_df
