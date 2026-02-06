@@ -44,8 +44,9 @@ def main():
     # save audio and transcription files in MFA format
     print(f"Saving audio and transcription files to {speaker_dir}...")
     def save_mfa_record(record, index):
-        audio_path = speaker_dir / f"{index}.wav"
-        transcription_path = speaker_dir / f"{index}.lab"
+        orig_record_index = record_indices[index]
+        audio_path = speaker_dir / f"{orig_record_index}.wav"
+        transcription_path = speaker_dir / f"{orig_record_index}.lab"
 
         # save audio file
         audio = record['audio']['array']
