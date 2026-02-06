@@ -76,6 +76,13 @@ def build_phrases_csv(eaf_unique_df, df, output_path):
     unique_phrase_df = unique_phrase_df.drop_duplicates(subset='fst_text')
     unique_phrase_df = unique_phrase_df.rename(columns={'fst_text':'phrase'})
 
+    # Exclude phrases with only one word
+    single_word_mask = unique_phrase_df['phrase'].str.split().apply(len) <= 1
+    num_single_words = single_word_mask.sum()
+    unique_phrase_df = unique_phrase_df[~single_word_mask]
+    print(f"Found {num_single_words} phrases with only one word, dropping")
+
+
     # Count occurrences of each phrase
     token_counts = df['fst_text'].value_counts()
 
