@@ -124,10 +124,9 @@ def build_keyword_list(
 
         # sanity check to make sure we have enough phrases
         if len(phrase_idcs) < phrase_count:
-            raise ValueError(
-                f"Not enough phrases ({len(phrase_idcs)}) for word '{word}' "
-                f"with phrase_count={phrase_count}"
-            )
+            print(f"Insufficient phrases for word '{word}' (only {len(phrase_idcs)} available after filtering), skipping...")
+            candidate_mask[sampled_keyword_index] = False
+            continue
 
         # sample phrase_count phrases randomly
         random.Random(random_seed).shuffle(phrase_idcs)
@@ -159,6 +158,8 @@ def build_keyword_list(
             'positive_phrase_idcs': positive_phrase_idcs,
             'positive_record_idcs': positive_record_idcs,
         })
+
+        print(f" Selected keyword '{word}'")
 
     keyword_df = word_df.loc[keyword_indices]
     keywords = keyword_df['word'].tolist()
