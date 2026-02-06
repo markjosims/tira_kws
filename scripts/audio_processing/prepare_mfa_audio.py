@@ -54,7 +54,7 @@ def main():
 
         # save transcription file (MFA expects a single line with the transcription
         with open(transcription_path, 'w') as f:
-            f.write(record['transcription'])
+            f.write(record['rewritten_transcript'])
     tira_asr.map(save_mfa_record, with_indices=True)
     print("Finished preparing MFA corpus")
 
