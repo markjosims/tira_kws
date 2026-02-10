@@ -3,7 +3,7 @@ parent_dir=$(dirname "$current_dir")
 uv venv --python=3.10
 source .venv/bin/activate
 uv pip install -r requirements.txt
-uv pip install k2==1.24.4.dev20251118+cuda12.9.torch2.9.1 -f https://k2-fsa.github.io/k2/cuda.html
+uv pip install k2==1.24.4.dev20251118+cuda12.8.torch2.9.1 -f https://k2-fsa.github.io/k2/cuda.html
 uv pip install git+https://github.com/lhotse-speech/lhotse
 cd $parent_dir
 if [ ! -d "icefall" ]; then
