@@ -31,18 +31,18 @@ def pairwise_dtw(
     dtw_matrix = torch.zeros(n_query, n_test)
     for i in range(n_query):
         for j in range(n_test):
-             _, dtw_score = dtw_path_from_metric(
+            #  _, dtw_score = dtw_path_from_metric(
+            #     query_embeds[i],
+            #     test_embeds[j],
+            #     metric=get_cosine_distance,
+            #  )
+            _, dtw_score = dtw_subsequence_path(
                 query_embeds[i],
                 test_embeds[j],
-                metric=get_cosine_distance,
-             )
-             # _, dtw_score = dtw_subsequence_path(
-             #     query_embeds[i],
-             #     test_embeds[j],
-             # )
-             # convert distance to similarity
-             dtw_score = 1 - dtw_score
-             dtw_matrix[i, j] = dtw_score
+            )
+            # convert distance to similarity
+            dtw_score = 1 - dtw_score
+            dtw_matrix[i, j] = dtw_score
 
     return dtw_matrix
 
