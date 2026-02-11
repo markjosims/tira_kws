@@ -41,8 +41,7 @@ def pairwise_dtw(
              #     test_embeds[j],
              # )
              # convert distance to similarity
-             # and normalize by test phrase length
-             dtw_score = 1 - dtw_score/len(test_embeds[j])
+             dtw_score = 1 - dtw_score
              dtw_matrix[i, j] = dtw_score
 
     return dtw_matrix
