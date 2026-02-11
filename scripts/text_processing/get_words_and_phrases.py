@@ -2,11 +2,8 @@
 """
 # text_preproc.py
 Depends on:
-- TIRA_ASR dataset loaded via `src.dataloading.load_tira_asr` with columns:
-    - `transcription` (raw text from ELAN)
-    - `rewritten_transcript` (FST-normalized text)
-    - `gloss` (gloss of the transcription)
-    - `root` (lemmata of the transcription)
+- Tira supervisions: JSONL manifest containing annotations for the Tira ASR dataset,
+  see `src/dataloading.py` for loading code and `src/constants.py` for path constants.
 
 Generates:
 - MERGED_PHRASES_CSV: mapping of EAF text to FST-normalized text
@@ -22,7 +19,7 @@ from src.constants import (
     WORDS_DIR, PHRASES_DIR, MERGED_PHRASES_CSV, PHRASES_CSV,
     PHRASE2RECORDS_PATH, WORD2PHRASE_PATH, WORDS_CSV
 )
-from src.dataloading import load_tira_asr
+from src.dataloading import load_supervisions_df
 import pandas as pd
 
 def build_merged_phrases_csv(df, output_path):
@@ -205,22 +202,11 @@ def main():
     PHRASES_DIR.mkdir(parents=True, exist_ok=True)
 
     print("Loading Tira ASR dataset...")
-    ds = load_tira_asr()
-    print(f"Loaded dataset with {len(ds)} records")
-
-    # Prepare dataframe
-    print("\nPreparing dataframe...")
-    colmap = {
-        'transcription': 'eaf_text',
-        'rewritten_transcript': 'fst_text',
-        'gloss': 'gloss',
-        'root': 'lemmata',
-    }
-    cols_to_drop = set(ds.column_names) - set(colmap.keys())
-    ds_noaudio = ds.remove_columns(list(cols_to_drop))
-    df: pd.DataFrame = ds_noaudio.to_pandas() # type: ignore
-    df = df.rename(columns=colmap)
-    print(f"DataFrame shape: {df.shape}")
+    df = load_supervisions_df()
+    df = df.rename(columns={'text': 'eaf_text'})
+    df = df.rename_axis('record_id', axis=1)
+    print(f"Loaded dataset with {len(df)} records")
+    print(df.head())
 
     # Build all files
     eaf_unique_df = build_merged_phrases_csv(df, MERGED_PHRASES_CSV)

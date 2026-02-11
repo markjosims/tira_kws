@@ -22,10 +22,15 @@ SPEECHBRAIN_LID_ENCODER_NAME = 'speechbrain/lang-id-voxlingua107-ecapa'
 # file paths
 
 ## dataset paths
-DATASETS_DIR = Path(os.environ.get("DATASETS", os.path.expanduser("~/datasets")))
+DATASETS_DIR = os.environ.get("DATASETS", "~/datasets")
+DATASETS_DIR = Path(os.path.expanduser(DATASETS_DIR))
 TIRA_ASR_PATH = DATASETS_DIR / "tira_asr"
 TIRA_DRZ_PATH = DATASETS_DIR / "tira_drz"
 TIRA_ASR_URI = "css-kws-capstone/tira-asr"
+
+TIRA_ELICITATION = DATASETS_DIR / "tira_elicitation"
+SUPERVISION_MANIFEST = TIRA_ELICITATION / "supervision_manifest.jsonl"
+RECORDING_MANIFEST = TIRA_ELICITATION / "recording_manifest.jsonl"
 
 ## local data paths
 PROJECT_DIR = Path(__file__).parent.parent

@@ -4,7 +4,10 @@ from torch.utils.data import DataLoader
 from torch.nn.utils.rnn import pad_sequence
 from tqdm import tqdm
 from transformers import WhisperProcessor
-from src.constants import BATCH_SIZE, TIRA_ASR_PATH, TIRA_ASR_URI, TIRA_DRZ_PATH
+from src.constants import (
+    BATCH_SIZE, TIRA_ASR_PATH, TIRA_ASR_URI, TIRA_DRZ_PATH,
+    SUPERVISION_MANIFEST, RECORDING_MANIFEST
+)
 from src.encoding import (
     load_clap_speech_encoder, load_clap_speech_processor, encode_clap_audio,
     load_speechbrain_encoder, encode_speechbrain_audio,
@@ -12,8 +15,10 @@ from src.encoding import (
     load_xlsr, load_wavlm, encode_wav2vec
 )
 from typing import *
+import pandas as pd
 from argparse import ArgumentParser
 import os
+from lhotse import CutSet, RecordingSet, SupervisionSet
 
 def add_dataset_optional_args(parser: ArgumentParser) -> ArgumentParser:
     """
@@ -50,6 +55,9 @@ def load_tira_asr() -> datasets.Dataset:
     else:
         dataset = datasets.load_dataset(TIRA_ASR_URI)
 
+    if type(dataset) is not datasets.DatasetDict:
+        raise ValueError(f"Expected dataset to be a DatasetDict with 'train', 'validation', and 'test' splits, but got {type(dataset)}")
+
     # combine train, validation, and test splits
     dataset = datasets.concatenate_datasets([
         dataset['train'],
@@ -58,6 +66,31 @@ def load_tira_asr() -> datasets.Dataset:
     ])
 
     return dataset
+
+def load_supervisions_df() -> pd.DataFrame:
+    """
+    Load supervision segments from the Tira elicitation dataset
+    and return as a dataframe.
+    """
+    supervisions_df = pd.read_json(SUPERVISION_MANIFEST, lines=True)
+    supervisions_df = supervisions_df.set_index('id')
+
+    # the columns 'fst_text', 'gloss' and 'root' are nested under 'custom'
+    supervisions_df['fst_text'] = supervisions_df['custom'].apply(lambda x: x['fst_text'])
+    supervisions_df['gloss'] = supervisions_df['custom'].apply(lambda x: x['gloss'])
+    supervisions_df['lemmata'] = supervisions_df['custom'].apply(lambda x: x['root'])
+    supervisions_df = supervisions_df.drop(columns=['custom'])
+
+    return supervisions_df
+
+def load_elicitation_cuts() -> CutSet:
+    recordings = RecordingSet.from_jsonl(RECORDING_MANIFEST)
+    supervisions = SupervisionSet.from_jsonl(SUPERVISION_MANIFEST)
+    cuts = CutSet.from_manifests(
+        recordings=recordings,
+        supervisions=supervisions,
+    )
+    return cuts
 
 def load_tira_drz() -> datasets.Dataset:
     """
