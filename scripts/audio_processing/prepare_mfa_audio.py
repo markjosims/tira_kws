@@ -42,7 +42,9 @@ def main():
 
     # filter Tira supervisions to only include records with these indices
     cuts = cuts.filter(lambda cut: int(getattr(cut, 'id')) in record_indices)
-    breakpoint()
+    cuts = cuts.to_eager()
+    assert len(cuts) == len(record_indices), f"Expected {len(record_indices)} cuts "\
+        + f"after filtering but got {len(cuts)}"
 
     # save audio and transcription files in MFA format
     print(f"Saving audio and transcription files to {speaker_dir}...")
@@ -59,7 +61,7 @@ def main():
 
         # save transcription file (MFA expects a single line with the transcription)
         with open(transcription_path, 'w') as f:
-            f.write(cut.supervisions[0].text)
+            f.write(cut.supervisions[0].custom['fst_text'])
     cuts.map(save_mfa_record)
     print("Finished preparing MFA corpus")
 
