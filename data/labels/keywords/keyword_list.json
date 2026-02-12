@@ -1,6 +1,7 @@
 [
     {
         "keyword": "ídɔ̀t̪ɔ̀",
+        "word_idx": 2416,
         "positive_phrase_idcs": [
             6426,
             3021,
@@ -28,6 +29,7 @@
     },
     {
         "keyword": "nàŋnò",
+        "word_idx": 498,
         "positive_phrase_idcs": [
             365,
             6755,
@@ -55,6 +57,7 @@
     },
     {
         "keyword": "t̪ə́mànì",
+        "word_idx": 2499,
         "positive_phrase_idcs": [
             3533,
             3204,
@@ -82,6 +85,7 @@
     },
     {
         "keyword": "èd̪ɛ̀ɾɛ́",
+        "word_idx": 539,
         "positive_phrase_idcs": [
             5432,
             540,
@@ -109,6 +113,7 @@
     },
     {
         "keyword": "láɾl̀à",
+        "word_idx": 835,
         "positive_phrase_idcs": [
             677,
             2082,
@@ -136,6 +141,7 @@
     },
     {
         "keyword": "ðàŋàlà",
+        "word_idx": 54,
         "positive_phrase_idcs": [
             4980,
             7345,
@@ -163,6 +169,7 @@
     },
     {
         "keyword": "t̪ə̀nɔ̀nɔ́",
+        "word_idx": 509,
         "positive_phrase_idcs": [
             4698,
             5184,
@@ -190,6 +197,7 @@
     },
     {
         "keyword": "ágáŋɛ̂",
+        "word_idx": 770,
         "positive_phrase_idcs": [
             614,
             1967,
@@ -217,6 +225,7 @@
     },
     {
         "keyword": "lúrnɔ̀",
+        "word_idx": 89,
         "positive_phrase_idcs": [
             3117,
             6028,
@@ -244,6 +253,7 @@
     },
     {
         "keyword": "ðàlgàrâj",
+        "word_idx": 494,
         "positive_phrase_idcs": [
             4625,
             3628,
@@ -271,6 +281,7 @@
     },
     {
         "keyword": "bùlìjí",
+        "word_idx": 2195,
         "positive_phrase_idcs": [
             5248,
             191,
@@ -298,6 +309,7 @@
     },
     {
         "keyword": "kə́və̀lɛ̀ðɔ́",
+        "word_idx": 886,
         "positive_phrase_idcs": [
             5579,
             5550,
@@ -325,6 +337,7 @@
     },
     {
         "keyword": "únɛ́ɾɛ́",
+        "word_idx": 1,
         "positive_phrase_idcs": [
             1799,
             1827,
@@ -352,6 +365,7 @@
     },
     {
         "keyword": "kə̀mùt̪ɔ̀",
+        "word_idx": 540,
         "positive_phrase_idcs": [
             401,
             1127,
@@ -379,6 +393,7 @@
     },
     {
         "keyword": "dɔ́ŋðɛ̀",
+        "word_idx": 126,
         "positive_phrase_idcs": [
             7261,
             5771,
@@ -406,6 +421,7 @@
     },
     {
         "keyword": "èmàɽðɛ́n",
+        "word_idx": 290,
         "positive_phrase_idcs": [
             3404,
             4580,
@@ -433,6 +449,7 @@
     },
     {
         "keyword": "sɔ̀ɽíŋgɔ́",
+        "word_idx": 155,
         "positive_phrase_idcs": [
             3786,
             2600,
@@ -460,6 +477,7 @@
     },
     {
         "keyword": "t̪ə̀mɛ̀ɾðɔ́",
+        "word_idx": 645,
         "positive_phrase_idcs": [
             3226,
             482,
@@ -487,6 +505,7 @@
     },
     {
         "keyword": "úɽìðà",
+        "word_idx": 1381,
         "positive_phrase_idcs": [
             716,
             3611,
@@ -514,6 +533,7 @@
     },
     {
         "keyword": "kámàɽà",
+        "word_idx": 210,
         "positive_phrase_idcs": [
             2100,
             56,
@@ -541,6 +561,7 @@
     },
     {
         "keyword": "ùlùŋú",
+        "word_idx": 879,
         "positive_phrase_idcs": [
             5169,
             5119,
@@ -568,6 +589,7 @@
     },
     {
         "keyword": "jìcə̀lò",
+        "word_idx": 13,
         "positive_phrase_idcs": [
             2794,
             4627,
@@ -595,6 +617,7 @@
     },
     {
         "keyword": "t̪àwìðì",
+        "word_idx": 747,
         "positive_phrase_idcs": [
             6257,
             1509,
@@ -622,6 +645,7 @@
     },
     {
         "keyword": "ílɛ̀ðɛ̀",
+        "word_idx": 2210,
         "positive_phrase_idcs": [
             2614,
             4202,
@@ -649,6 +673,7 @@
     },
     {
         "keyword": "ɛ́làɽà",
+        "word_idx": 124,
         "positive_phrase_idcs": [
             7266,
             7223,
@@ -676,6 +701,7 @@
     },
     {
         "keyword": "nd̪ɔ̀bà",
+        "word_idx": 65,
         "positive_phrase_idcs": [
             69,
             4111,
@@ -703,6 +729,7 @@
     },
     {
         "keyword": "ŕlɛ̀ɲì",
+        "word_idx": 300,
         "positive_phrase_idcs": [
             727,
             5225,
@@ -730,6 +757,7 @@
     },
     {
         "keyword": "àpɾíɲá",
+        "word_idx": 267,
         "positive_phrase_idcs": [
             6998,
             3252,
@@ -757,6 +785,7 @@
     },
     {
         "keyword": "ìt̪ə̀ɾɔ́",
+        "word_idx": 1462,
         "positive_phrase_idcs": [
             151,
             3651,
@@ -784,6 +813,7 @@
     },
     {
         "keyword": "ŋə́rt̪á",
+        "word_idx": 1854,
         "positive_phrase_idcs": [
             4602,
             3583,
