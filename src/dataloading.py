@@ -83,13 +83,22 @@ def load_supervisions_df() -> pd.DataFrame:
 
     return supervisions_df
 
-def load_elicitation_cuts() -> CutSet:
+def load_elicitation_cuts(index_list: Optional[List[int]] = None) -> CutSet:
     recordings = RecordingSet.from_jsonl(RECORDING_MANIFEST)
     supervisions = SupervisionSet.from_jsonl(SUPERVISION_MANIFEST)
     cuts = CutSet.from_manifests(
         recordings=recordings,
         supervisions=supervisions,
     )
+
+    if index_list is not None:
+        # since index list corresponds to record indices, first flatten
+        # cuts to supervisions so we can filter by record index
+        cuts = cuts.trim_to_supervisions()
+        cuts = cuts.filter(lambda cut: int(getattr(cut, 'id')) in index_list)
+        cuts = cuts.to_eager()
+        assert len(cuts) == len(index_list), f"Expected {len(index_list)} cuts after filtering but got {len(cuts)}"
+
     return cuts
 
 # def load_tira_drz() -> datasets.Dataset:
