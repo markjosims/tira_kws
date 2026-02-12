@@ -28,9 +28,11 @@ def build_keyword_list(
         word_df: pd.DataFrame,
         word2phrase: pd.DataFrame,
         phrase2records: pd.DataFrame,
+        phrase_df: pd.DataFrame,
         phrase_count: int=10,
         num_keywords: int=30,
         min_keyword_length: int=5,
+        min_words_per_sentence: int=3,
         random_seed: int=1337,
     ) -> Tuple[List[Dict[str, Union[str, List[int]]]], pd.DataFrame]:
     """
@@ -64,9 +66,11 @@ def build_keyword_list(
         word_df: DataFrame with unique phrases and token counts
         word2phrase: Mapping from words to phrases containing the word
         phrase2records: Mapping from phrases to records containing the phrase
+        phrase_df: DataFrame with unique phrases and token counts
         phrase_count: Number of phrases for each keyword.
         num_keywords: Number of keywords to select.
         min_keyword_length: Minimum length of each keyword in characters.
+        min_words_per_sentence: Minimum number of words per positive sentence.
         random_seed: Random seed for reproducibility.
     Returns:
         keyword_list: List of keyword dicts
@@ -113,6 +117,11 @@ def build_keyword_list(
         phrase_idcs = word2phrase[
             word2phrase['word_idx'] == sampled_keyword_index
         ]['phrase_idx'].tolist()
+
+        # filter out phrases with less than min_words_per_sentence words
+        phrase_lens = phrase_df.loc[phrase_idcs, 'phrase'].str.split().apply(len)
+        phrase_len_mask = phrase_lens >= min_words_per_sentence
+        phrase_idcs = phrase_df.loc[phrase_idcs][phrase_len_mask].index.tolist()
 
         # filter out phrases that contain any already selected keywords
         # (to ensure negative examples are clean)
@@ -176,6 +185,7 @@ def get_all_phrase_idcs(
         phrase_list: List[str],
         phrase2records: pd.DataFrame,
         negative_phrase_count: int=700,
+        min_words_per_sentence: int=3,
         random_seed: int=1337,
     ) -> pd.DataFrame:
     """
@@ -189,6 +199,7 @@ def get_all_phrase_idcs(
         phrase_list: List of all phrases
         phrase2records: pd.DataFrame mapping phrases to records
         negative_phrase_count: Number of negative phrases to sample
+        min_words_per_sentence: Minimum number of words per test sentence.
         random_seed: Random seed for reproducibility
     returns:
         positive and negative phrase indices
@@ -210,7 +221,11 @@ def get_all_phrase_idcs(
     print(" Collecting phrases that do not contain any keywords...")
     negative_phrase_idcs = []
     for idx, phrase in enumerate(phrase_list):
+        # skip phrases that contain any of the keywords
         if any(keyword in phrase for keyword in keywords):
+            continue
+        # or that have less than min_words_per_sentence words
+        if len(phrase.split()) < min_words_per_sentence:
             continue
         negative_phrase_idcs.append(idx)
     print(f" Negative candidate phrases: {len(negative_phrase_idcs)}")
@@ -260,6 +275,9 @@ def main():
     word_df = pd.read_csv(WORDS_CSV)
     print(f"Loaded {len(word_df)} unique words from {WORDS_CSV}")
 
+    unique_phrase_df = pd.read_csv(PHRASES_CSV)
+    print(f"Loaded {len(unique_phrase_df)} unique phrases from {PHRASES_CSV}")
+
     word2phrase = pd.read_csv(WORD2PHRASE_PATH)
     print(f"Loaded word2phrase mapping from {WORD2PHRASE_PATH}")
 
@@ -271,12 +289,14 @@ def main():
 
     # Build keyword list
     keyword_list, keyword_df = build_keyword_list(
-        word_df,
-        word2phrase,
-        phrase2records,
+        word_df=word_df,
+        word2phrase=word2phrase,
+        phrase2records=phrase2records,
+        phrase_df=unique_phrase_df,
         phrase_count=args.phrase_count,
         num_keywords=args.num_keywords,
         min_keyword_length=args.min_keyword_length,
+        min_words_per_sentence=args.min_words_per_sentence,
         random_seed=args.random_seed,
     )
     keywords = keyword_df['word'].tolist()
@@ -284,15 +304,13 @@ def main():
     print(f"\nSaving keywords to {KEYWORDS_CSV}...")
     keyword_df.to_csv(KEYWORDS_CSV, index_label='word_idx')
 
-    # Get test phrase indices (positive + negative)
-    unique_phrase_df = pd.read_csv(PHRASES_CSV)
-
     all_phrase_data = get_all_phrase_idcs(
-        keywords,
-        keyword_list,
+        keywords=keywords,
+        keyword_list=keyword_list,
         phrase_list=unique_phrase_df['phrase'].tolist(),
         phrase2records=phrase2records,
         negative_phrase_count=args.negative_phrase_count,
+        min_words_per_sentence=args.min_words_per_sentence,
         random_seed=args.random_seed,
     )
 
@@ -323,6 +341,10 @@ def get_args() -> Namespace:
     parser.add_argument(
         '--negative_phrase_count', type=int, default=700,
         help='Number of negative phrases that contain no keywords.'
+    )
+    parser.add_argument(
+        '--min_words_per_sentence', type=int, default=3,
+        help='Minimum number of words per test sentence.'
     )
     parser.add_argument(
         '--random_seed', type=int, default=1337,
