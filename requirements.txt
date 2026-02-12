@@ -3,13 +3,11 @@ jiwer
 tqdm
 pandas
 numpy
-datasets
 transformers
 scikit-learn
 librosa
 soundfile
-torch==2.9.1
-huggingface_hub
 unidecode
 tgt
 pytest
+numba

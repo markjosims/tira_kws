@@ -2,9 +2,8 @@ current_dir=$(pwd)
 parent_dir=$(dirname "$current_dir")
 uv venv --python=3.10
 source .venv/bin/activate
-# at time of writing, torch 2.9.1 automatically uses cuda 12.8
-uv pip install torch==2.9.1
-uv pip install k2==1.24.4.dev20251118+cuda12.8.torch2.9.1 -f https://k2-fsa.github.io/k2/cuda.html
+uv pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+uv pip install k2==1.24.4.dev20251118+cpu.torch2.9.1 -f https://k2-fsa.github.io/k2/cpu.html
 uv pip install git+https://github.com/lhotse-speech/lhotse
 uv pip install -r requirements.txt
 cd $parent_dir
