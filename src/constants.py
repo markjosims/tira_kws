@@ -31,7 +31,7 @@ TIRA_ASR_URI = "css-kws-capstone/tira-asr"
 TIRA_ELICITATION = DATASETS_DIR / "tira_elicitation"
 SUPERVISION_MANIFEST = TIRA_ELICITATION / "supervision_manifest.jsonl"
 RECORDING_MANIFEST = TIRA_ELICITATION / "recording_manifest.jsonl"
-KEYWORD_MANFIEST = TIRA_ELICITATION / "keyword_cuts.jsonl"
+KEYWORD_MANFIEST = TIRA_ELICITATION / "keyword_manifest.jsonl"
 
 ## local data paths
 PROJECT_DIR = Path(__file__).parent.parent
