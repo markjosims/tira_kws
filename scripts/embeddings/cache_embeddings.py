@@ -17,7 +17,7 @@ from torch.nn.utils.rnn import pad_sequence
 
 from src.constants import EMBEDDINGS
 from src.dataloading import load_dataset, prepare_dataset, add_dataset_args
-from src.encoding import add_sliding_window_args, add_encoder_args
+from distance import add_sliding_window_args, add_encoder_args
 import torch
 from typing import *
 

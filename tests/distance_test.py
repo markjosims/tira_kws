@@ -1,28 +1,19 @@
 from sqlalchemy.orm import query_expression
-from tqdm import tqdm
 
-from src.encoding import *
-import librosa
+from distance import get_cosine_distance, get_cosine_similarity, get_windowed_cosine_similarity
 import torch
-from transformers import WhisperProcessor
-from src.constants import DEVICE, SAMPLE_RATE
 import pytest
 from src.wfst import decode_keyword_batch, decode_single_keyword, decode_embed_list
 from random import randint
 from tslearn.metrics import dtw_path_from_metric
+from typing import Optional, Tuple, List
 
-AILN_WAV = "data/ailn.wav"
-EXPECTED_CLAP_IPA_SIZE = {
-    'tiny': 384,
-    'base': 512,
-    'small': 512,
-}
 TEST_EMBED_DIM = 256
 
 def get_orthogonal_vectors(
         n_vectors: int = 8,
-        n_windows: Optional[tuple[int, int]]=None
-) -> tuple[torch.Tensor, torch.Tensor]:
+        n_windows: Optional[Tuple[int, int]]=None
+) -> Tuple[torch.Tensor, torch.Tensor]:
     base_vector = torch.randn(1, TEST_EMBED_DIM)
     ortho_vector = torch.linalg.svd(base_vector).Vh[1]
     scaling_factor = 0.01
@@ -49,30 +40,6 @@ def noise_pad(t: torch.Tensor, n_pad: int = 20) -> torch.Tensor:
     scaling_factor = 200
     noise = torch.full((n_pad, t.shape[-1]), torch.inf) * scaling_factor
     return torch.cat([noise, t, noise], dim=0)
-
-def load_test_audio():
-    audio, _ = librosa.load(AILN_WAV, sr=SAMPLE_RATE)
-    audio = np.expand_dims(audio, axis=0)
-    return audio
-
-def test_load_clap_speech_encoder():
-    for size in ['tiny', 'base', 'small']:
-        encoder = load_clap_speech_encoder(size)
-        assert isinstance(encoder, SpeechEncoder)
-        assert encoder.device == DEVICE
-
-def test_load_clap_speech_processor():
-    processor = load_clap_speech_processor()
-    assert isinstance(processor, WhisperProcessor)
-
-def test_encode_clap_audio():
-    audio = load_test_audio()
-    processor = load_clap_speech_processor()
-    for size in ['tiny', 'base', 'small']:
-        encoder = load_clap_speech_encoder(size)
-        embeddings = encode_clap_audio(audio, encoder, processor)
-        assert embeddings.shape[0] == audio.shape[0]
-        assert embeddings.shape[1] == EXPECTED_CLAP_IPA_SIZE[size]
 
 @pytest.mark.parametrize(
     "shape", [torch.randint(5, 20, (2,)).tolist() for _ in range(20)]

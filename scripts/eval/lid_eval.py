@@ -22,7 +22,7 @@ Arguments:
 
 
 
-from src.encoding import add_sliding_window_args, add_encoder_args
+from distance import add_sliding_window_args, add_encoder_args
 from src.dataloading import add_dataset_optional_args
 from sklearn.metrics import roc_auc_score
 from sklearn.linear_model import LogisticRegression
