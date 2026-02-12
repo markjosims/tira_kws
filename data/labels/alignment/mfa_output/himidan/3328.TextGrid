@@ -52,22 +52,22 @@ item []:
             text = "b" 
         intervals [5]:
             xmin = 0.27 
-            xmax = 0.31 
+            xmax = 0.35 
             text = "ʉ" 
         intervals [6]:
-            xmin = 0.31 
-            xmax = 0.34 
+            xmin = 0.35 
+            xmax = 0.38 
             text = "l" 
         intervals [7]:
-            xmin = 0.34 
-            xmax = 0.66 
+            xmin = 0.38 
+            xmax = 0.64 
             text = "i" 
         intervals [8]:
-            xmin = 0.66 
-            xmax = 0.69 
+            xmin = 0.64 
+            xmax = 0.67 
             text = "j" 
         intervals [9]:
-            xmin = 0.69 
+            xmin = 0.67 
             xmax = 0.72 
             text = "i" 
         intervals [10]:

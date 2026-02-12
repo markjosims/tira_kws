@@ -44,18 +44,18 @@ item []:
             text = "" 
         intervals [2]:
             xmin = 0.09 
-            xmax = 0.16 
+            xmax = 0.18 
             text = "ɑ" 
         intervals [3]:
-            xmin = 0.16 
-            xmax = 0.19 
+            xmin = 0.18 
+            xmax = 0.24 
             text = "ɹ" 
         intervals [4]:
-            xmin = 0.19 
-            xmax = 0.22 
+            xmin = 0.24 
+            xmax = 0.27 
             text = "i" 
         intervals [5]:
-            xmin = 0.22 
+            xmin = 0.27 
             xmax = 0.41 
             text = "t" 
         intervals [6]:
