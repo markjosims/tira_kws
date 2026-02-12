@@ -1,0 +1,84 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0 
+xmax = 1.1 
+tiers? <exists> 
+size = 2 
+item []: 
+    item [1]:
+        class = "IntervalTier" 
+        name = "words" 
+        xmin = 0 
+        xmax = 1.1 
+        intervals: size = 2 
+        intervals [1]:
+            xmin = 0.0 
+            xmax = 0.69 
+            text = "lə̀və̀lɛ̀ðɜ́l" 
+        intervals [2]:
+            xmin = 0.69 
+            xmax = 1.1 
+            text = "únɛ́ɾɛ́" 
+    item [2]:
+        class = "IntervalTier" 
+        name = "phones" 
+        xmin = 0 
+        xmax = 1.1 
+        intervals: size = 14 
+        intervals [1]:
+            xmin = 0.0 
+            xmax = 0.37 
+            text = "l" 
+        intervals [2]:
+            xmin = 0.37 
+            xmax = 0.4 
+            text = "ə" 
+        intervals [3]:
+            xmin = 0.4 
+            xmax = 0.43 
+            text = "v" 
+        intervals [4]:
+            xmin = 0.43 
+            xmax = 0.46 
+            text = "ə" 
+        intervals [5]:
+            xmin = 0.46 
+            xmax = 0.53 
+            text = "l" 
+        intervals [6]:
+            xmin = 0.53 
+            xmax = 0.6 
+            text = "ɛ" 
+        intervals [7]:
+            xmin = 0.6 
+            xmax = 0.63 
+            text = "ð" 
+        intervals [8]:
+            xmin = 0.63 
+            xmax = 0.66 
+            text = "ɐ" 
+        intervals [9]:
+            xmin = 0.66 
+            xmax = 0.69 
+            text = "l" 
+        intervals [10]:
+            xmin = 0.69 
+            xmax = 0.72 
+            text = "ʉ" 
+        intervals [11]:
+            xmin = 0.72 
+            xmax = 0.76 
+            text = "n" 
+        intervals [12]:
+            xmin = 0.76 
+            xmax = 1.02 
+            text = "ɛ" 
+        intervals [13]:
+            xmin = 1.02 
+            xmax = 1.05 
+            text = "ɾ" 
+        intervals [14]:
+            xmin = 1.05 
+            xmax = 1.1 
+            text = "ɛ" 

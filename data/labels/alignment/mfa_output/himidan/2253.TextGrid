@@ -14,10 +14,10 @@ item []:
         intervals: size = 11 
         intervals [1]:
             xmin = 0.0 
-            xmax = 0.15 
+            xmax = 0.14 
             text = "" 
         intervals [2]:
-            xmin = 0.15 
+            xmin = 0.14 
             xmax = 0.39 
             text = "àn" 
         intervals [3]:
@@ -34,10 +34,10 @@ item []:
             text = "" 
         intervals [6]:
             xmin = 2.11 
-            xmax = 3.06 
+            xmax = 3.07 
             text = "kə́və̀lɛ̀ðɔ́" 
         intervals [7]:
-            xmin = 3.06 
+            xmin = 3.07 
             xmax = 4.04 
             text = "" 
         intervals [8]:
@@ -64,10 +64,10 @@ item []:
         intervals: size = 28 
         intervals [1]:
             xmin = 0.0 
-            xmax = 0.15 
+            xmax = 0.14 
             text = "" 
         intervals [2]:
-            xmin = 0.15 
+            xmin = 0.14 
             xmax = 0.27 
             text = "ɑ" 
         intervals [3]:
@@ -104,18 +104,18 @@ item []:
             text = "k" 
         intervals [11]:
             xmin = 2.18 
-            xmax = 2.23 
+            xmax = 2.28 
             text = "ə" 
         intervals [12]:
-            xmin = 2.23 
-            xmax = 2.26 
+            xmin = 2.28 
+            xmax = 2.31 
             text = "v" 
         intervals [13]:
-            xmin = 2.26 
-            xmax = 2.29 
+            xmin = 2.31 
+            xmax = 2.34 
             text = "ə" 
         intervals [14]:
-            xmin = 2.29 
+            xmin = 2.34 
             xmax = 2.42 
             text = "l" 
         intervals [15]:
@@ -128,10 +128,10 @@ item []:
             text = "ð" 
         intervals [17]:
             xmin = 3.0 
-            xmax = 3.06 
+            xmax = 3.07 
             text = "ɒ" 
         intervals [18]:
-            xmin = 3.06 
+            xmin = 3.07 
             xmax = 4.04 
             text = "" 
         intervals [19]:

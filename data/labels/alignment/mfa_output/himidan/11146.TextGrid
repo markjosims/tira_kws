@@ -11,7 +11,7 @@ item []:
         name = "words" 
         xmin = 0 
         xmax = 2.16 
-        intervals: size = 5 
+        intervals: size = 6 
         intervals [1]:
             xmin = 0.0 
             xmax = 0.05 
@@ -30,14 +30,18 @@ item []:
             text = "dún" 
         intervals [5]:
             xmin = 1.58 
-            xmax = 2.16 
+            xmax = 1.91 
             text = "t̪ə́mànì" 
+        intervals [6]:
+            xmin = 1.91 
+            xmax = 2.16 
+            text = "" 
     item [2]:
         class = "IntervalTier" 
         name = "phones" 
         xmin = 0 
         xmax = 2.16 
-        intervals: size = 21 
+        intervals: size = 22 
         intervals [1]:
             xmin = 0.0 
             xmax = 0.05 
@@ -116,9 +120,13 @@ item []:
             text = "ɑ" 
         intervals [20]:
             xmin = 1.85 
-            xmax = 1.89 
+            xmax = 1.88 
             text = "n" 
         intervals [21]:
-            xmin = 1.89 
-            xmax = 2.16 
+            xmin = 1.88 
+            xmax = 1.91 
             text = "i" 
+        intervals [22]:
+            xmin = 1.91 
+            xmax = 2.16 
+            text = "" 

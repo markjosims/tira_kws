@@ -64,10 +64,10 @@ item []:
             text = "t" 
         intervals [9]:
             xmin = 0.58 
-            xmax = 0.65 
+            xmax = 0.64 
             text = "i" 
         intervals [10]:
-            xmin = 0.65 
+            xmin = 0.64 
             xmax = 0.77 
             text = "tʃ" 
         intervals [11]:

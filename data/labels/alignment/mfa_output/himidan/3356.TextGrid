@@ -64,10 +64,10 @@ item []:
             text = "l" 
         intervals [7]:
             xmin = 0.43 
-            xmax = 0.6 
+            xmax = 0.51 
             text = "i" 
         intervals [8]:
-            xmin = 0.6 
+            xmin = 0.51 
             xmax = 0.72 
             text = "j" 
         intervals [9]:

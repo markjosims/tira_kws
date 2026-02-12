@@ -84,14 +84,14 @@ item []:
             text = "j" 
         intervals [13]:
             xmin = 1.12 
-            xmax = 1.24 
+            xmax = 1.25 
             text = "i" 
         intervals [14]:
-            xmin = 1.24 
-            xmax = 1.25 
+            xmin = 1.25 
+            xmax = 1.26 
             text = "ŋ" 
         intervals [15]:
-            xmin = 1.25 
+            xmin = 1.26 
             xmax = 1.57 
             text = "i" 
         intervals [16]:

@@ -18,10 +18,10 @@ item []:
             text = "" 
         intervals [2]:
             xmin = 0.49 
-            xmax = 0.79 
+            xmax = 0.78 
             text = "kúkù" 
         intervals [3]:
-            xmin = 0.79 
+            xmin = 0.78 
             xmax = 0.95 
             text = "" 
         intervals [4]:
@@ -60,10 +60,10 @@ item []:
             text = "k" 
         intervals [5]:
             xmin = 0.58 
-            xmax = 0.79 
+            xmax = 0.78 
             text = "ʉ" 
         intervals [6]:
-            xmin = 0.79 
+            xmin = 0.78 
             xmax = 0.95 
             text = "" 
         intervals [7]:
