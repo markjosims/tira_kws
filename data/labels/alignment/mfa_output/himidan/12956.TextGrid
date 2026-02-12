@@ -34,10 +34,10 @@ item []:
             text = "" 
         intervals [6]:
             xmin = 0.99 
-            xmax = 1.39 
+            xmax = 1.41 
             text = "t̪àwìðì" 
         intervals [7]:
-            xmin = 1.39 
+            xmin = 1.41 
             xmax = 1.622 
             text = "" 
     item [2]:
@@ -116,9 +116,9 @@ item []:
             text = "ð" 
         intervals [18]:
             xmin = 1.31 
-            xmax = 1.39 
+            xmax = 1.41 
             text = "i" 
         intervals [19]:
-            xmin = 1.39 
+            xmin = 1.41 
             xmax = 1.622 
             text = "" 

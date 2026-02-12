@@ -68,14 +68,14 @@ item []:
             text = "ɑ" 
         intervals [9]:
             xmin = 0.54 
-            xmax = 0.71 
+            xmax = 0.66 
             text = "ŋ" 
         intervals [10]:
-            xmin = 0.71 
-            xmax = 0.74 
+            xmin = 0.66 
+            xmax = 0.75 
             text = "ɑ" 
         intervals [11]:
-            xmin = 0.74 
+            xmin = 0.75 
             xmax = 0.86 
             text = "t" 
         intervals [12]:

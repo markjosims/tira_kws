@@ -92,10 +92,10 @@ item []:
             text = "ɒ" 
         intervals [13]:
             xmin = 1.08 
-            xmax = 1.11 
+            xmax = 1.14 
             text = "ʉ" 
         intervals [14]:
-            xmin = 1.11 
+            xmin = 1.14 
             xmax = 1.22 
             text = "n" 
         intervals [15]:

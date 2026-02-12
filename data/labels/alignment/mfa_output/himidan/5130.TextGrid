@@ -14,10 +14,10 @@ item []:
         intervals: size = 5 
         intervals [1]:
             xmin = 0.0 
-            xmax = 0.12 
+            xmax = 0.1 
             text = "" 
         intervals [2]:
-            xmin = 0.12 
+            xmin = 0.1 
             xmax = 0.67 
             text = "ŋàcá" 
         intervals [3]:
@@ -40,10 +40,10 @@ item []:
         intervals: size = 18 
         intervals [1]:
             xmin = 0.0 
-            xmax = 0.12 
+            xmax = 0.1 
             text = "" 
         intervals [2]:
-            xmin = 0.12 
+            xmin = 0.1 
             xmax = 0.15 
             text = "ŋ" 
         intervals [3]:

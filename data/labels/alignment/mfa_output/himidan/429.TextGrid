@@ -22,10 +22,10 @@ item []:
             text = "ágáŋɛ̂" 
         intervals [3]:
             xmin = 1.23 
-            xmax = 1.95 
+            xmax = 1.94 
             text = "" 
         intervals [4]:
-            xmin = 1.95 
+            xmin = 1.94 
             xmax = 2.36 
             text = "və́lɛ̀ðɔ́" 
         intervals [5]:
@@ -68,10 +68,10 @@ item []:
             text = "ɛ" 
         intervals [7]:
             xmin = 1.23 
-            xmax = 1.95 
+            xmax = 1.94 
             text = "" 
         intervals [8]:
-            xmin = 1.95 
+            xmin = 1.94 
             xmax = 2.04 
             text = "v" 
         intervals [9]:
@@ -88,10 +88,10 @@ item []:
             text = "ɛ" 
         intervals [12]:
             xmin = 2.26 
-            xmax = 2.3 
+            xmax = 2.29 
             text = "ð" 
         intervals [13]:
-            xmin = 2.3 
+            xmin = 2.29 
             xmax = 2.36 
             text = "ɒ" 
         intervals [14]:

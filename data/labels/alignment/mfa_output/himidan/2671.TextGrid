@@ -30,10 +30,10 @@ item []:
             text = "íjɔ̀" 
         intervals [5]:
             xmin = 1.7 
-            xmax = 2.26 
+            xmax = 2.27 
             text = "ùlùŋú" 
         intervals [6]:
-            xmin = 2.26 
+            xmin = 2.27 
             xmax = 2.31 
             text = "" 
     item [2]:
@@ -112,9 +112,9 @@ item []:
             text = "ŋ" 
         intervals [18]:
             xmin = 2.08 
-            xmax = 2.26 
+            xmax = 2.27 
             text = "ʉ" 
         intervals [19]:
-            xmin = 2.26 
+            xmin = 2.27 
             xmax = 2.31 
             text = "" 

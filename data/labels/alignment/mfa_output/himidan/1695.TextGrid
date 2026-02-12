@@ -64,10 +64,10 @@ item []:
             text = "ɛ" 
         intervals [5]:
             xmin = 0.46 
-            xmax = 0.51 
+            xmax = 0.49 
             text = "ɾ" 
         intervals [6]:
-            xmin = 0.51 
+            xmin = 0.49 
             xmax = 0.66 
             text = "ɛ" 
         intervals [7]:

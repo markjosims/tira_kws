@@ -30,18 +30,18 @@ item []:
             text = "káɾɔ́gɛ́" 
         intervals [5]:
             xmin = 1.4 
-            xmax = 1.89 
+            xmax = 1.93 
             text = "ùrnɔ̀" 
         intervals [6]:
-            xmin = 1.89 
+            xmin = 1.93 
             xmax = 2.28 
             text = "" 
         intervals [7]:
             xmin = 2.28 
-            xmax = 2.64 
+            xmax = 2.7 
             text = "kìjɔ́" 
         intervals [8]:
-            xmin = 2.64 
+            xmin = 2.7 
             xmax = 3.06 
             text = "únɛ́ɾɛ́" 
         intervals [9]:
@@ -120,10 +120,10 @@ item []:
             text = "n" 
         intervals [17]:
             xmin = 1.78 
-            xmax = 1.89 
+            xmax = 1.93 
             text = "ɒ" 
         intervals [18]:
-            xmin = 1.89 
+            xmin = 1.93 
             xmax = 2.28 
             text = "" 
         intervals [19]:
@@ -140,14 +140,14 @@ item []:
             text = "j" 
         intervals [22]:
             xmin = 2.48 
-            xmax = 2.64 
+            xmax = 2.7 
             text = "ɒ" 
         intervals [23]:
-            xmin = 2.64 
-            xmax = 2.71 
+            xmin = 2.7 
+            xmax = 2.75 
             text = "ʉ" 
         intervals [24]:
-            xmin = 2.71 
+            xmin = 2.75 
             xmax = 2.81 
             text = "n" 
         intervals [25]:

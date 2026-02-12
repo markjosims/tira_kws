@@ -22,10 +22,10 @@ item []:
             text = "ðáɾà" 
         intervals [3]:
             xmin = 0.43 
-            xmax = 1.42 
+            xmax = 1.29 
             text = "ðə̀və̀lɛ̀ðɔ́" 
         intervals [4]:
-            xmin = 1.42 
+            xmin = 1.29 
             xmax = 1.68 
             text = "lúrnɔ̀" 
         intervals [5]:
@@ -96,22 +96,22 @@ item []:
             text = "ɛ" 
         intervals [12]:
             xmin = 0.65 
-            xmax = 1.39 
+            xmax = 1.26 
             text = "ð" 
         intervals [13]:
-            xmin = 1.39 
-            xmax = 1.42 
+            xmin = 1.26 
+            xmax = 1.29 
             text = "ɒ" 
         intervals [14]:
-            xmin = 1.42 
-            xmax = 1.45 
+            xmin = 1.29 
+            xmax = 1.39 
             text = "l" 
         intervals [15]:
-            xmin = 1.45 
-            xmax = 1.48 
+            xmin = 1.39 
+            xmax = 1.47 
             text = "ʉ" 
         intervals [16]:
-            xmin = 1.48 
+            xmin = 1.47 
             xmax = 1.52 
             text = "ɹ" 
         intervals [17]:

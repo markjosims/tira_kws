@@ -34,10 +34,10 @@ item []:
             text = "káɾɔ́gɛ́" 
         intervals [6]:
             xmin = 1.73 
-            xmax = 2.55 
+            xmax = 2.56 
             text = "lúrnɔ̀" 
         intervals [7]:
-            xmin = 2.55 
+            xmin = 2.56 
             xmax = 4.01 
             text = "" 
         intervals [8]:
@@ -136,10 +136,10 @@ item []:
             text = "n" 
         intervals [19]:
             xmin = 2.25 
-            xmax = 2.55 
+            xmax = 2.56 
             text = "ɒ" 
         intervals [20]:
-            xmin = 2.55 
+            xmin = 2.56 
             xmax = 4.01 
             text = "" 
         intervals [21]:

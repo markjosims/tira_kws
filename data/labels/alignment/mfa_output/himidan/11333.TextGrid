@@ -30,14 +30,14 @@ item []:
             text = "ɔ́ndì" 
         intervals [5]:
             xmin = 0.91 
-            xmax = 1.56 
+            xmax = 1.55 
             text = "káɾɔ́gɛ́" 
         intervals [6]:
-            xmin = 1.56 
-            xmax = 2.16 
+            xmin = 1.55 
+            xmax = 2.19 
             text = "ɔ́ɟɔ́" 
         intervals [7]:
-            xmin = 2.16 
+            xmin = 2.19 
             xmax = 2.74 
             text = "" 
         intervals [8]:
@@ -116,22 +116,22 @@ item []:
             text = "ɡ" 
         intervals [14]:
             xmin = 1.41 
-            xmax = 1.56 
+            xmax = 1.55 
             text = "ɛ" 
         intervals [15]:
-            xmin = 1.56 
-            xmax = 1.77 
+            xmin = 1.55 
+            xmax = 1.78 
             text = "ɒ" 
         intervals [16]:
-            xmin = 1.77 
+            xmin = 1.78 
             xmax = 1.92 
             text = "dʒ" 
         intervals [17]:
             xmin = 1.92 
-            xmax = 2.16 
+            xmax = 2.19 
             text = "ɒ" 
         intervals [18]:
-            xmin = 2.16 
+            xmin = 2.19 
             xmax = 2.74 
             text = "" 
         intervals [19]:

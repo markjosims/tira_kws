@@ -14,18 +14,18 @@ item []:
         intervals: size = 7 
         intervals [1]:
             xmin = 0.0 
-            xmax = 0.51 
+            xmax = 0.52 
             text = "nàvlà" 
         intervals [2]:
-            xmin = 0.51 
+            xmin = 0.52 
             xmax = 0.95 
             text = "nə́ðùɽì" 
         intervals [3]:
             xmin = 0.95 
-            xmax = 1.39 
+            xmax = 1.41 
             text = "nɛ́" 
         intervals [4]:
-            xmin = 1.39 
+            xmin = 1.41 
             xmax = 1.67 
             text = "" 
         intervals [5]:
@@ -64,10 +64,10 @@ item []:
             text = "l" 
         intervals [5]:
             xmin = 0.44 
-            xmax = 0.51 
+            xmax = 0.52 
             text = "ɑ" 
         intervals [6]:
-            xmin = 0.51 
+            xmin = 0.52 
             xmax = 0.61 
             text = "n" 
         intervals [7]:
@@ -96,10 +96,10 @@ item []:
             text = "n" 
         intervals [13]:
             xmin = 1.08 
-            xmax = 1.39 
+            xmax = 1.41 
             text = "ɛ" 
         intervals [14]:
-            xmin = 1.39 
+            xmin = 1.41 
             xmax = 1.67 
             text = "" 
         intervals [15]:
@@ -116,10 +116,10 @@ item []:
             text = "j" 
         intervals [18]:
             xmin = 2.08 
-            xmax = 2.14 
+            xmax = 2.15 
             text = "i" 
         intervals [19]:
-            xmin = 2.14 
+            xmin = 2.15 
             xmax = 2.26 
             text = "n" 
         intervals [20]:

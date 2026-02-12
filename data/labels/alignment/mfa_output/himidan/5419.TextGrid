@@ -18,14 +18,14 @@ item []:
             text = "" 
         intervals [2]:
             xmin = 0.09 
-            xmax = 0.72 
+            xmax = 0.76 
             text = "t̪ɛ́" 
         intervals [3]:
-            xmin = 0.72 
-            xmax = 0.75 
+            xmin = 0.76 
+            xmax = 0.79 
             text = "" 
         intervals [4]:
-            xmin = 0.75 
+            xmin = 0.79 
             xmax = 1.05 
             text = "ŋáɾt̪ɛ̀" 
         intervals [5]:
@@ -52,22 +52,22 @@ item []:
             text = "t" 
         intervals [3]:
             xmin = 0.12 
-            xmax = 0.72 
+            xmax = 0.76 
             text = "ɛ" 
         intervals [4]:
-            xmin = 0.72 
-            xmax = 0.75 
+            xmin = 0.76 
+            xmax = 0.79 
             text = "" 
         intervals [5]:
-            xmin = 0.75 
-            xmax = 0.78 
+            xmin = 0.79 
+            xmax = 0.82 
             text = "ŋ" 
         intervals [6]:
-            xmin = 0.78 
-            xmax = 0.81 
+            xmin = 0.82 
+            xmax = 0.85 
             text = "ɑ" 
         intervals [7]:
-            xmin = 0.81 
+            xmin = 0.85 
             xmax = 0.89 
             text = "ɾ" 
         intervals [8]:

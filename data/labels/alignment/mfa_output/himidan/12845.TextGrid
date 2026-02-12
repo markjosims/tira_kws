@@ -18,10 +18,10 @@ item []:
             text = "láɾl̀à" 
         intervals [2]:
             xmin = 0.47 
-            xmax = 0.81 
+            xmax = 0.84 
             text = "ðáwà" 
         intervals [3]:
-            xmin = 0.81 
+            xmin = 0.84 
             xmax = 1.24 
             text = "nd̪ɔ̀bà" 
         intervals [4]:
@@ -60,18 +60,18 @@ item []:
             text = "ð" 
         intervals [7]:
             xmin = 0.64 
-            xmax = 0.75 
+            xmax = 0.78 
             text = "ɑ" 
         intervals [8]:
-            xmin = 0.75 
-            xmax = 0.78 
-            text = "w" 
-        intervals [9]:
             xmin = 0.78 
             xmax = 0.81 
+            text = "w" 
+        intervals [9]:
+            xmin = 0.81 
+            xmax = 0.84 
             text = "ɑ" 
         intervals [10]:
-            xmin = 0.81 
+            xmin = 0.84 
             xmax = 0.89 
             text = "n" 
         intervals [11]:

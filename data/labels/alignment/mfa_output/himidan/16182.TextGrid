@@ -34,10 +34,10 @@ item []:
             text = "və́lɛ̀ðà" 
         intervals [6]:
             xmin = 1.51 
-            xmax = 1.61 
+            xmax = 1.59 
             text = "" 
         intervals [7]:
-            xmin = 1.61 
+            xmin = 1.59 
             xmax = 2.04 
             text = "t̪ɔ́wɜ̀nì" 
         intervals [8]:
@@ -108,10 +108,10 @@ item []:
             text = "ɲ" 
         intervals [15]:
             xmin = 0.97 
-            xmax = 1.03 
+            xmax = 1.02 
             text = "ɑ" 
         intervals [16]:
-            xmin = 1.03 
+            xmin = 1.02 
             xmax = 1.17 
             text = "ɹ" 
         intervals [17]:
@@ -140,10 +140,10 @@ item []:
             text = "ɑ" 
         intervals [23]:
             xmin = 1.51 
-            xmax = 1.61 
+            xmax = 1.59 
             text = "" 
         intervals [24]:
-            xmin = 1.61 
+            xmin = 1.59 
             xmax = 1.64 
             text = "t" 
         intervals [25]:

@@ -80,10 +80,10 @@ item []:
             text = "ɑ" 
         intervals [9]:
             xmin = 0.69 
-            xmax = 0.89 
+            xmax = 0.9 
             text = "ɛ" 
         intervals [10]:
-            xmin = 0.89 
+            xmin = 0.9 
             xmax = 0.93 
             text = "ð" 
         intervals [11]:

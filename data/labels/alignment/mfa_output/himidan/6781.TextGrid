@@ -124,10 +124,10 @@ item []:
             text = "d" 
         intervals [18]:
             xmin = 3.5 
-            xmax = 3.59 
+            xmax = 3.6 
             text = "ɒ" 
         intervals [19]:
-            xmin = 3.59 
+            xmin = 3.6 
             xmax = 3.73 
             text = "t" 
         intervals [20]:

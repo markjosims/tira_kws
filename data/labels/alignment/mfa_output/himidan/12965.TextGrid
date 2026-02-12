@@ -26,18 +26,18 @@ item []:
             text = "nɔ́nà" 
         intervals [4]:
             xmin = 0.59 
-            xmax = 0.72 
+            xmax = 0.73 
             text = "lɔ̀n" 
         intervals [5]:
-            xmin = 0.72 
+            xmin = 0.73 
             xmax = 0.85 
             text = "" 
         intervals [6]:
             xmin = 0.85 
-            xmax = 1.17 
+            xmax = 1.18 
             text = "t̪àwìðì" 
         intervals [7]:
-            xmin = 1.17 
+            xmin = 1.18 
             xmax = 1.365 
             text = "" 
     item [2]:
@@ -84,10 +84,10 @@ item []:
             text = "ɒ" 
         intervals [10]:
             xmin = 0.65 
-            xmax = 0.72 
+            xmax = 0.73 
             text = "n" 
         intervals [11]:
-            xmin = 0.72 
+            xmin = 0.73 
             xmax = 0.85 
             text = "" 
         intervals [12]:
@@ -112,9 +112,9 @@ item []:
             text = "ð" 
         intervals [17]:
             xmin = 1.12 
-            xmax = 1.17 
+            xmax = 1.18 
             text = "i" 
         intervals [18]:
-            xmin = 1.17 
+            xmin = 1.18 
             xmax = 1.365 
             text = "" 

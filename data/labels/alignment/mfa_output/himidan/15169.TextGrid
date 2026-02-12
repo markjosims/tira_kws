@@ -84,10 +84,10 @@ item []:
             text = "d" 
         intervals [12]:
             xmin = 1.1 
-            xmax = 1.13 
+            xmax = 1.18 
             text = "ɒ" 
         intervals [13]:
-            xmin = 1.13 
+            xmin = 1.18 
             xmax = 1.29 
             text = "b" 
         intervals [14]:

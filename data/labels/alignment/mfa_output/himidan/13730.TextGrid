@@ -14,10 +14,10 @@ item []:
         intervals: size = 5 
         intervals [1]:
             xmin = 0.0 
-            xmax = 0.24 
+            xmax = 0.23 
             text = "lá" 
         intervals [2]:
-            xmin = 0.24 
+            xmin = 0.23 
             xmax = 0.62 
             text = "ŋácà" 
         intervals [3]:
@@ -44,14 +44,14 @@ item []:
             text = "l" 
         intervals [2]:
             xmin = 0.19 
-            xmax = 0.24 
+            xmax = 0.23 
             text = "ɑ" 
         intervals [3]:
-            xmin = 0.24 
-            xmax = 0.27 
+            xmin = 0.23 
+            xmax = 0.26 
             text = "ŋ" 
         intervals [4]:
-            xmin = 0.27 
+            xmin = 0.26 
             xmax = 0.45 
             text = "ɑ" 
         intervals [5]:

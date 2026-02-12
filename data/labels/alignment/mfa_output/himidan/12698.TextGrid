@@ -72,10 +72,10 @@ item []:
             text = "ð" 
         intervals [8]:
             xmin = 0.69 
-            xmax = 0.79 
+            xmax = 0.78 
             text = "i" 
         intervals [9]:
-            xmin = 0.79 
+            xmin = 0.78 
             xmax = 0.84 
             text = "d" 
         intervals [10]:

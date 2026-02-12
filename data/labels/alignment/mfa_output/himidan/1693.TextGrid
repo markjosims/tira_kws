@@ -40,18 +40,18 @@ item []:
         intervals: size = 20 
         intervals [1]:
             xmin = 0.0 
-            xmax = 0.1 
+            xmax = 0.11 
             text = "ɛ" 
         intervals [2]:
-            xmin = 0.1 
+            xmin = 0.11 
             xmax = 0.19 
             text = "d" 
         intervals [3]:
             xmin = 0.19 
-            xmax = 0.23 
+            xmax = 0.26 
             text = "ɛ" 
         intervals [4]:
-            xmin = 0.23 
+            xmin = 0.26 
             xmax = 0.31 
             text = "ɾ" 
         intervals [5]:
