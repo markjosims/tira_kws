@@ -9,12 +9,13 @@ See JSON structure in `keyword_list_builder.py`.
 from src.constants import (MFA_SPEAKER_OUTPUT_DIR, KEYWORD_MANFIEST,
     KEYWORD_SENTENCES, KEYWORDS_CSV, RECORDING_MANIFEST)
 from src.dataloading import load_elicitation_cuts
-from tgt.core import TextGrid
+from tgt.io import read_textgrid
 import pandas as pd
 import argparse
 from pathlib import Path
 from lhotse import SupervisionSegment, SupervisionSet, RecordingSet
-from lhotse.qa import fix_manifests, validate_recordings_and_supervisions
+from lhotse.qa import validate_recordings_and_supervisions
+from unicodedata import normalize
 
 def main():
     args = get_args()
@@ -35,6 +36,7 @@ def main():
         # sanity check: should only be one supervision per cut
         assert len(cut.supervisions) == 1, f"Expected exactly one supervision for cut {cut.id}, but got {len(cut.supervisions)}"
         sentence_supervision = cut.supervisions[0]
+        sentence_supervision.start = cut.start
 
         # only add keyword supervisions for cuts corresponding to positive records
         # since negative records don't contain the keyword
@@ -87,26 +89,31 @@ def get_keyword_supervision(
 
 
     textgrid_path = MFA_SPEAKER_OUTPUT_DIR / f"{record_id}.TextGrid"
-    textgrid = TextGrid(str(textgrid_path))
+    textgrid = read_textgrid(str(textgrid_path))
     word_tier = textgrid.get_tier_by_name("words")
-    keyword_interval = word_tier.get_annotations_w_text(current_keyword)
+    intervals = word_tier.annotations
+    keyword_interval = None
+    for interval in intervals:
+        # normalize text to ensure matching with keywords in KEYWORDS_CSV
+        interval_text = normalize("NFKD", interval.text)
+        if interval_text == current_keyword:
+            keyword_interval = interval
+            break
 
-    # sanity check: ensure exactly one interval with the keyword text
-    assert len(keyword_interval) == 1, "Expected exactly one interval with keyword"\
-        + f" '{current_keyword}' for record {record_id}, but got {len(keyword_interval)}"
-    keyword_interval = keyword_interval[0]
+    # sanity check: ensure at least one interval with the keyword text
+    assert keyword_interval is not None, "Expected at least one interval with keyword"\
+        + f" '{current_keyword}' for record {record_id}, but got {intervals}"
 
     # start and end times of the keyword interval are relative to the start of the cut
     # change to be absolute times relative to the start of the recording
     start = cut.start + keyword_interval.start_time
     end = cut.start + keyword_interval.end_time
-    breakpoint()
     # create supervision segment for the keyword interval
     keyword_supervision = SupervisionSegment(
         id=f"{record_id}_keyword",
         recording_id=cut.recording_id,
         start=start,
-        duration=end - start,
+        duration=end-start,
         text=current_keyword,
         custom={"keyword_type": "keyword"}
     )
