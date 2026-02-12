@@ -155,6 +155,7 @@ def build_keyword_list(
 
         keyword_list.append({
             'keyword': word,
+            'word_idx': sampled_keyword_index,
             'positive_phrase_idcs': positive_phrase_idcs,
             'positive_record_idcs': positive_record_idcs,
         })
@@ -195,18 +196,16 @@ def get_all_phrase_idcs(
 
     positive_phrase_idcs = []
     positive_record_idcs = []
+    keyword_idcs = []
     for keyword_dict in keyword_list:
         positive_phrase_idcs.extend(keyword_dict['positive_phrase_idcs'])
         positive_record_idcs.extend(keyword_dict['positive_record_idcs'])
-
-    positive_phrase_idcs = set(positive_phrase_idcs)
-    positive_record_idcs = set(positive_record_idcs)
+        keyword_idcs.extend([keyword_dict['word_idx']] * len(keyword_dict['positive_phrase_idcs']))
 
     # sanity check: should have same number of positive phrases and records
-    assert len(positive_phrase_idcs) == len(positive_record_idcs)
+    assert len(set(positive_phrase_idcs)) == len(set(positive_record_idcs))
 
     print(f" Total unique positive phrases: {len(positive_phrase_idcs)}")
-
 
     print(" Collecting phrases that do not contain any keywords...")
     negative_phrase_idcs = []
@@ -225,8 +224,8 @@ def get_all_phrase_idcs(
         negative_record_idcs.append(record_idx)
 
     # sanity check: ensure no overlap between positive and negative indices
-    assert not positive_record_idcs.intersection(negative_record_idcs)
-    assert not positive_phrase_idcs.intersection(set(negative_phrase_idcs))
+    assert not set(positive_record_idcs).intersection(negative_record_idcs)
+    assert not set(positive_phrase_idcs).intersection(negative_phrase_idcs)
     
     print(f" Negative candidate records: {len(negative_record_idcs)}")
     sampled_negative_idcs = random.Random(random_seed).sample(
@@ -238,11 +237,13 @@ def get_all_phrase_idcs(
     positive_data = pd.DataFrame({
         'phrase_idx': list(positive_phrase_idcs),
         'record_idx': list(positive_record_idcs),
+        'word_idx': list(keyword_idcs),
         'is_positive': True,
     })
     negative_data = pd.DataFrame({
         'phrase_idx': negative_phrase_idcs,
         'record_idx': negative_record_idcs,
+        'word_idx': None,
         'is_positive': False,
     })
     # filter out only sampled negative records
