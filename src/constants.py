@@ -31,6 +31,7 @@ TIRA_ASR_URI = "css-kws-capstone/tira-asr"
 TIRA_ELICITATION = DATASETS_DIR / "tira_elicitation"
 SUPERVISION_MANIFEST = TIRA_ELICITATION / "supervision_manifest.jsonl"
 RECORDING_MANIFEST = TIRA_ELICITATION / "recording_manifest.jsonl"
+KEYWORD_MANFIEST = TIRA_ELICITATION / "keyword_cuts.jsonl"
 
 ## local data paths
 PROJECT_DIR = Path(__file__).parent.parent
@@ -100,18 +101,20 @@ Files needed for forced alignment using Montreal Forced Aligner (MFA).
 """
 
 # directory for storing MFA-related files
-ALIGNMENT_DIR =         LABELS_DIR / "alignment"
+ALIGNMENT_DIR =             LABELS_DIR / "alignment"
 
 # TXT file containing MFA-format pronunciation dictionary
 # for all words in `WORDS_CSV`. Each line has format `word\tpronunciation`.
-MFA_DICT_PATH =         ALIGNMENT_DIR / "mfa_dict.txt"
+MFA_DICT_PATH =             ALIGNMENT_DIR / "mfa_dict.txt"
 
 # Directory containing audio corpus conforming to MFA format.
 # Stored in `DATASETS_DIR` rather than within the project
-MFA_CORPUS_DIR =        DATASETS_DIR / "tira_mfa"
+MFA_CORPUS_DIR =            DATASETS_DIR / "tira_mfa"
+MFA_SPEAKER_DIR =           MFA_CORPUS_DIR / "himidan"
 
 # Directory for storing MFA output TextGrids
-MFA_OUTPUT_DIR =        ALIGNMENT_DIR / "mfa_output"
+MFA_OUTPUT_DIR =            ALIGNMENT_DIR / "mfa_output"
+MFA_SPEAKER_OUTPUT_DIR =    MFA_OUTPUT_DIR / "himidan"
 
 
 """
