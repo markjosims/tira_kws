@@ -180,7 +180,8 @@ def build_word2phrase(words_df, unique_phrase_df, output_path) -> pd.DataFrame:
     # Create mapping from word to phrase indices
     rows = []
     for index, word in words_df['word'].items():
-        phrase_mask = unique_phrase_df['phrase'].str.contains(word)
+        phrase_mask = unique_phrase_df['phrase'].str.split()\
+            .apply(lambda words: word in words)
         phrase_indices = unique_phrase_df.index[phrase_mask].tolist()
         rows.extend({
             'word_idx': index,
