@@ -32,7 +32,7 @@ def build_keyword_list(
         phrase_count: int=10,
         num_keywords: int=30,
         min_keyword_length: int=5,
-        min_words_per_sentence: int=3,
+        min_words_per_sentence: int=4,
         random_seed: int=1337,
     ) -> Tuple[List[Dict[str, Union[str, List[int]]]], pd.DataFrame]:
     """
@@ -185,7 +185,7 @@ def get_all_phrase_idcs(
         phrase_list: List[str],
         phrase2records: pd.DataFrame,
         negative_phrase_count: int=700,
-        min_words_per_sentence: int=3,
+        min_words_per_sentence: int=4,
         random_seed: int=1337,
     ) -> pd.DataFrame:
     """
@@ -343,7 +343,7 @@ def get_args() -> Namespace:
         help='Number of negative phrases that contain no keywords.'
     )
     parser.add_argument(
-        '--min_words_per_sentence', type=int, default=3,
+        '--min_words_per_sentence', type=int, default=4,
         help='Minimum number of words per test sentence.'
     )
     parser.add_argument(
