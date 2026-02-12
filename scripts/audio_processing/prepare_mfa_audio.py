@@ -18,8 +18,7 @@ Interspeech 2026 experiment.
 
 from argparse import ArgumentParser
 
-from traitlets import default
-from dataloading import load_elicitation_cuts
+from src.dataloading import load_elicitation_cuts
 from src.constants import MFA_CORPUS_DIR, MFA_SPEAKER_DIR, KEYWORD_SENTENCES
 import soundfile as sf
 from pathlib import Path
