@@ -1,14 +1,14 @@
 from src.constants import (
-    SUPERVISION_MANIFEST, RECORDING_MANIFEST
+    SUPERVISION_MANIFEST, RECORDING_MANIFEST, KEYWORD_MANFIEST, FEATURES_DIR
 )
 
 from typing import *
 import pandas as pd
-from lhotse import CutSet, RecordingSet, SupervisionSet
+from lhotse import CutSet, RecordingSet, SupervisionSet, FeatureSet
 
 def load_supervisions_df() -> pd.DataFrame:
     """
-    Load supervision segments from the Tira elicitation dataset
+    Load supervision segments from the Tira elicitation dataset 
     and return as a dataframe.
     """
     supervisions_df = pd.read_json(SUPERVISION_MANIFEST, lines=True)
@@ -39,3 +39,13 @@ def load_elicitation_cuts(index_list: Optional[List[int]] = None) -> CutSet:
         assert len(cuts) == len(index_list), f"Expected {len(index_list)} cuts after filtering but got {len(cuts)}"
 
     return cuts
+
+def load_kws_cuts(
+        feature_set: Literal['xlsr']
+) -> Tuple[CutSet, CutSet]:
+    cuts_path = FEATURES_DIR / f"kws_{feature_set}.jsonl"
+    cuts = CutSet.from_jsonl(cuts_path)
+    
+    word_cuts = cuts.trim_to_alignments(type='word')
+    sentence_cuts = cuts.trim_to_supervisions()
+    return word_cuts, sentence_cuts
