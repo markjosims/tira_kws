@@ -26,6 +26,31 @@ def pad_arrays_or_tensors(
         return padded_sequences
     else:
         raise ValueError("Unsupported sequence type. Expected torch.Tensor or np.ndarray.")
+    
+def pad_matrices(
+        matrices: Union[List[torch.Tensor], List[np.ndarray]],
+        padding_value: float = float('inf'),
+) -> Union[torch.Tensor, np.ndarray]:
+    """
+    Pad a sequence of matrices to a common shape. Encapsulates logic
+    for both torch and numpy tensors.
+    """
+    if isinstance(matrices[0], torch.Tensor):
+        max_rows = max(mat.shape[0] for mat in matrices)
+        max_cols = max(mat.shape[1] for mat in matrices)
+        padded_matrices = torch.full((len(matrices), max_rows, max_cols), padding_value)
+        for i, mat in enumerate(matrices):
+            padded_matrices[i, :mat.shape[0], :mat.shape[1]] = mat
+        return padded_matrices
+    elif isinstance(matrices[0], np.ndarray):
+        max_rows = max(mat.shape[0] for mat in matrices)
+        max_cols = max(mat.shape[1] for mat in matrices)
+        padded_matrices = np.full((len(matrices), max_rows, max_cols), padding_value)
+        for i, mat in enumerate(matrices):
+            padded_matrices[i, :mat.shape[0], :mat.shape[1]] = mat
+        return padded_matrices
+    else:
+        raise ValueError("Unsupported matrix type. Expected torch.Tensor or np.ndarray.")
 
 """
 ## similarity computation utilities
