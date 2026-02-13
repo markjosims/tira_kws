@@ -49,10 +49,10 @@ def main():
         
         keyword_lengths = [feature.shape[0] for feature in keyword_features]
         
-        positive_phrase_ids = [cut.id for cut in keyword_batch]
+        positive_record_ids = [cut.id for cut in keyword_batch]
         id_stem_regex = r'(.+)-\d+' # matches the stem of the cut ID before the final dash 
         # and number, which corresponds to the alignment index for the keyword in the sentence
-        positive_phrase_ids = [re.match(id_stem_regex, cut_id).group(1) for cut_id in positive_phrase_ids]
+        positive_record_ids = [re.match(id_stem_regex, cut_id).group(1) for cut_id in positive_record_ids]
 
         keyword_features = pad_arrays_or_tensors(keyword_features).to(DEVICE)
 
@@ -64,7 +64,7 @@ def main():
             test_phrase_features = [torch.Tensor(feature) for feature in test_phrase_features]
 
             test_phrase_lengths = [feature.shape[0] for feature in test_phrase_features]
-            test_phrase_ids = [cut.id for cut in test_phrase_batch]
+            test_record_ids = [cut.id for cut in test_phrase_batch]
 
             test_phrase_features = pad_arrays_or_tensors(test_phrase_features).to(DEVICE)
 
@@ -74,11 +74,11 @@ def main():
             batch_matrices.extend(inner_batch_matrices)
 
             # Update manifest with keyword and test phrase indices
-            for positive_phrase_id, keyword_length in zip(positive_phrase_ids, keyword_lengths):
-                for test_phrase_id, test_phrase_length in zip(test_phrase_ids, test_phrase_lengths):
+            for positive_record_id, keyword_length in zip(positive_record_ids, keyword_lengths):
+                for test_record_id, test_phrase_length in zip(test_record_ids, test_phrase_lengths):
                     manifest.append({
-                        'positive_phrase_id': positive_phrase_id,
-                        'test_phrase_id': test_phrase_id,
+                        'positive_record_id': positive_record_id,
+                        'test_record_id': test_record_id,
                         'keyword_length': keyword_length,
                         'test_phrase_length': test_phrase_length,
                     })
@@ -101,8 +101,8 @@ def main():
         row['phrase_idx']: row['word_idx']
         for _, row in keyword_sentences.iterrows()
     }
-    manifest_df['positive_phrase_id'] = manifest_df['positive_phrase_id'].astype(int)
-    manifest_df['keyword_id'] = manifest_df['positive_phrase_id'].map(phrase_idx2word_idx)
+    manifest_df['positive_record_id'] = manifest_df['positive_record_id'].astype(int)
+    manifest_df['keyword_id'] = manifest_df['positive_record_id'].map(phrase_idx2word_idx)
     print("Associated keyword IDs with positive phrase IDs in manifest")
 
     print(manifest_df.head())
