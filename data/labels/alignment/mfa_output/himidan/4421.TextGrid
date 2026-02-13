@@ -18,10 +18,10 @@ item []:
             text = "" 
         intervals [2]:
             xmin = 0.05 
-            xmax = 0.67 
+            xmax = 0.66 
             text = "àɽàŋgár" 
         intervals [3]:
-            xmin = 0.67 
+            xmin = 0.66 
             xmax = 1.01 
             text = "jál" 
         intervals [4]:
@@ -76,10 +76,10 @@ item []:
             text = "ɑ" 
         intervals [8]:
             xmin = 0.53 
-            xmax = 0.67 
+            xmax = 0.66 
             text = "ɹ" 
         intervals [9]:
-            xmin = 0.67 
+            xmin = 0.66 
             xmax = 0.86 
             text = "j" 
         intervals [10]:
@@ -100,10 +100,10 @@ item []:
             text = "i" 
         intervals [14]:
             xmin = 1.14 
-            xmax = 1.18 
+            xmax = 1.17 
             text = "dʒ" 
         intervals [15]:
-            xmin = 1.18 
+            xmin = 1.17 
             xmax = 1.75 
             text = "i" 
         intervals [16]:

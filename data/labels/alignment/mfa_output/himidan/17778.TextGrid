@@ -42,10 +42,10 @@ item []:
             text = "kə̀mɛ̀ɾðɔ́" 
         intervals [8]:
             xmin = 1.79 
-            xmax = 2.23 
+            xmax = 2.22 
             text = "ápɾíɲá" 
         intervals [9]:
-            xmin = 2.23 
+            xmin = 2.22 
             xmax = 2.41 
             text = "" 
     item [2]:
@@ -108,10 +108,10 @@ item []:
             text = "ɛ" 
         intervals [14]:
             xmin = 0.81 
-            xmax = 0.87 
+            xmax = 0.92 
             text = "ʉ" 
         intervals [15]:
-            xmin = 0.87 
+            xmin = 0.92 
             xmax = 1.01 
             text = "ɹ" 
         intervals [16]:
@@ -176,13 +176,13 @@ item []:
             text = "i" 
         intervals [31]:
             xmin = 2.11 
-            xmax = 2.2 
+            xmax = 2.19 
             text = "ɲ" 
         intervals [32]:
-            xmin = 2.2 
-            xmax = 2.23 
+            xmin = 2.19 
+            xmax = 2.22 
             text = "ɑ" 
         intervals [33]:
-            xmin = 2.23 
+            xmin = 2.22 
             xmax = 2.41 
             text = "" 

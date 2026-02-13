@@ -38,10 +38,10 @@ item []:
             text = "" 
         intervals [7]:
             xmin = 2.98 
-            xmax = 3.83 
+            xmax = 3.82 
             text = "ɔ́ɾìnìjɔ̀" 
         intervals [8]:
-            xmin = 3.83 
+            xmin = 3.82 
             xmax = 4.004 
             text = "" 
     item [2]:
@@ -136,33 +136,33 @@ item []:
             text = "" 
         intervals [22]:
             xmin = 2.98 
-            xmax = 3.29 
+            xmax = 3.28 
             text = "ɒ" 
         intervals [23]:
-            xmin = 3.29 
-            xmax = 3.41 
+            xmin = 3.28 
+            xmax = 3.37 
             text = "ɾ" 
         intervals [24]:
-            xmin = 3.41 
-            xmax = 3.48 
+            xmin = 3.37 
+            xmax = 3.4 
             text = "i" 
         intervals [25]:
-            xmin = 3.48 
-            xmax = 3.58 
+            xmin = 3.4 
+            xmax = 3.43 
             text = "n" 
         intervals [26]:
-            xmin = 3.58 
-            xmax = 3.61 
+            xmin = 3.43 
+            xmax = 3.49 
             text = "i" 
         intervals [27]:
-            xmin = 3.61 
+            xmin = 3.49 
             xmax = 3.65 
             text = "j" 
         intervals [28]:
             xmin = 3.65 
-            xmax = 3.83 
+            xmax = 3.82 
             text = "ɒ" 
         intervals [29]:
-            xmin = 3.83 
+            xmin = 3.82 
             xmax = 4.004 
             text = "" 

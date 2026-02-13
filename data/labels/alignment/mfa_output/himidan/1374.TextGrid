@@ -18,14 +18,14 @@ item []:
             text = "" 
         intervals [2]:
             xmin = 0.21 
-            xmax = 0.6 
+            xmax = 0.59 
             text = "áɽó" 
         intervals [3]:
-            xmin = 0.6 
-            xmax = 0.7 
+            xmin = 0.59 
+            xmax = 0.71 
             text = "" 
         intervals [4]:
-            xmin = 0.7 
+            xmin = 0.71 
             xmax = 1.3 
             text = "ágá" 
         intervals [5]:
@@ -52,22 +52,22 @@ item []:
             text = "" 
         intervals [2]:
             xmin = 0.21 
-            xmax = 0.25 
+            xmax = 0.24 
             text = "ɑ" 
         intervals [3]:
-            xmin = 0.25 
+            xmin = 0.24 
             xmax = 0.32 
             text = "ɹ" 
         intervals [4]:
             xmin = 0.32 
-            xmax = 0.6 
+            xmax = 0.59 
             text = "ow" 
         intervals [5]:
-            xmin = 0.6 
-            xmax = 0.7 
+            xmin = 0.59 
+            xmax = 0.71 
             text = "" 
         intervals [6]:
-            xmin = 0.7 
+            xmin = 0.71 
             xmax = 0.74 
             text = "ɑ" 
         intervals [7]:

@@ -34,10 +34,10 @@ item []:
             text = "sɔ̀ɽíŋgɔ́" 
         intervals [6]:
             xmin = 1.79 
-            xmax = 2.16 
+            xmax = 2.14 
             text = "nd̪ɔ̀bà" 
         intervals [7]:
-            xmin = 2.16 
+            xmin = 2.14 
             xmax = 2.35 
             text = "" 
     item [2]:
@@ -128,9 +128,9 @@ item []:
             text = "b" 
         intervals [21]:
             xmin = 2.11 
-            xmax = 2.16 
+            xmax = 2.14 
             text = "ɑ" 
         intervals [22]:
-            xmin = 2.16 
+            xmin = 2.14 
             xmax = 2.35 
             text = "" 

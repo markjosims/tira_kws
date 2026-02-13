@@ -112,10 +112,10 @@ item []:
             text = "tʃ" 
         intervals [17]:
             xmin = 1.65 
-            xmax = 1.74 
+            xmax = 1.67 
             text = "ʊ" 
         intervals [18]:
-            xmin = 1.74 
+            xmin = 1.67 
             xmax = 1.81 
             text = "m" 
         intervals [19]:

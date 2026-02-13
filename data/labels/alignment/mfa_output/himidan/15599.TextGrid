@@ -30,10 +30,10 @@ item []:
             text = "ŋátɛ́" 
         intervals [5]:
             xmin = 1.56 
-            xmax = 2.04 
+            xmax = 2.03 
             text = "və́lɛ̀ðɛ̀" 
         intervals [6]:
-            xmin = 2.04 
+            xmin = 2.03 
             xmax = 2.19 
             text = "" 
     item [2]:
@@ -132,9 +132,9 @@ item []:
             text = "ð" 
         intervals [23]:
             xmin = 1.82 
-            xmax = 2.04 
+            xmax = 2.03 
             text = "ɛ" 
         intervals [24]:
-            xmin = 2.04 
+            xmin = 2.03 
             xmax = 2.19 
             text = "" 

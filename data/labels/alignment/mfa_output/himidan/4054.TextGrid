@@ -140,10 +140,10 @@ item []:
             text = "ɹ" 
         intervals [19]:
             xmin = 2.29 
-            xmax = 2.38 
+            xmax = 2.39 
             text = "ŋ" 
         intervals [20]:
-            xmin = 2.38 
+            xmin = 2.39 
             xmax = 2.49 
             text = "ɒ" 
         intervals [21]:
@@ -164,10 +164,10 @@ item []:
             text = "l" 
         intervals [25]:
             xmin = 3.29 
-            xmax = 3.39 
+            xmax = 3.38 
             text = "ɑ" 
         intervals [26]:
-            xmin = 3.39 
+            xmin = 3.38 
             xmax = 3.45 
             text = "d" 
         intervals [27]:

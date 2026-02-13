@@ -52,10 +52,10 @@ item []:
             text = "" 
         intervals [2]:
             xmin = 0.14 
-            xmax = 0.25 
+            xmax = 0.23 
             text = "ɑ" 
         intervals [3]:
-            xmin = 0.25 
+            xmin = 0.23 
             xmax = 0.33 
             text = "n" 
         intervals [4]:
@@ -84,10 +84,10 @@ item []:
             text = "ɑ" 
         intervals [10]:
             xmin = 0.67 
-            xmax = 0.76 
+            xmax = 0.77 
             text = "ŋ" 
         intervals [11]:
-            xmin = 0.76 
+            xmin = 0.77 
             xmax = 0.8 
             text = "ʉ" 
         intervals [12]:
@@ -104,10 +104,10 @@ item []:
             text = "l" 
         intervals [15]:
             xmin = 1.02 
-            xmax = 1.08 
+            xmax = 1.07 
             text = "ɛ" 
         intervals [16]:
-            xmin = 1.08 
+            xmin = 1.07 
             xmax = 1.11 
             text = "ɲ" 
         intervals [17]:

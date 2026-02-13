@@ -46,10 +46,10 @@ item []:
             text = "t̪á" 
         intervals [9]:
             xmin = 1.99 
-            xmax = 2.93 
+            xmax = 2.94 
             text = "" 
         intervals [10]:
-            xmin = 2.93 
+            xmin = 2.94 
             xmax = 3.46 
             text = "kə̀mɛ̀ɾðɔ́" 
         intervals [11]:
@@ -148,10 +148,10 @@ item []:
             text = "ɑ" 
         intervals [21]:
             xmin = 1.99 
-            xmax = 2.93 
+            xmax = 2.94 
             text = "" 
         intervals [22]:
-            xmin = 2.93 
+            xmin = 2.94 
             xmax = 2.98 
             text = "k" 
         intervals [23]:

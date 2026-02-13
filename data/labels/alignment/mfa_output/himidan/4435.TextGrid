@@ -11,36 +11,40 @@ item []:
         name = "words" 
         xmin = 0 
         xmax = 4.351 
-        intervals: size = 8 
+        intervals: size = 9 
         intervals [1]:
             xmin = 0.0 
             xmax = 0.16 
             text = "" 
         intervals [2]:
             xmin = 0.16 
-            xmax = 0.65 
+            xmax = 0.64 
             text = "àɽàŋgár" 
         intervals [3]:
-            xmin = 0.65 
+            xmin = 0.64 
             xmax = 0.99 
             text = "jál" 
         intervals [4]:
             xmin = 0.99 
-            xmax = 1.78 
+            xmax = 1.79 
             text = "líɟí" 
         intervals [5]:
-            xmin = 1.78 
+            xmin = 1.79 
             xmax = 2.57 
             text = "" 
         intervals [6]:
             xmin = 2.57 
-            xmax = 3.38 
+            xmax = 3.3 
             text = "nídáló" 
         intervals [7]:
-            xmin = 3.38 
+            xmin = 3.3 
+            xmax = 3.54 
+            text = "" 
+        intervals [8]:
+            xmin = 3.54 
             xmax = 3.91 
             text = "ɲàɽà" 
-        intervals [8]:
+        intervals [9]:
             xmin = 3.91 
             xmax = 4.351 
             text = "" 
@@ -49,7 +53,7 @@ item []:
         name = "phones" 
         xmin = 0 
         xmax = 4.351 
-        intervals: size = 27 
+        intervals: size = 28 
         intervals [1]:
             xmin = 0.0 
             xmax = 0.16 
@@ -80,10 +84,10 @@ item []:
             text = "ɑ" 
         intervals [8]:
             xmin = 0.56 
-            xmax = 0.65 
+            xmax = 0.64 
             text = "ɹ" 
         intervals [9]:
-            xmin = 0.65 
+            xmin = 0.64 
             xmax = 0.84 
             text = "j" 
         intervals [10]:
@@ -108,10 +112,10 @@ item []:
             text = "dʒ" 
         intervals [15]:
             xmin = 1.22 
-            xmax = 1.78 
+            xmax = 1.79 
             text = "i" 
         intervals [16]:
-            xmin = 1.78 
+            xmin = 1.79 
             xmax = 2.57 
             text = "" 
         intervals [17]:
@@ -136,25 +140,29 @@ item []:
             text = "l" 
         intervals [22]:
             xmin = 3.03 
-            xmax = 3.38 
+            xmax = 3.3 
             text = "ow" 
         intervals [23]:
-            xmin = 3.38 
-            xmax = 3.46 
-            text = "ɲ" 
+            xmin = 3.3 
+            xmax = 3.54 
+            text = "" 
         intervals [24]:
-            xmin = 3.46 
-            xmax = 3.52 
-            text = "ɑ" 
+            xmin = 3.54 
+            xmax = 3.59 
+            text = "ɲ" 
         intervals [25]:
-            xmin = 3.52 
-            xmax = 3.61 
-            text = "ɹ" 
+            xmin = 3.59 
+            xmax = 3.66 
+            text = "ɑ" 
         intervals [26]:
-            xmin = 3.61 
+            xmin = 3.66 
+            xmax = 3.79 
+            text = "ɹ" 
+        intervals [27]:
+            xmin = 3.79 
             xmax = 3.91 
             text = "ɑ" 
-        intervals [27]:
+        intervals [28]:
             xmin = 3.91 
             xmax = 4.351 
             text = "" 

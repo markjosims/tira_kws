@@ -68,10 +68,10 @@ item []:
             text = "ʉ" 
         intervals [4]:
             xmin = 0.22 
-            xmax = 0.27 
+            xmax = 0.26 
             text = "d" 
         intervals [5]:
-            xmin = 0.27 
+            xmin = 0.26 
             xmax = 0.54 
             text = "i" 
         intervals [6]:

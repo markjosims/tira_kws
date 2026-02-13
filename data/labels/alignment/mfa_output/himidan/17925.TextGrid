@@ -184,14 +184,14 @@ item []:
             text = "k" 
         intervals [27]:
             xmin = 2.67 
-            xmax = 2.74 
+            xmax = 2.75 
             text = "ʉ" 
         intervals [28]:
-            xmin = 2.74 
-            xmax = 2.88 
+            xmin = 2.75 
+            xmax = 2.89 
             text = "k" 
         intervals [29]:
-            xmin = 2.88 
+            xmin = 2.89 
             xmax = 3.0 
             text = "ʉ" 
         intervals [30]:

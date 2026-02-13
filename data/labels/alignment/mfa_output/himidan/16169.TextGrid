@@ -104,10 +104,10 @@ item []:
             text = "ɹ" 
         intervals [17]:
             xmin = 1.64 
-            xmax = 1.69 
+            xmax = 1.7 
             text = "v" 
         intervals [18]:
-            xmin = 1.69 
+            xmin = 1.7 
             xmax = 1.75 
             text = "ə" 
         intervals [19]:

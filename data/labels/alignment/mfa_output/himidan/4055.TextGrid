@@ -38,10 +38,10 @@ item []:
             text = "làdìjà" 
         intervals [7]:
             xmin = 2.05 
-            xmax = 2.31 
+            xmax = 2.26 
             text = "ídɔ̀" 
         intervals [8]:
-            xmin = 2.31 
+            xmin = 2.26 
             xmax = 2.367 
             text = "" 
     item [2]:
@@ -140,9 +140,9 @@ item []:
             text = "d" 
         intervals [23]:
             xmin = 2.2 
-            xmax = 2.31 
+            xmax = 2.26 
             text = "ɒ" 
         intervals [24]:
-            xmin = 2.31 
+            xmin = 2.26 
             xmax = 2.367 
             text = "" 

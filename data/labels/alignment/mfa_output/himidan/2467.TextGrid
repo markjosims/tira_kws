@@ -18,10 +18,10 @@ item []:
             text = "" 
         intervals [2]:
             xmin = 0.1 
-            xmax = 0.5 
+            xmax = 0.49 
             text = "t̪òlé" 
         intervals [3]:
-            xmin = 0.5 
+            xmin = 0.49 
             xmax = 0.6 
             text = "" 
         intervals [4]:
@@ -72,10 +72,10 @@ item []:
             text = "l" 
         intervals [5]:
             xmin = 0.32 
-            xmax = 0.5 
+            xmax = 0.49 
             text = "ɛ" 
         intervals [6]:
-            xmin = 0.5 
+            xmin = 0.49 
             xmax = 0.6 
             text = "" 
         intervals [7]:

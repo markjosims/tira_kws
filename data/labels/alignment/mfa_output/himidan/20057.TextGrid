@@ -38,10 +38,10 @@ item []:
             text = "jámìɲí" 
         intervals [7]:
             xmin = 3.42 
-            xmax = 3.79 
+            xmax = 3.77 
             text = "ðíɲɔ̀" 
         intervals [8]:
-            xmin = 3.79 
+            xmin = 3.77 
             xmax = 4.089 
             text = "" 
     item [2]:
@@ -52,14 +52,14 @@ item []:
         intervals: size = 29 
         intervals [1]:
             xmin = 0.0 
-            xmax = 0.13 
+            xmax = 0.12 
             text = "ɑ" 
         intervals [2]:
-            xmin = 0.13 
-            xmax = 0.29 
+            xmin = 0.12 
+            xmax = 0.28 
             text = "p" 
         intervals [3]:
-            xmin = 0.29 
+            xmin = 0.28 
             xmax = 0.35 
             text = "ɾ" 
         intervals [4]:
@@ -160,9 +160,9 @@ item []:
             text = "ɲ" 
         intervals [28]:
             xmin = 3.67 
-            xmax = 3.79 
+            xmax = 3.77 
             text = "ɒ" 
         intervals [29]:
-            xmin = 3.79 
+            xmin = 3.77 
             xmax = 4.089 
             text = "" 

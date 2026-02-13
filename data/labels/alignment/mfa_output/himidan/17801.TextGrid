@@ -176,14 +176,14 @@ item []:
             text = "" 
         intervals [27]:
             xmin = 4.64 
-            xmax = 4.73 
+            xmax = 4.72 
             text = "ɑ" 
         intervals [28]:
-            xmin = 4.73 
-            xmax = 4.74 
+            xmin = 4.72 
+            xmax = 4.73 
             text = "ɾ" 
         intervals [29]:
-            xmin = 4.74 
+            xmin = 4.73 
             xmax = 4.87 
             text = "ð" 
         intervals [30]:

@@ -34,10 +34,10 @@ item []:
             text = "ŋáŋâl" 
         intervals [6]:
             xmin = 1.65 
-            xmax = 2.17 
+            xmax = 2.16 
             text = "lɛ̀ŋcá" 
         intervals [7]:
-            xmin = 2.17 
+            xmin = 2.16 
             xmax = 2.313 
             text = "" 
     item [2]:
@@ -60,10 +60,10 @@ item []:
             text = "ə" 
         intervals [4]:
             xmin = 0.24 
-            xmax = 0.27 
+            xmax = 0.28 
             text = "ɹ" 
         intervals [5]:
-            xmin = 0.27 
+            xmin = 0.28 
             xmax = 0.47 
             text = "d" 
         intervals [6]:
@@ -132,9 +132,9 @@ item []:
             text = "tʃ" 
         intervals [22]:
             xmin = 2.0 
-            xmax = 2.17 
+            xmax = 2.16 
             text = "ɑ" 
         intervals [23]:
-            xmin = 2.17 
+            xmin = 2.16 
             xmax = 2.313 
             text = "" 

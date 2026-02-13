@@ -34,14 +34,14 @@ item []:
             text = "ɔ́ndì" 
         intervals [6]:
             xmin = 2.34 
-            xmax = 3.18 
+            xmax = 3.17 
             text = "káŋɛ̂" 
         intervals [7]:
-            xmin = 3.18 
-            xmax = 3.48 
+            xmin = 3.17 
+            xmax = 3.49 
             text = "" 
         intervals [8]:
-            xmin = 3.48 
+            xmin = 3.49 
             xmax = 4.17 
             text = "r̀lɛ̀ɲí" 
         intervals [9]:
@@ -64,10 +64,10 @@ item []:
             text = "ɑ" 
         intervals [3]:
             xmin = 0.23 
-            xmax = 0.39 
+            xmax = 0.4 
             text = "p" 
         intervals [4]:
-            xmin = 0.39 
+            xmin = 0.4 
             xmax = 0.47 
             text = "ɾ" 
         intervals [5]:
@@ -136,22 +136,22 @@ item []:
             text = "k" 
         intervals [21]:
             xmin = 2.5 
-            xmax = 2.69 
+            xmax = 2.64 
             text = "ɑ" 
         intervals [22]:
-            xmin = 2.69 
+            xmin = 2.64 
             xmax = 2.76 
             text = "ŋ" 
         intervals [23]:
             xmin = 2.76 
-            xmax = 3.18 
+            xmax = 3.17 
             text = "ɛ" 
         intervals [24]:
-            xmin = 3.18 
-            xmax = 3.48 
+            xmin = 3.17 
+            xmax = 3.49 
             text = "" 
         intervals [25]:
-            xmin = 3.48 
+            xmin = 3.49 
             xmax = 3.53 
             text = "ɹ" 
         intervals [26]:
@@ -160,10 +160,10 @@ item []:
             text = "l" 
         intervals [27]:
             xmin = 3.73 
-            xmax = 3.9 
+            xmax = 3.89 
             text = "ɛ" 
         intervals [28]:
-            xmin = 3.9 
+            xmin = 3.89 
             xmax = 3.99 
             text = "ɲ" 
         intervals [29]:
