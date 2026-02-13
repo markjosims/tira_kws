@@ -14,8 +14,10 @@ import pandas as pd
 import argparse
 from pathlib import Path
 from lhotse import SupervisionSegment, SupervisionSet, RecordingSet
+from lhotse.supervision import AlignmentItem
 from lhotse.qa import validate_recordings_and_supervisions
 from unicodedata import normalize
+from typing import Tuple
 
 def main():
     args = get_args()
@@ -41,11 +43,13 @@ def main():
         # only add keyword supervisions for cuts corresponding to positive records
         # since negative records don't contain the keyword
         if cut.id in positive_indices:
-            current_keyword = get_current_keyword(keyword_sentences_df, keyword_df, cut)
-            kws_supervisions.append(get_keyword_supervision(current_keyword, cut))
+            word_idx, current_keyword = get_current_keyword(keyword_sentences_df, keyword_df, cut)
+            keyword_alignment = get_keyword_alignment(current_keyword, cut)
 
             sentence_supervision.custom['keyword_type'] = "positive_sentence"
             sentence_supervision.custom['keyword'] = current_keyword
+            sentence_supervision.custom['keyword_id'] = word_idx
+            sentence_supervision.alignment = {'word': [keyword_alignment]}
         else:
             sentence_supervision.custom['keyword_type'] = "negative_sentence"
 
@@ -64,7 +68,7 @@ def main():
     print(f"Saving keyword cut manifest to {args.output}...")
     supervision_set.to_file(args.output)
 
-def get_current_keyword(keyword_sentences_df, keyword_df, cut):
+def get_current_keyword(keyword_sentences_df, keyword_df, cut) -> Tuple[int, str]:
     word_idx = keyword_sentences_df.loc[
             keyword_sentences_df['record_idx'] == int(cut.id), 'word_idx'
         ]
@@ -78,13 +82,13 @@ def get_current_keyword(keyword_sentences_df, keyword_df, cut):
     if len(current_keyword) != 1:
         raise ValueError(f"Expected exactly one keyword for record {cut.id}, but got {current_keyword}")
     current_keyword = str(current_keyword.iloc[0])
-    return current_keyword
+    return word_idx, current_keyword
 
 
-def get_keyword_supervision(
+def get_keyword_alignment(
           current_keyword: str,
           cut: SupervisionSegment
-        ) -> SupervisionSegment:
+        ) -> AlignmentItem:
     record_id = cut.id
 
 
@@ -109,15 +113,12 @@ def get_keyword_supervision(
     start = cut.start + keyword_interval.start_time
     end = cut.start + keyword_interval.end_time
     # create supervision segment for the keyword interval
-    keyword_supervision = SupervisionSegment(
-        id=f"{record_id}_keyword",
-        recording_id=cut.recording_id,
+    keyword_alignment = AlignmentItem(
+        symbol=current_keyword,
         start=start,
         duration=end-start,
-        text=current_keyword,
-        custom={"keyword_type": "keyword"}
     )
-    return keyword_supervision
+    return keyword_alignment
 
 def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Add word alignments from MFA to lhotse supervision set")
