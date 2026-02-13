@@ -29,27 +29,27 @@ def test_cosine_similarity_values(n_vectors):
 @pytest.mark.parametrize(
     "shape", [torch.randint(5, 20, (4,)).tolist() for _ in range(20)]
 )
-def test_windowed_similarity_shape(shape):
+def test_pairwise_similarity_shape(shape):
     n_records_a, n_windows_a, n_records_b, n_windows_b = shape
 
     emb_a = torch.randn(n_records_a, n_windows_a, TEST_EMBED_DIM)
     emb_b = torch.randn(n_records_b, n_windows_b, TEST_EMBED_DIM)
 
-    windowed_similarity = pairwise_cosine_similarity(emb_a, emb_b)
+    pairwise_similarity = pairwise_cosine_similarity(emb_a, emb_b)
 
-    assert windowed_similarity.shape == (n_records_a, n_records_b, n_windows_a, n_windows_b)
+    assert pairwise_similarity.shape == (n_records_a, n_records_b, n_windows_a, n_windows_b)
 
 @pytest.mark.parametrize(
     "n_windows", [torch.randint(5, 20, (2,)).tolist() for _ in range(20)]
 )
-def test_windowed_similarity_values(n_windows):
+def test_pairwise_similarity_values(n_windows):
     emb_a, emb_b = get_orthogonal_vectors(n_vectors=10, n_windows=n_windows)
 
-    windowed_similarity = pairwise_cosine_similarity(emb_a, emb_b)
+    pairwise_similarity = pairwise_cosine_similarity(emb_a, emb_b)
 
-    for i in range(windowed_similarity.shape[0]):
-        for j in range(windowed_similarity.shape[1]):
-            record_sim_pred = windowed_similarity[i, j]
+    for i in range(pairwise_similarity.shape[0]):
+        for j in range(pairwise_similarity.shape[1]):
+            record_sim_pred = pairwise_similarity[i, j]
             record_sim_expected = get_cosine_similarity(emb_a[i], emb_b[j])
             assert torch.isclose(record_sim_pred, record_sim_expected, atol=1e-06).all()
 
