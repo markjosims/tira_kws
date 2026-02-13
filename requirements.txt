@@ -11,3 +11,4 @@ unidecode
 tgt
 pytest
 numba
+torchmetrics
