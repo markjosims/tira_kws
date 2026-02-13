@@ -1,6 +1,31 @@
-from typing import *
+from typing import List, Union
 import torch
+import numpy as np
 from torch.nn.utils.rnn import pad_sequence
+
+"""
+## sequence utilities
+- pad_arrays_or_tensors: Pad a list of variable-length sequences to a common length.
+"""
+
+def pad_arrays_or_tensors(
+        sequences: Union[List[torch.Tensor], List[np.ndarray]],
+        padding_value: float = float('inf'),
+    ) -> Union[torch.Tensor, np.ndarray]:
+    """
+    Pad a sequence of embeddings to a common length. Encapsulates logic
+    for both torch and numpy tensors.
+    """
+    if isinstance(sequences[0], torch.Tensor):
+        return pad_sequence(sequences, batch_first=True, padding_value=padding_value) # type: ignore
+    elif isinstance(sequences[0], np.ndarray):
+        max_length = max(seq.shape[0] for seq in sequences)
+        padded_sequences = np.full((len(sequences), max_length, sequences[0].shape[1]), padding_value)
+        for i, seq in enumerate(sequences):
+            padded_sequences[i, :seq.shape[0], :] = seq
+        return padded_sequences
+    else:
+        raise ValueError("Unsupported sequence type. Expected torch.Tensor or np.ndarray.")
 
 """
 ## similarity computation utilities
@@ -9,6 +34,7 @@ from torch.nn.utils.rnn import pad_sequence
 - get_windowed_cosine_similarity: Compute cosine similarity matrix between windowed embeddings.
 """
 
+# @torch.compile
 def get_cosine_similarity(
         query_embeds: torch.Tensor,
         test_embeds: torch.Tensor,
@@ -45,7 +71,8 @@ def get_cosine_distance(
     """
     return 1-get_cosine_similarity(query_embeds, test_embeds)
 
-def get_windowed_cosine_similarity(
+# @torch.compile
+def pairwise_cosine_similarity(
         query_embeds: torch.Tensor,
         test_embeds: torch.Tensor,
         fillna: bool = False,

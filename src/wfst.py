@@ -8,7 +8,7 @@ from typing import *
 from torch.nn.utils.rnn import pad_sequence
 from src.constants import DEVICE, WFST_BATCH_SIZE
 from torch.utils.data import DataLoader
-from distance import get_windowed_cosine_similarity, pad_and_return_lengths
+from distance import pairwise_cosine_similarity, pad_and_return_lengths
 
 SELF_WEIGHT = torch.tensor(1).log()
 SKIP_WEIGHT = torch.tensor(1).log()
@@ -303,7 +303,7 @@ def decode_embed_list(
         and shortest path labels for each test phrase in the batch
     """
     if similarity_metric == 'cosine':
-        similarity_function = lambda *args: get_windowed_cosine_similarity(*args, fillna=True)
+        similarity_function = lambda *args: pairwise_cosine_similarity(*args, fillna=True)
     else:
         raise ValueError(f'Unknown similarity metric: {similarity_metric}')
 
