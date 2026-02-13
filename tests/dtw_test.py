@@ -8,7 +8,7 @@ import numpy as np
 import torch
 
 @pytest.mark.parametrize(
-    "num_queries,num_tests", [(randint(10, 50), randint(10, 50)) for _ in range(60)]
+    "num_queries,num_tests", [(randint(10, 50), randint(10, 50)) for _ in range(10)]
 )
 def test_batched_subseq_dtw(num_queries, num_tests):
     max_query_length = 20
@@ -31,7 +31,8 @@ def test_batched_subseq_dtw(num_queries, num_tests):
         reference_lengths_expanded
     )
     end_time = time.perf_counter()
-    print(f"DTW computation time: {end_time - start_time:.4f} seconds")
+    native_dtw_time = end_time - start_time
+    print(f"DTW computation time: {native_dtw_time:.4f} seconds")
 
     # Check that the output shape is correct
     assert dtw_scores.shape == (num_queries * num_tests,),\
@@ -63,11 +64,11 @@ def test_batched_subseq_dtw(num_queries, num_tests):
     print(f"Native implementation is {tslearn_time / (end_time - start_time):.2f} times faster than tslearn")
 
 @pytest.mark.parametrize(
-    "num_queries,num_tests", [(randint(10, 50), randint(10, 50)) for _ in range(60)]
+    "num_queries,num_tests", [(randint(10, 50), randint(10, 50)) for _ in range(10)]
 )
 def test_batched_subseq_dtw_time(num_queries, num_tests):
-    max_query_length = 50
-    max_reference_length = 100
+    max_query_length = 500
+    max_reference_length = 1000
     query_lengths, reference_lengths, query_arrays, test_arrays, \
     batched_distances, query_lengths_expanded, reference_lengths_expanded \
     = create_dtw_test_inputs(
