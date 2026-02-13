@@ -63,47 +63,47 @@ def test_batched_subseq_dtw(num_queries, num_tests):
     print(f"Total tslearn DTW computation time: {tslearn_time:.4f} seconds")
     print(f"Native implementation is {tslearn_time / (end_time - start_time):.2f} times faster than tslearn")
 
-@pytest.mark.parametrize(
-    "num_queries,num_tests", [(randint(10, 50), randint(10, 50)) for _ in range(10)]
-)
-def test_batched_subseq_dtw_time(num_queries, num_tests):
-    max_query_length = 500
-    max_reference_length = 1000
-    query_lengths, reference_lengths, query_arrays, test_arrays, \
-    batched_distances, query_lengths_expanded, reference_lengths_expanded \
-    = create_dtw_test_inputs(
-        num_queries,
-        num_tests,
-        max_query_length,
-        max_reference_length,
-        TEST_EMBED_DIM*10
-    )
+# @pytest.mark.parametrize(
+#     "num_queries,num_tests", [(randint(10, 50), randint(10, 50)) for _ in range(10)]
+# )
+# def test_batched_subseq_dtw_time(num_queries, num_tests):
+#     max_query_length = 500
+#     max_reference_length = 1000
+#     query_lengths, reference_lengths, query_arrays, test_arrays, \
+#     batched_distances, query_lengths_expanded, reference_lengths_expanded \
+#     = create_dtw_test_inputs(
+#         num_queries,
+#         num_tests,
+#         max_query_length,
+#         max_reference_length,
+#         TEST_EMBED_DIM*10
+#     )
 
-    # Compute DTW scores w/o prange
-    start_time = time.perf_counter()
-    dtw_scores_no_prange = batched_subseq_dtw(
-        batched_distances,
-        query_lengths_expanded,
-        reference_lengths_expanded,
-        use_prange=False
-    )
-    end_time = time.perf_counter()
-    no_prange_time = end_time - start_time
-    print(f"DTW computation time without prange: {no_prange_time:.4f} seconds")  
+#     # Compute DTW scores w/o prange
+#     start_time = time.perf_counter()
+#     dtw_scores_no_prange = batched_subseq_dtw(
+#         batched_distances,
+#         query_lengths_expanded,
+#         reference_lengths_expanded,
+#         use_prange=False
+#     )
+#     end_time = time.perf_counter()
+#     no_prange_time = end_time - start_time
+#     print(f"DTW computation time without prange: {no_prange_time:.4f} seconds")  
 
-    # Compute DTW scores with prange
-    start_time = time.perf_counter()
-    dtw_scores_prange = batched_subseq_dtw(
-        batched_distances,
-        query_lengths_expanded,
-        reference_lengths_expanded,
-        use_prange=True
-    )
-    end_time = time.perf_counter()
-    prange_time = end_time - start_time
-    print(f"DTW computation time with prange: {prange_time:.4f} seconds")
+#     # Compute DTW scores with prange
+#     start_time = time.perf_counter()
+#     dtw_scores_prange = batched_subseq_dtw(
+#         batched_distances,
+#         query_lengths_expanded,
+#         reference_lengths_expanded,
+#         use_prange=True
+#     )
+#     end_time = time.perf_counter()
+#     prange_time = end_time - start_time
+#     print(f"DTW computation time with prange: {prange_time:.4f} seconds")
 
-    print(f"Speedup with prange: {no_prange_time / prange_time:.2f}x")
+#     print(f"Speedup with prange: {no_prange_time / prange_time:.2f}x")
 
 def create_dtw_test_inputs(num_queries, num_tests, max_query_length, max_reference_length, embed_dim):
 

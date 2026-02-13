@@ -8,7 +8,6 @@ def batched_subseq_dtw(
     batched_distances: np.ndarray,
     query_lengths: np.ndarray,
     reference_lengths: np.ndarray,
-    use_prange: bool = True,
 ) -> np.ndarray:
     """
     Computes subsequence DTW distances for a batch of sequences.
@@ -47,8 +46,12 @@ def batched_subseq_dtw(
     batch_size = batched_distances.shape[0]
     dtw_scores = np.zeros(batch_size, dtype=np.float64)
 
-    def _subseq_dtw_inner(query_len, seq_len, dist_mat):
-        # for subsequence DTW, set the first column to 0
+    for b in prange(batch_size):
+        query_len = query_lengths[b]
+        seq_len = reference_lengths[b]
+        dist_mat = batched_distances[b]
+
+                # for subsequence DTW, set the first column to 0
         # (allowing for starting at any point in the reference sequence)
         cost = np.full(
             (query_len + 1, seq_len + 1),
@@ -67,24 +70,7 @@ def batched_subseq_dtw(
                 current_distance = dist_mat[i - 1, j - 1]
                 cost[i, j] = current_distance + min_cost
         min_cost = np.min(cost[query_len,1:seq_len+1])  # minimum cost over the last row
-        return min_cost
-
-    if use_prange:
-        for b in prange(batch_size):
-            query_len = query_lengths[b]
-            seq_len = reference_lengths[b]
-            dist_mat = batched_distances[b]
-
-            min_cost = _subseq_dtw_inner(query_len, seq_len, dist_mat)
-            dtw_scores[b] = min_cost
-    else:
-        for b in range(batch_size):
-            query_len = query_lengths[b]
-            seq_len = reference_lengths[b]
-            dist_mat = batched_distances[b]
-
-            min_cost = _subseq_dtw_inner(query_len, seq_len, dist_mat)
-            dtw_scores[b] = min_cost
+        dtw_scores[b] = min_cost
     
     return dtw_scores
 
