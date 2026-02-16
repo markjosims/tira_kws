@@ -1,31 +1,31 @@
 word_idx,index,word,token_count,lemma,phrase_count
-2466,2466,kə̀mɛ̀ɾðɔ́,16,mɛɾð,12
-500,500,làɾìt̪ɔ́,72,aɾ-it̪,23
-3302,3302,lùmɛ̀ðɛ̀,40,umɛð,24
-620,620,lɛ́ŋgɛ́n,68,lɛŋg,39
-1077,1077,èdɛ̀ɽì,37,ðə̀ðɛ̀ɽì,12
-54,54,ðàŋàlà,133,ðàŋàl,60
-623,623,bàcʊ̂m,70,bàcʊ̂m,30
-1204,1204,lə́vàvɾà,46,lə̀vàvɾì,19
-99,99,və̀lɛ̀ðá,278,vəlɛð,84
-260,260,ðáŋâl,47,ŋgá,17
-654,654,dɔ̀ŋðɔ́,121,dɔŋð,42
-395,395,lə̀və́r,341,lə̀və́r,162
-1,1,únɛ́ɾɛ́,1123,ùnɛ́ɾɛ́,395
-1293,1293,ndráðɛ́,22,ɛ̀ɾâð,11
-131,131,ðìcə̀lò,401,icəlo,150
-350,350,ŋìðɛ̀ní,162,ŋìðɛ̀ní,97
-267,267,àpɾíɲá,147,àpɾí,71
-2684,2684,àlkúɾcɛ́,26,àlkúrcì,12
-892,892,r̀lɛ̀ɲí,138,rlɛɲ,53
-337,337,t̪ólèɲá,86,t̪òlé,45
-747,747,t̪àwìðì,115,aw-ið,63
-6,6,nd̪ɔ̀bàgɛ̀,467,nd̪ɔ̀bàgɛ̀,166
-448,448,ŋìðìjí,50,ið-ij,34
-2912,2912,èdə̀ɽɔ̀l,27,àdə̀ɽɔ̀l,14
-86,86,ɔ̀ðə̀ŋɪ̀nà,36,ɔ̀ðə̀ŋɪ̀nà,17
-47,47,ɛ̀làɽà,96,ɛ̀làɽà,36
-155,155,sɔ̀ɽíŋgɔ́,44,sɔ̀ɽíŋgɔ́,21
-172,172,kúkùŋú,581,kúkù,286
-1854,1854,ŋə́rt̪á,29,ŋə́rt̪á,17
-224,224,àɽàŋgár,42,àɽàŋgár,18
+4131,4131,kam@rdo,15,"mɛɾð, ŋgá",12
+745,745,dic@lo,370,"icəlo, ɔɽ, t̪, âl",149
+269,269,bacum,83,"bàcʊ̂m, nɔn",36
+816,816,kangto,34,"aŋ-it̪, aŋ",14
+1583,1583,romoco,33,"ŋgá, ðɔ̀mɔ̀cɔ̀",18
+68,68,elara,195,"ɛ̀làɽà, nɔn, aɾ",64
+214,214,kukungu,459,"kúkù, ŋac, nɔn, r-it̪, ɲɛlac, ŋat̪-ið-it̪, vəlɛc, id-ij, j",214
+306,306,karoge,55,aɾ,31
+55,55,ulungu,80,"ùlùŋú, ðìt̪rɔ́",22
+200,200,l@ver,171,"lə̀və́r, ŋgá, t̪-ɛt̪",73
+472,472,donda,46,"ðɔ̀ndɔ̀, nɔn",34
+320,320,rleni,126,"rlɛɲ, m",53
+2,2,ndobage,415,"vəlɛð, ðàŋàl, vəlɛð-at̪, nd̪ɔ̀bàgɛ̀, piɽ-in, ij, nɔn, ɔd, jɛð, ŋgá",149
+522,522,aranggar,38,"àɽàŋgár, nɔn",17
+119,119,v@ledo,534,"vəlɛð, ðàŋàl, ùrnɔ̀",172
+273,273,emarden,76,"èmàɽðɛ́n, ɛ̀màð",31
+157,157,ngidini,54,"ið-ij, ðiɲ(2), ŋgá, ŋìðɛ̀ní",36
+1083,1083,alkurce,30,"àlkúrcì, nɔn",14
+3351,3351,langaca,51,ŋgá,18
+222,222,lurno,529,"ùrnɔ̀, ɔɾ-in",172
+1810,1810,dalgaraj,47,ðàlgàrâj,22
+5,5,unere,3328,"ùnɛ́ɾɛ́, vəlɛð, ðàŋàl, âl, ðə̀ðɛ̀ɽì, aɽ, ɔ́ɟɔ́, vɜɽ, lɔ́vɛ́ɽɛ́, ɛ́ɽɛ́, ɛ̀là(1), d̪uɾ, lə̀və́r, kaɾ-ið, ðuɽ, lə̀vàvɾì, ŋgá, àpɾí, ud, âɾò, kúkù, ánó, ur, tuð, kaɾc-ið, t̪-ið, utið-ið, um-ɛt̪-in, àlú, ið-in, eðin, ðɔ̀mɔ̀cɔ̀, bul, r̀ðɛ̀, dún, r̀ɽò, ij, ŋáó, ðùd̪ɔ̀, ɛ̀vàɾtɔ̀, id, kɔt̪-in, ònì, ʊ̀mí, ŋɛ́n, ðár, ð-in, álpʊ́ɾɔ́, ilɛð, ɔɽ-at̪, ɔŋɔŋɔn, ùðɛ̀, ní, ðɔ̂ɾà, ðùpì, uɽc, tut, ŋùðɛ́r, urmuð, ùt̪ùlú, um, òɽùwɛ́l, ɔ̀ðə̀ŋɪ̀nà, ìt̪ə̀ɾɔ́, àdám, var, vɾað, ðùɽì(1), vəlɛð-in, biɽ, adɔŋɔn, lídí, lə̀bú, aɽ-at̪, lɛŋc, lúcɔ́, umɛð, t̪ɔt̪, t̪ɔɽ, aɾ, nd̪ɔ̀bà, r, nǔr, ɔɽ, rlɛɲ, ájà, aj",1157
+1180,1180,edorol,27,"àdə̀ɽɔ̀l, ɔɽ",15
+177,177,edoro,433,"ðə̀ðɛ̀ɽì, vəlɛð, nɔn, uɽiðið, uɽið-ið",143
+85,85,aprina,337,"ið, àpɾí, uɽc-ij, ij, tuð-ij, uɽið-ij, ur-ij, utið-ij, t̪-ij, kaɾ-ij, ŋac-in, vəlɛð, nd-ij, mɛɾð, mɛrð",156
+37,37,dangala,289,"ðàŋàl, vəlɛð, vəlɛð-at̪, j, ŋac, ŋgá, dɔŋð",120
+286,286,dedoro,267,"vəlɛð, ŋgá, vɜɽ",84
+290,290,tolena,121,"t̪òlé, rlɛɲ, ŋɛ́n, nɔn-ɔt̪, nɔn",59
+441,441,l@v@r,79,"lə̀və́r, ŋgá, uɽið-at̪",40
+491,491,lenggen,94,"lɛŋg, àpɾí, nɔn, kɔt̪-ɔt̪, kɔt̪-it̪, kɔt̪-ij-it̪",50
