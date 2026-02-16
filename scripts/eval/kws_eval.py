@@ -6,7 +6,7 @@ AUROC and AUPRC.
 """
 
 import torch
-from src.constants import DISTANCE_DIR, KEYWORD_LIST, KEYWORD_SENTENCES
+from tira_kws.constants import DISTANCE_DIR, KEYWORD_LIST, KEYWORD_SENTENCES
 from torchmetrics.classification import BinaryEER, BinaryROC, F1Score
 from torchmetrics.retrieval import (
     RetrievalMAP, RetrievalRecall, RetrievalAUROC, RetrievalHitRate

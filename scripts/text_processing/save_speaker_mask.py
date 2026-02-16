@@ -4,8 +4,8 @@ For now, assuming that the dataset is TIRA DRZ.
 """
 
 import argparse
-from src.dataloading import load_tira_drz
-from src.constants import LABELS_DIR
+from tira_kws.dataloading import load_tira_drz
+from tira_kws.constants import LABELS_DIR
 import torch
 
 def parse_args():

@@ -6,9 +6,9 @@ This script adds the `keyword_idcs` key to the existing KEYWORD_LIST JSON file.
 See JSON structure in `keyword_list_builder.py`.
 """
 
-from src.constants import (MFA_SPEAKER_OUTPUT_DIR, KEYWORD_MANFIEST,
+from tira_kws.constants import (MFA_SPEAKER_OUTPUT_DIR, KEYWORD_MANFIEST,
     KEYWORD_SENTENCES, KEYWORDS_CSV, RECORDING_MANIFEST)
-from src.dataloading import load_elicitation_cuts
+from tira_kws.dataloading import load_elicitation_cuts
 from tgt.io import read_textgrid
 import pandas as pd
 import argparse

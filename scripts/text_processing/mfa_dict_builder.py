@@ -2,7 +2,7 @@ from typing import Dict, Optional, Sequence, Union
 from unicodedata import normalize
 from string import punctuation
 from argparse import ArgumentParser
-from src.constants import WORDS_CSV, MFA_DICT_PATH, ALIGNMENT_DIR
+from tira_kws.constants import WORDS_CSV, MFA_DICT_PATH, ALIGNMENT_DIR
 import pandas as pd
 from tqdm import tqdm
 

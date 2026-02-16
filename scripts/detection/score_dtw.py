@@ -6,14 +6,14 @@ the DTW score and save as a new CSV file 'manifest_dtw.csv' under
 data/distance/$feature_name.
 """
 
-from src.constants import DISTANCE_DIR
+from tira_kws.constants import DISTANCE_DIR
 import argparse
 from glob import glob
 import numpy as np
 import re
 import pandas as pd
 from tqdm import tqdm
-from src.dtw import batched_subseq_dtw
+from tira_kws.dtw import batched_subseq_dtw
 
 def main():
     args = get_args()

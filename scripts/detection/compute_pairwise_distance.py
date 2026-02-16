@@ -9,12 +9,12 @@ from tqdm import tqdm
 import torch
 import pandas as pd
 import numpy as np
-from src.dataloading import load_kws_cuts
-from src.distance import (
+from tira_kws.dataloading import load_kws_cuts
+from tira_kws.distance import (
     pairwise_cosine_similarity, pad_arrays_or_tensors,
     pad_matrices
 )
-from src.constants import DEVICE, DISTANCE_DIR, KEYWORD_SENTENCES
+from tira_kws.constants import DEVICE, DISTANCE_DIR, KEYWORD_SENTENCES
 import argparse
 import re
 

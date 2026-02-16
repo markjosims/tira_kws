@@ -40,14 +40,14 @@ from typing import List
 import os
 
 # local imports
-from src.dataloading import load_tira_asr, load_tira_drz
-from src.constants import (
+from tira_kws.dataloading import load_tira_asr, load_tira_drz
+from tira_kws.constants import (
     PHRASES_CSV, KEYPHRASE_CSV, CER_MATRIX_PATH,
     CALIBRATION_LIST, KEYPHRASE_LIST, PHRASE2RECORDS_PATH,
     CALIBRATION_NUM_NEGATIVE, CALIBRATION_NUM_POSITIVE,
     ENGLISH_CALIBRATION_LIST,
 )
-from scripts.text_processing.get_words_and_phrases import build_merged_phrases_csv, build_phrases_csv, build_phrase2records
+from scripts.text_processing.get_words_and_phrases import build_merged_phrases_csv, build_phrases_csv, build_record2phrase
 
 
 def define_keyphrases(unique_phrase_df, min_token_count=10):

@@ -6,7 +6,7 @@ Depends on:
   see `src/dataloading.py` for loading code and `src/constants.py` for path constants.
 
 Generates:
-- MERGED_PHRASES_CSV: mapping of EAF text to FST-normalized text
+- MERGED_PHRASES_CSV: mapping of EAF text to unicode-normalized text
 - RECORD2PHRASE_PATH: mapping of record indices to phrase indices
 - PHRASES_CSV: dataframe of unique phrases with token counts, gloss, and lemmata
 - WORDS_CSV: dataframe of unique words with token counts, gloss and lemmata
@@ -14,74 +14,38 @@ Generates:
 """
 
 from tqdm import tqdm
-import numpy as np
-from src.constants import (
-    WORDS_DIR, PHRASES_DIR, MERGED_PHRASES_CSV, PHRASES_CSV,
-    PHRASE2RECORDS_PATH, WORD2PHRASE_PATH, WORDS_CSV
+from tira_kws.constants import (
+    WORDS_DIR, PHRASES_DIR, PHRASES_CSV,
+    PHRASE2RECORDS_PATH, WORD2PHRASE_PATH, WORDS_CSV,
+    NORMALIZATION_TYPE, RECORD_LIST_CSV
 )
-from src.dataloading import load_supervisions_df
 import pandas as pd
 
-def build_merged_phrases_csv(df, output_path):
+def build_phrases_csv(phrase_merges_df, df, output_path):
     """
-    Build MERGED_PHRASES_CSV: mapping EAF text to FST-normalized text.
-
-    Finds instances where FST normalization caused several dissimilar
-    hand-transcribed sentences to merge.
-    """
-    print("Building merged phrases CSV...")
-
-    # Build mapping from FST text to EAF text variants
-    fst_to_eaf = {}
-    fst_unique = df['fst_text'].unique().tolist()
-    eaf_strs_encountered = set()
-
-    for fst_text in tqdm(fst_unique, desc="Processing FST texts"):
-        mask = df['fst_text'] == fst_text
-        eaf_text = df.loc[mask, 'eaf_text'].unique().tolist()
-        fst_to_eaf[fst_text] = eaf_text
-        # ensure only one FST str per EAF str
-        assert not any(eaf_str in eaf_strs_encountered for eaf_str in eaf_text)
-        eaf_strs_encountered.update(eaf_text)
-
-    # Create dataframe with unique EAF texts
-    eaf_unique_df = df.drop_duplicates(subset=['eaf_text'])
-    eaf_unique_df = eaf_unique_df.reset_index(drop=True)
-
-    eaf_unique_df['num_eaf_variants'] = eaf_unique_df['fst_text']\
-        .apply(fst_to_eaf.get)\
-        .apply(len)
-    eaf_unique_df = eaf_unique_df.sort_values('num_eaf_variants', ascending=False)
-
-    # Save to CSV
-    eaf_unique_df.to_csv(output_path, index_label='index')
-    print(f"Saved merged phrases CSV to {output_path}")
-    print(f"  Total unique FST texts: {len(fst_unique)}")
-    print(f"  Total unique EAF texts: {len(eaf_unique_df)}")
-
-    return eaf_unique_df
-
-
-def build_phrases_csv(eaf_unique_df, df, output_path):
-    """
-    Build PHRASES_CSV: dataframe with unique FST strings and token counts.
+    Build PHRASES_CSV: dataframe with unique normalized strings and token counts.
     """
     print("\nBuilding phrases CSV...")
 
-    # Create dataframe with unique FST phrases
-    unique_phrase_df = eaf_unique_df.drop(columns='eaf_text')
-    unique_phrase_df = unique_phrase_df.drop_duplicates(subset='fst_text')
-    unique_phrase_df = unique_phrase_df.rename(columns={'fst_text':'phrase'})
+    # Add column for normalized text to supervisions df
+    text2normalized = dict(
+        zip(phrase_merges_df['text'], phrase_merges_df['text_normalized'])
+    )
+    df['text_normalized'] = df['text'].map(text2normalized)
 
-    # Exclude phrases with only one word
-    single_word_mask = unique_phrase_df['phrase'].str.split().apply(len) <= 1
-    num_single_words = single_word_mask.sum()
-    unique_phrase_df = unique_phrase_df[~single_word_mask]
-    print(f"Found {num_single_words} phrases with only one word, dropping")
+    # Create dataframe with unique normalized phrases
+    unique_phrase_df = phrase_merges_df.drop(columns='text')
+    unique_phrase_df = unique_phrase_df.drop_duplicates(subset='text_normalized')
+    unique_phrase_df = unique_phrase_df.rename(columns={'text_normalized':'phrase'})
 
+    # # Exclude phrases with only one word
+    # single_word_mask = unique_phrase_df['phrase'].str.split().apply(len) <= 1
+    # num_single_words = single_word_mask.sum()
+    # unique_phrase_df = unique_phrase_df[~single_word_mask]
+    # print(f"Found {num_single_words} phrases with only one word, dropping")
 
     # Count occurrences of each phrase
-    token_counts = df['fst_text'].value_counts()
+    token_counts = df['text_normalized'].value_counts()
 
     # Map token counts to phrases
     unique_phrase_df = unique_phrase_df.set_index('phrase')
@@ -98,7 +62,7 @@ def build_phrases_csv(eaf_unique_df, df, output_path):
 
 def build_words_csv(unique_phrase_df, output_path):
     """
-    Build WORDS_CSV: dataframe with unique FST-normalize words alongside
+    Build WORDS_CSV: dataframe with unique normalized words alongside
     token and phrase counts.
     """
     print("\nBuilding words CSV...")
@@ -128,7 +92,7 @@ def build_words_csv(unique_phrase_df, output_path):
     # Get token and phrase counts per word
     word_rows = []
     for word in unique_words:
-        word_mask = unique_phrase_df['phrase'].str.contains(word)
+        word_mask = unique_phrase_df['phrase'].str.contains(rf'\b{word}\b', regex=True)
         token_count = unique_phrase_df.loc[word_mask, 'token_count'].sum()
         word_rows.append({
             'word': word,
@@ -149,7 +113,7 @@ def build_words_csv(unique_phrase_df, output_path):
 
     return word_df
 
-def build_phrase2records(df, unique_phrase_df, output_path) -> pd.DataFrame:
+def build_record2phrase(df, unique_phrase_df, output_path) -> pd.DataFrame:
     """
     Build RECORD2PHRASE_PATH: mapping of record index to phrase index.
     """
@@ -159,7 +123,8 @@ def build_phrase2records(df, unique_phrase_df, output_path) -> pd.DataFrame:
     phrase_to_idx = {phrase: idx for idx, phrase in unique_phrase_df['phrase'].items()}
 
     # Map each record to its phrase index
-    record2phrase = df['fst_text'].apply(phrase_to_idx.get).tolist()
+    record2phrase = df['text_normalized'].apply(phrase_to_idx.get)
+    record2phrase = record2phrase.tolist()
 
     # Save to dataframe
     record2phrase_df = pd.DataFrame(record2phrase, columns=['phrase_idx'])
@@ -202,19 +167,17 @@ def main():
     WORDS_DIR.mkdir(parents=True, exist_ok=True)
     PHRASES_DIR.mkdir(parents=True, exist_ok=True)
 
-    print("Loading Tira ASR dataset...")
-    df = load_supervisions_df()
-    df = df.rename(columns={'text': 'eaf_text'})
-    df = df.rename_axis('record_id', axis=1)
-    print(f"Loaded dataset with {len(df)} records")
-    print(df.head())
+    # Load supervisions dataframe
+    print("Loading Tira ASR data...")
+    df = pd.read_csv(RECORD_LIST_CSV, keep_default_na=False)
 
     # Build all files
-    eaf_unique_df = build_merged_phrases_csv(df, MERGED_PHRASES_CSV)
-    unique_phrase_df = build_phrases_csv(eaf_unique_df, df, PHRASES_CSV)
+    phrase_merges_path = PHRASES_DIR / f"merges_{NORMALIZATION_TYPE}.csv"
+    phrase_merges_df = pd.read_csv(phrase_merges_path, index_col='index', keep_default_na=False)
+    unique_phrase_df = build_phrases_csv(phrase_merges_df, df, PHRASES_CSV)
     words_df = build_words_csv(unique_phrase_df, WORDS_CSV)
 
-    build_phrase2records(df, unique_phrase_df, PHRASE2RECORDS_PATH)
+    build_record2phrase(df, unique_phrase_df, PHRASE2RECORDS_PATH)
     build_word2phrase(words_df, unique_phrase_df, WORD2PHRASE_PATH)
 
 if __name__ == '__main__':
