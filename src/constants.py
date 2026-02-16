@@ -103,7 +103,7 @@ Files needed for forced alignment using Montreal Forced Aligner (MFA).
 """
 
 # directory for storing MFA-related files
-ALIGNMENT_DIR =             LABELS_DIR / "alignment"
+ALIGNMENT_DIR =             DATA_DIR / "alignment"
 
 # TXT file containing MFA-format pronunciation dictionary
 # for all words in `WORDS_CSV`. Each line has format `word\tpronunciation`.
