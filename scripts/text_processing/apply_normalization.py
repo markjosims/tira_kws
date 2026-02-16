@@ -16,7 +16,8 @@ Generates:
 from tqdm import tqdm
 from unidecode import unidecode
 from tira_kws.constants import (
-    WORDS_DIR, PHRASES_DIR, RECORDS_DIR, RECORD_LIST_CSV
+    WORDS_DIR, PHRASES_DIR,
+    RECORDS_DIR, RECORD_LIST_CSV, UNNORMALIZED_WORDS
 )
 from tira_kws.dataloading import load_supervisions_df
 import pandas as pd
@@ -190,6 +191,13 @@ def main():
 
     # save updated dataframe to use for building other files
     df.to_csv(RECORD_LIST_CSV, index=False)
+    unnormalized_words = set()
+    df['text'].str.split().apply(unnormalized_words.update)
+    with open(UNNORMALIZED_WORDS, 'w') as f:
+        for word in sorted(unnormalized_words):
+            f.write(word + "\n")
+    print(f"Saved updated supervisions dataframe to {RECORD_LIST_CSV}")
+    print(f"Saved list of unique unnormalized words to {UNNORMALIZED_WORDS}")
 
 if __name__ == "__main__":
     main()

@@ -52,6 +52,7 @@ See `scripts/data_builders/text_preproc.py` for details.
 # mapping between normalized text and original records
 RECORDS_DIR =           LABELS_DIR / "records"
 RECORD_LIST_CSV =       RECORDS_DIR / "record_list.csv"
+UNNORMALIZED_WORDS =    RECORDS_DIR / "unnormalized_words.txt"
 
 # directories for word and phrase data
 WORDS_DIR =             LABELS_DIR / "words"
@@ -76,7 +77,7 @@ CER_MATRIX_PATH =       PHRASES_DIR / "cer_matrix.np"
 PHRASE2RECORDS_PATH =   PHRASES_DIR / "record2phrase.csv"
 
 # similar to `PHRASES_CSV`, each row is a unique word
-# (FST-normalized) along with its token count and lemma form.
+# (normalized) along with its token count and lemma form.
 WORDS_CSV =             WORDS_DIR / "tira_words.csv"
 
 # CSV mapping Tira word indices to phrase containing them
