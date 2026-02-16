@@ -19,7 +19,7 @@ item []:
         intervals [2]:
             xmin = 0.59 
             xmax = 1.22 
-            text = "jál" 
+            text = "jǎl" 
         intervals [3]:
             xmin = 1.22 
             xmax = 1.74 
@@ -30,12 +30,12 @@ item []:
             text = "ùɟí" 
         intervals [5]:
             xmin = 2.46 
-            xmax = 2.74 
+            xmax = 2.73 
             text = "" 
         intervals [6]:
-            xmin = 2.74 
+            xmin = 2.73 
             xmax = 3.32 
-            text = "t̪íjáló" 
+            text = "díjàlò" 
         intervals [7]:
             xmin = 3.32 
             xmax = 3.534 
@@ -104,18 +104,18 @@ item []:
             text = "i" 
         intervals [15]:
             xmin = 2.46 
-            xmax = 2.74 
+            xmax = 2.73 
             text = "" 
         intervals [16]:
-            xmin = 2.74 
-            xmax = 2.77 
-            text = "t" 
+            xmin = 2.73 
+            xmax = 2.86 
+            text = "d" 
         intervals [17]:
-            xmin = 2.77 
-            xmax = 2.81 
+            xmin = 2.86 
+            xmax = 2.9 
             text = "i" 
         intervals [18]:
-            xmin = 2.81 
+            xmin = 2.9 
             xmax = 2.95 
             text = "j" 
         intervals [19]:

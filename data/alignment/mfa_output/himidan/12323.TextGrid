@@ -11,36 +11,32 @@ item []:
         name = "words" 
         xmin = 0 
         xmax = 3.095 
-        intervals: size = 8 
+        intervals: size = 7 
         intervals [1]:
             xmin = 0.0 
             xmax = 0.21 
             text = "" 
         intervals [2]:
             xmin = 0.21 
-            xmax = 0.56 
-            text = "íŋgá" 
-        intervals [3]:
-            xmin = 0.56 
             xmax = 0.82 
-            text = "nɔ́nà" 
-        intervals [4]:
+            text = "íŋgánɔ́nà" 
+        intervals [3]:
             xmin = 0.82 
             xmax = 1.35 
             text = "ndráðɛ́" 
-        intervals [5]:
+        intervals [4]:
             xmin = 1.35 
             xmax = 1.67 
             text = "nɛ́" 
-        intervals [6]:
+        intervals [5]:
             xmin = 1.67 
-            xmax = 2.3 
+            xmax = 2.34 
             text = "rɔ̀mɔ̀cɔ̀" 
-        intervals [7]:
-            xmin = 2.3 
+        intervals [6]:
+            xmin = 2.34 
             xmax = 2.77 
             text = "nd̪ɔ̀bà" 
-        intervals [8]:
+        intervals [7]:
             xmin = 2.77 
             xmax = 3.095 
             text = "" 
@@ -100,14 +96,14 @@ item []:
             text = "ɹ" 
         intervals [13]:
             xmin = 1.02 
-            xmax = 1.12 
+            xmax = 1.14 
             text = "ɑ" 
         intervals [14]:
-            xmin = 1.12 
-            xmax = 1.15 
+            xmin = 1.14 
+            xmax = 1.17 
             text = "ð" 
         intervals [15]:
-            xmin = 1.15 
+            xmin = 1.17 
             xmax = 1.35 
             text = "ɛ" 
         intervals [16]:
@@ -140,10 +136,10 @@ item []:
             text = "tʃ" 
         intervals [23]:
             xmin = 2.26 
-            xmax = 2.3 
+            xmax = 2.34 
             text = "ɒ" 
         intervals [24]:
-            xmin = 2.3 
+            xmin = 2.34 
             xmax = 2.43 
             text = "n" 
         intervals [25]:

@@ -2,7 +2,7 @@ from typing import Dict, Optional, Sequence, Union
 from unicodedata import normalize
 from string import punctuation
 from argparse import ArgumentParser
-from tira_kws.constants import WORDS_CSV, MFA_DICT_PATH, ALIGNMENT_DIR
+from tira_kws.constants import UNNORMALIZED_WORDS, MFA_DICT_PATH, ALIGNMENT_DIR
 import pandas as pd
 from tqdm import tqdm
 
@@ -125,9 +125,14 @@ def main():
     ALIGNMENT_DIR.mkdir(parents=True, exist_ok=True)
 
     print(f"Reading Tira words from {args.input_file}...")
-    df = pd.read_csv(args.input_file)
+    words = []
+    with open(args.input_file, 'r') as f:
+        for line in f:
+            word = line.strip()
+            words.append(word)
+    print(f"Read {len(words)} unique unnormalized words")
     with open(args.output_file, 'w') as f:
-        for word in tqdm(df['word'].tolist(), desc="Converting words to MFA format"):
+        for word in tqdm(words, desc="Converting words to MFA format"):
             mfa_word = tira2mfa(word)
             f.write(f"{word}\t{mfa_word}\n")
     print(f"Wrote MFA dictionary to {args.output_file}")
@@ -136,7 +141,7 @@ def get_args():
     parser = ArgumentParser(description="Convert Tira words to MFA format")
     parser.add_argument(
         "--input_file", "-i",
-        default=WORDS_CSV,
+        default=UNNORMALIZED_WORDS,
         help="Path to input file containing Tira words"
     )
     parser.add_argument(

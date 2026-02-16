@@ -31,7 +31,7 @@ item []:
         intervals [5]:
             xmin = 1.33 
             xmax = 2.15 
-            text = "jɛ́r̀ɔ́" 
+            text = "jɛ̀rɔ́" 
         intervals [6]:
             xmin = 2.15 
             xmax = 2.67 
@@ -39,17 +39,17 @@ item []:
         intervals [7]:
             xmin = 2.67 
             xmax = 3.64 
-            text = "lɛ́mbré" 
+            text = "lɛ́mbrɛ̀" 
         intervals [8]:
             xmin = 3.64 
             xmax = 3.7 
             text = "" 
         intervals [9]:
             xmin = 3.7 
-            xmax = 4.11 
-            text = "nɜ́nì" 
+            xmax = 4.1 
+            text = "nánʊ̀" 
         intervals [10]:
-            xmin = 4.11 
+            xmin = 4.1 
             xmax = 4.567 
             text = "" 
     item [2]:
@@ -156,17 +156,17 @@ item []:
             text = "n" 
         intervals [25]:
             xmin = 3.85 
-            xmax = 4.01 
-            text = "ɐ" 
+            xmax = 4.0 
+            text = "ɑ" 
         intervals [26]:
-            xmin = 4.01 
+            xmin = 4.0 
             xmax = 4.08 
             text = "n" 
         intervals [27]:
             xmin = 4.08 
-            xmax = 4.11 
-            text = "i" 
+            xmax = 4.1 
+            text = "ʊ" 
         intervals [28]:
-            xmin = 4.11 
+            xmin = 4.1 
             xmax = 4.567 
             text = "" 

@@ -11,7 +11,7 @@ item []:
         name = "words" 
         xmin = 0 
         xmax = 2.73 
-        intervals: size = 8 
+        intervals: size = 7 
         intervals [1]:
             xmin = 0.0 
             xmax = 0.15 
@@ -19,7 +19,7 @@ item []:
         intervals [2]:
             xmin = 0.15 
             xmax = 0.43 
-            text = "àn" 
+            text = "án" 
         intervals [3]:
             xmin = 0.43 
             xmax = 0.88 
@@ -30,17 +30,13 @@ item []:
             text = "" 
         intervals [5]:
             xmin = 1.03 
-            xmax = 1.26 
-            text = "kál" 
-        intervals [6]:
-            xmin = 1.26 
             xmax = 1.82 
-            text = "və̀lɛ̀ðɔ́" 
-        intervals [7]:
+            text = "kálvə̀lɛ̀ðɔ́" 
+        intervals [6]:
             xmin = 1.82 
             xmax = 2.38 
             text = "nd̪ɔ̀bàgɛ̀" 
-        intervals [8]:
+        intervals [7]:
             xmin = 2.38 
             xmax = 2.73 
             text = "" 

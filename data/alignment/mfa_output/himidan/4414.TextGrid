@@ -11,7 +11,7 @@ item []:
         name = "words" 
         xmin = 0 
         xmax = 6.426 
-        intervals: size = 9 
+        intervals: size = 10 
         intervals [1]:
             xmin = 0.0 
             xmax = 0.22 
@@ -31,29 +31,33 @@ item []:
         intervals [5]:
             xmin = 1.88 
             xmax = 2.84 
-            text = "jɛ́r̀ɔ́" 
+            text = "jɛ̀rɔ́" 
         intervals [6]:
             xmin = 2.84 
-            xmax = 4.68 
+            xmax = 4.77 
             text = "" 
         intervals [7]:
-            xmin = 4.68 
+            xmin = 4.77 
             xmax = 5.66 
-            text = "lə́mbrá" 
+            text = "lɛ́mbrà" 
         intervals [8]:
             xmin = 5.66 
             xmax = 5.75 
             text = "" 
         intervals [9]:
             xmin = 5.75 
+            xmax = 6.19 
+            text = "nànʊ̀" 
+        intervals [10]:
+            xmin = 6.19 
             xmax = 6.426 
-            text = "nɜ̀nì" 
+            text = "" 
     item [2]:
         class = "IntervalTier" 
         name = "phones" 
         xmin = 0 
         xmax = 6.426 
-        intervals: size = 27 
+        intervals: size = 28 
         intervals [1]:
             xmin = 0.0 
             xmax = 0.22 
@@ -116,18 +120,18 @@ item []:
             text = "ɒ" 
         intervals [16]:
             xmin = 2.84 
-            xmax = 4.68 
+            xmax = 4.77 
             text = "" 
         intervals [17]:
-            xmin = 4.68 
+            xmin = 4.77 
             xmax = 4.97 
             text = "l" 
         intervals [18]:
             xmin = 4.97 
-            xmax = 5.06 
-            text = "ə" 
+            xmax = 5.05 
+            text = "ɛ" 
         intervals [19]:
-            xmin = 5.06 
+            xmin = 5.05 
             xmax = 5.28 
             text = "m" 
         intervals [20]:
@@ -153,12 +157,16 @@ item []:
         intervals [25]:
             xmin = 5.89 
             xmax = 6.07 
-            text = "ɐ" 
+            text = "ɑ" 
         intervals [26]:
             xmin = 6.07 
-            xmax = 6.16 
+            xmax = 6.17 
             text = "n" 
         intervals [27]:
-            xmin = 6.16 
+            xmin = 6.17 
+            xmax = 6.19 
+            text = "ʊ" 
+        intervals [28]:
+            xmin = 6.19 
             xmax = 6.426 
-            text = "i" 
+            text = "" 

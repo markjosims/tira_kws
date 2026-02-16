@@ -20,7 +20,6 @@ from argparse import ArgumentParser
 
 from tira_kws.dataloading import load_elicitation_cuts
 from tira_kws.constants import MFA_CORPUS_DIR, MFA_SPEAKER_DIR, KEYWORD_SENTENCES
-import soundfile as sf
 from pathlib import Path
 import pandas as pd
 
@@ -52,7 +51,7 @@ def main():
 
         # save transcription file (MFA expects a single line with the transcription)
         with open(transcription_path, 'w') as f:
-            f.write(cut.supervisions[0].custom['fst_text'])
+            f.write(cut.supervisions[0].text)
     cuts.map(save_mfa_record)
     print("Finished preparing MFA corpus")
 

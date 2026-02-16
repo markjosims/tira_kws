@@ -27,7 +27,7 @@ item []:
         intervals [4]:
             xmin = 0.61 
             xmax = 1.33 
-            text = "və̀lɛ̀ðá" 
+            text = "və̀lɛ̀ðà" 
         intervals [5]:
             xmin = 1.33 
             xmax = 1.75 
@@ -39,7 +39,7 @@ item []:
         intervals [7]:
             xmin = 2.23 
             xmax = 2.62 
-            text = "t̪ɔ́wɜ̀nì" 
+            text = "t̪ɔ́wə̀nì" 
         intervals [8]:
             xmin = 2.62 
             xmax = 3.07 
@@ -50,12 +50,12 @@ item []:
             text = "ðáŋàl" 
         intervals [10]:
             xmin = 3.34 
-            xmax = 3.74 
+            xmax = 3.78 
             text = "və̀lɛ̀ðɔ́" 
         intervals [11]:
-            xmin = 3.74 
+            xmin = 3.78 
             xmax = 4.22 
-            text = "t̪ɔ́wɜ̀nì" 
+            text = "t̪ɔ́wə̀nì" 
         intervals [12]:
             xmin = 4.22 
             xmax = 4.382 
@@ -165,7 +165,7 @@ item []:
         intervals [25]:
             xmin = 2.46 
             xmax = 2.52 
-            text = "ɐ" 
+            text = "ə" 
         intervals [26]:
             xmin = 2.52 
             xmax = 2.59 
@@ -212,36 +212,36 @@ item []:
             text = "ə" 
         intervals [37]:
             xmin = 3.47 
-            xmax = 3.55 
+            xmax = 3.66 
             text = "l" 
         intervals [38]:
-            xmin = 3.55 
-            xmax = 3.61 
+            xmin = 3.66 
+            xmax = 3.72 
             text = "ɛ" 
         intervals [39]:
-            xmin = 3.61 
-            xmax = 3.7 
+            xmin = 3.72 
+            xmax = 3.75 
             text = "ð" 
         intervals [40]:
-            xmin = 3.7 
-            xmax = 3.74 
+            xmin = 3.75 
+            xmax = 3.78 
             text = "ɒ" 
         intervals [41]:
-            xmin = 3.74 
+            xmin = 3.78 
             xmax = 3.82 
             text = "t" 
         intervals [42]:
             xmin = 3.82 
-            xmax = 3.86 
+            xmax = 3.87 
             text = "ɒ" 
         intervals [43]:
-            xmin = 3.86 
+            xmin = 3.87 
             xmax = 3.95 
             text = "w" 
         intervals [44]:
             xmin = 3.95 
             xmax = 3.98 
-            text = "ɐ" 
+            text = "ə" 
         intervals [45]:
             xmin = 3.98 
             xmax = 4.03 

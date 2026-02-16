@@ -18,16 +18,16 @@ item []:
             text = "ðà" 
         intervals [2]:
             xmin = 0.73 
-            xmax = 1.03 
-            text = "t̪àbùðɔ́l" 
+            xmax = 0.89 
+            text = "àbðôl" 
         intervals [3]:
-            xmin = 1.03 
+            xmin = 0.89 
             xmax = 1.33 
-            text = "bàcʊ̂m" 
+            text = "bàcùm" 
         intervals [4]:
             xmin = 1.33 
             xmax = 1.43 
-            text = "gɛ́" 
+            text = "gɛ̀" 
         intervals [5]:
             xmin = 1.43 
             xmax = 1.564 
@@ -37,7 +37,7 @@ item []:
         name = "phones" 
         xmin = 0 
         xmax = 1.564 
-        intervals: size = 17 
+        intervals: size = 15 
         intervals [1]:
             xmin = 0.0 
             xmax = 0.7 
@@ -48,61 +48,53 @@ item []:
             text = "ɑ" 
         intervals [3]:
             xmin = 0.73 
-            xmax = 0.76 
-            text = "t" 
-        intervals [4]:
-            xmin = 0.76 
-            xmax = 0.79 
+            xmax = 0.77 
             text = "ɑ" 
-        intervals [5]:
-            xmin = 0.79 
-            xmax = 0.82 
+        intervals [4]:
+            xmin = 0.77 
+            xmax = 0.8 
             text = "b" 
-        intervals [6]:
-            xmin = 0.82 
-            xmax = 0.85 
-            text = "ʉ" 
-        intervals [7]:
-            xmin = 0.85 
-            xmax = 0.97 
+        intervals [5]:
+            xmin = 0.8 
+            xmax = 0.83 
             text = "ð" 
-        intervals [8]:
-            xmin = 0.97 
-            xmax = 1.0 
-            text = "ɒ" 
-        intervals [9]:
-            xmin = 1.0 
-            xmax = 1.03 
+        intervals [6]:
+            xmin = 0.83 
+            xmax = 0.86 
+            text = "ow" 
+        intervals [7]:
+            xmin = 0.86 
+            xmax = 0.89 
             text = "l" 
+        intervals [8]:
+            xmin = 0.89 
+            xmax = 0.98 
+            text = "b" 
+        intervals [9]:
+            xmin = 0.98 
+            xmax = 1.03 
+            text = "ɑ" 
         intervals [10]:
             xmin = 1.03 
-            xmax = 1.07 
-            text = "b" 
-        intervals [11]:
-            xmin = 1.07 
-            xmax = 1.1 
-            text = "ɑ" 
-        intervals [12]:
-            xmin = 1.1 
             xmax = 1.19 
             text = "tʃ" 
-        intervals [13]:
+        intervals [11]:
             xmin = 1.19 
-            xmax = 1.21 
-            text = "ʊ" 
-        intervals [14]:
-            xmin = 1.21 
+            xmax = 1.22 
+            text = "ʉ" 
+        intervals [12]:
+            xmin = 1.22 
             xmax = 1.33 
             text = "m" 
-        intervals [15]:
+        intervals [13]:
             xmin = 1.33 
             xmax = 1.37 
             text = "ɡ" 
-        intervals [16]:
+        intervals [14]:
             xmin = 1.37 
             xmax = 1.43 
             text = "ɛ" 
-        intervals [17]:
+        intervals [15]:
             xmin = 1.43 
             xmax = 1.564 
             text = "" 

@@ -11,32 +11,28 @@ item []:
         name = "words" 
         xmin = 0 
         xmax = 2.11 
-        intervals: size = 7 
+        intervals: size = 6 
         intervals [1]:
             xmin = 0.0 
-            xmax = 0.18 
-            text = "" 
-        intervals [2]:
-            xmin = 0.18 
             xmax = 0.53 
-            text = "èdɛ̀ɽì" 
-        intervals [3]:
+            text = "ðɛ̀dɛ̀ɽì" 
+        intervals [2]:
             xmin = 0.53 
             xmax = 0.74 
             text = "ðá" 
-        intervals [4]:
+        intervals [3]:
             xmin = 0.74 
             xmax = 1.16 
             text = "ŋ́cɔ́lɔ̀" 
-        intervals [5]:
+        intervals [4]:
             xmin = 1.16 
             xmax = 1.53 
             text = "və̀lɛ̀ðɔ́" 
-        intervals [6]:
+        intervals [5]:
             xmin = 1.53 
             xmax = 1.9 
             text = "nd̪ɔ̀bà" 
-        intervals [7]:
+        intervals [6]:
             xmin = 1.9 
             xmax = 2.11 
             text = "" 
@@ -48,14 +44,14 @@ item []:
         intervals: size = 25 
         intervals [1]:
             xmin = 0.0 
-            xmax = 0.18 
-            text = "" 
+            xmax = 0.2 
+            text = "ð" 
         intervals [2]:
-            xmin = 0.18 
-            xmax = 0.22 
+            xmin = 0.2 
+            xmax = 0.23 
             text = "ɛ" 
         intervals [3]:
-            xmin = 0.22 
+            xmin = 0.23 
             xmax = 0.26 
             text = "d" 
         intervals [4]:
