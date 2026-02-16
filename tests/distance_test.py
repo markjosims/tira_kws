@@ -1,4 +1,4 @@
-from src.distance import get_cosine_similarity, pairwise_cosine_similarity
+from tira_kws.distance import get_cosine_similarity, pairwise_cosine_similarity
 import torch
 import pytest
 

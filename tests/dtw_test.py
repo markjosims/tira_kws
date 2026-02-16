@@ -1,5 +1,5 @@
-from src.dtw import batched_subseq_dtw, dtw_subsequence_path
-from src.distance import pairwise_cosine_similarity, pad_arrays_or_tensors
+from tira_kws.dtw import batched_subseq_dtw, dtw_subsequence_path
+from tira_kws.distance import pairwise_cosine_similarity, pad_arrays_or_tensors
 from tests.test_utils import TEST_EMBED_DIM
 import time
 import pytest

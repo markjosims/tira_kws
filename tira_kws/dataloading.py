@@ -1,4 +1,4 @@
-from src.constants import (
+from tira_kws.constants import (
     SUPERVISION_MANIFEST, RECORDING_MANIFEST, KEYWORD_MANFIEST, FEATURES_DIR
 )
 
@@ -19,6 +19,9 @@ def load_supervisions_df() -> pd.DataFrame:
     supervisions_df['gloss'] = supervisions_df['custom'].apply(lambda x: x['gloss'])
     supervisions_df['lemmata'] = supervisions_df['custom'].apply(lambda x: x['root'])
     supervisions_df = supervisions_df.drop(columns=['custom'])
+
+    # rename index to record_id for clarity and consistency with other files
+    supervisions_df = supervisions_df.rename_axis('record_id', axis=1)
 
     return supervisions_df
 

@@ -47,18 +47,23 @@ Files related to words and phrases extracted from the Tira ASR dataset.
 See `scripts/data_builders/text_preproc.py` for details.
 """
 
+# data from Tira ASR dataset supervisions
+# store locally since some text preprocessing steps may obscure
+# mapping between normalized text and original records
+RECORDS_DIR =           LABELS_DIR / "records"
+RECORD_LIST_CSV =       RECORDS_DIR / "record_list.csv"
+
 # directories for word and phrase data
 WORDS_DIR =             LABELS_DIR / "words"
 PHRASES_DIR =           LABELS_DIR / "phrases"
-
-# dataframe mapping `eaf_text` (raw string from ELAN)
-# to `fst_text` (string with most likely normalized form using FST parser).
-MERGED_PHRASES_CSV =    PHRASES_DIR / "keyphrases_rewritten_merges.csv"
 
 # dataframe where each row is a unique phrase (only
 # uses FST-normalized text) along with its token count
 # gloss and lemmata.
 PHRASES_CSV =           PHRASES_DIR / "tira_phrases.csv"
+
+# Use either FST normalization or unidecode normalization on raw EAF text.
+NORMALIZATION_TYPE = "unidecode" # change to "fst" to use FST normalization
 
 # matrix of character error rates (CER) between
 # all phrases in `PHRASES_CSV`.

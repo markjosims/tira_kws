@@ -6,9 +6,9 @@ import k2
 import torch
 from typing import *
 from torch.nn.utils.rnn import pad_sequence
-from src.constants import DEVICE, WFST_BATCH_SIZE
+from tira_kws.constants import DEVICE, WFST_BATCH_SIZE
+from tira_kws.distance import pairwise_cosine_similarity, pad_and_return_lengths
 from torch.utils.data import DataLoader
-from distance import pairwise_cosine_similarity, pad_and_return_lengths
 
 SELF_WEIGHT = torch.tensor(1).log()
 SKIP_WEIGHT = torch.tensor(1).log()

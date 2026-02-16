@@ -1,7 +1,9 @@
-from typing import List, Union
+from typing import List, Union, Tuple
 import torch
 import numpy as np
 from torch.nn.utils.rnn import pad_sequence
+
+from tira_kws.constants import DEVICE
 
 """
 ## sequence utilities
@@ -51,6 +53,40 @@ def pad_matrices(
         return padded_matrices
     else:
         raise ValueError("Unsupported matrix type. Expected torch.Tensor or np.ndarray.")
+
+def pad_and_return_lengths(
+        batch_embeds: List[torch.Tensor],
+) -> Tuple[torch.Tensor, torch.Tensor]:
+    """
+    Args:
+        batch_embeds: list of torch.Tensors indicating embedding tensors
+            for current batch
+
+    Returns: (padded_tensor,seq_lens) torch.Tensor containing padded
+        embeddings for the current batch and a torch.Tensor containing
+        the unpadded length of each sequence in the batch
+    """
+
+    # # enforce pad length for whole sequence by zero-padding first element
+    # first_row_len = batch_embeds[0].shape[0]
+    # embed_dim = batch_embeds[0].shape[-1]
+    # first_row_padding = torch.zeros(pad_len-first_row_len, embed_dim)
+    # first_row_padded = torch.cat([batch_embeds[0], first_row_padding], dim=0)
+    # batch_embeds[0] = first_row_padded
+
+    seq_lens = torch.tensor(
+        [seq.shape[0] for seq in batch_embeds],
+        dtype=int,
+        device=DEVICE,
+    )
+    padded_batch = pad_sequence(
+        batch_embeds,
+        batch_first=True,
+        padding_value=0.0,
+
+    )
+    padded_batch.to(DEVICE)
+    return padded_batch, seq_lens
 
 """
 ## similarity computation utilities

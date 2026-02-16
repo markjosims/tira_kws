@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tira-kws"
+version = "0.1.0"
+description = "Keyword and Keyphrase Search experiments for Tira"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {file = "LICENSE"}
+authors = [
+    {name = "Mark Joseph Simmons", email = "markjos@example.com"}
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    "tslearn",
+    "jiwer",
+    "tqdm",
+    "pandas",
+    "numpy",
+    "transformers",
+    "scikit-learn",
+    "librosa",
+    "soundfile",
+    "unidecode",
+    "tgt",
+    "pytest",
+    "numba",
+    "torchmetrics",
+]
+
+[project.urls]
+Homepage = "https://github.com/markjos/tira-kws"
+Repository = "https://github.com/markjos/tira-kws"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["tira_kws*"]
+
+[tool.setuptools.package-data]
+tira_kws = ["py.typed"]

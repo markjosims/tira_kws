@@ -1,4 +1,4 @@
-from distance import pairwise_cosine_similarity
+from tira_kws.distance import pairwise_cosine_similarity
 from tests.test_utils import get_orthogonal_vectors
 from wfst import decode_embed_list, decode_keyword_batch, decode_single_keyword
 import pytest
