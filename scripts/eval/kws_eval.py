@@ -21,10 +21,11 @@ def main():
     feature_name = args.feature_name
 
     print("Instantiating metrics...")
-    roc = BinaryROC()
     metric_dict = {
         'eer': BinaryEER(),
-        'f1': F1Score(task='binary', average='macro'),
+        'roc': BinaryROC(),
+        'f1_macro': F1Score(task='binary', average='macro'),
+        'f1_micro': F1Score(task='binary', average='micro'),
     }
     for k in args.k_values:
         metric_dict[f'map@{k}'] = RetrievalMAP(top_k=k)
@@ -74,28 +75,17 @@ def main():
             # negate scores since DTW scores are distances
             # then apply sigmoid so scores are between 0 and 1
             all_scores = -all_scores
-            all_scoes = torch.sigmoid(all_scores)
+            all_scores = torch.sigmoid(all_scores)
 
-
-            batch_metrics = {}
-            for metric_name, metric in metric_dict.items():
-                if '@' in metric_name:
-                    batch_metrics[metric_name] = metric(all_scores, all_labels, all_indices)
-                else:
-                    batch_metrics[metric_name] = metric(all_scores, all_labels)
-
-
-            fpr, tpr, thresholds = roc(all_scores, all_labels)
-            fpr_tpr_diff = fpr - (1-tpr)
-            fpr_tpr_diff = fpr_tpr_diff.abs()
-            min_diff_idx = fpr_tpr_diff.argmin()
-            eer_threshold = thresholds[min_diff_idx].item()
-
-            batch_metrics["eer_threshold"] = eer_threshold
+            batch_metrics = compute_metrics(
+                all_scores, all_labels, all_indices, metric_dict,
+            )
             eval_results.append(batch_metrics)
 
     summary_metrics = {}
     for metric, metric_obj in metric_dict.items():
+        if metric == 'roc':
+            continue
         summary_metrics[metric] = metric_obj.compute().item()
 
     # prepend summary metrics to eval results list so it will be the first row in the output CSV
@@ -116,6 +106,34 @@ def main():
 
     output_path = DISTANCE_DIR / feature_name / "evaluation_results.csv"
     eval_results_df.to_csv(output_path, index=False)
+
+def compute_metrics(all_scores, all_labels, all_indices, metric_dict):
+    batch_metrics = {}
+
+    # compute EER threshold using ROC curve
+    fpr, tpr, thresholds = metric_dict['roc'](all_scores, all_labels)
+    fpr_tpr_diff = fpr - (1-tpr)
+    fpr_tpr_diff = fpr_tpr_diff.abs()
+    min_diff_idx = fpr_tpr_diff.argmin()
+    eer_threshold = thresholds[min_diff_idx].item()
+
+    batch_metrics["eer_threshold"] = eer_threshold
+
+    # get predicted labels using EER threshold and compute F1 scores
+    pred_labels = (all_scores >= eer_threshold).long()
+    batch_metrics["f1_macro"] = metric_dict['f1_macro'](pred_labels, all_labels)
+    batch_metrics["f1_micro"] = metric_dict['f1_micro'](pred_labels, all_labels)
+
+    # compute remaining metrics
+    for metric_name, metric in metric_dict.items():
+        if metric_name in batch_metrics:
+            continue
+        elif '@' in metric_name:
+            batch_metrics[metric_name] = metric(all_scores, all_labels, all_indices)
+        else:
+            batch_metrics[metric_name] = metric(all_scores, all_labels)
+
+    return batch_metrics
 
 def get_args():
     parser = argparse.ArgumentParser()

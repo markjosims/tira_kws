@@ -1,10 +1,15 @@
 from tira_kws.constants import (
-    SUPERVISION_MANIFEST, RECORDING_MANIFEST, KEYWORD_MANFIEST, FEATURES_DIR
+    SUPERVISION_MANIFEST, RECORDING_MANIFEST, FEATURES_DIR
 )
 
 from typing import *
 import pandas as pd
-from lhotse import CutSet, RecordingSet, SupervisionSet, FeatureSet
+from lhotse import CutSet, RecordingSet, SupervisionSet
+from lhotse.cut import Cut
+from lhotse.dataset import K2SpeechRecognitionDataset, DynamicBucketingSampler
+from torch.utils.data import DataLoader
+from argparse import Namespace
+
 
 def load_supervisions_df() -> pd.DataFrame:
     """
@@ -44,11 +49,39 @@ def load_elicitation_cuts(index_list: Optional[List[int]] = None) -> CutSet:
     return cuts
 
 def load_kws_cuts(
-        feature_set: Literal['xlsr']
+        feature_set: Literal['xlsr', 'fbank'],
+        normalize_text: bool = False,
 ) -> Tuple[CutSet, CutSet]:
     cuts_path = FEATURES_DIR / f"kws_{feature_set}.jsonl"
     cuts = CutSet.from_jsonl(cuts_path)
     
     word_cuts = cuts.trim_to_alignments(type='word')
     sentence_cuts = cuts.trim_to_supervisions()
+
+    if normalize_text:
+        # 'normalized_text' field should be populated in supervisions already
+        def normalize_cut_text(cut: Cut) -> Cut:
+            cut.supervisions[0].text = cut.supervisions[0].custom['normalized_text']
+            return cut
+        word_cuts = word_cuts.map(normalize_cut_text)
+        sentence_cuts = sentence_cuts.map(normalize_cut_text)
     return word_cuts, sentence_cuts
+
+def get_k2_dataloader(cuts: CutSet, args: Namespace) -> DataLoader:
+    # based on GigaSpeechAsrDataModule.test_dataloders()
+    # in icefall/egs/gigaspeech/KWS/zipformer/asr_datamodule.py
+    # hardcoding defaults based on values in icefall/egs/gigaspeech/KWS/run.sh
+    test_ds = K2SpeechRecognitionDataset(return_cuts=True)
+    sampler = DynamicBucketingSampler(
+        cuts,
+        max_duration=args.max_duration,
+        max_cuts=args.max_cuts,
+        shuffle=False
+    )
+    test_dl = DataLoader(
+        test_ds,
+        batch_size=None,
+        sampler=sampler,
+        num_workers=0,
+    )
+    return test_dl
