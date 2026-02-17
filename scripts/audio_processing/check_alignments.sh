@@ -17,4 +17,4 @@ for textgrid_file in "${textgrid_files[@]}"; do
         echo "Warning: Corresponding WAV file not found for $textgrid_file at $wav_file"
     fi
 done
-praat --open ${wav_files[@]} ${textgrid_files[@]}
+praat --hide-picture --open ${wav_files[@]} ${textgrid_files[@]}
