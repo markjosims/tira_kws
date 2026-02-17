@@ -19,11 +19,12 @@ def main():
     args = get_args()
     feature_name = args.feature_name
 
-    feature_distance_dir = DISTANCE_DIR / feature_name
-    distance_matrices = feature_distance_dir.glob(f"distance_matrices_*.npz")
+    feature_dir = DISTANCE_DIR / feature_name
+    distance_matrix_dir = feature_dir / "distance_matrices"
+    distance_matrices = distance_matrix_dir.glob(f"distance_matrices_*.npz")
     distance_matrices = list(distance_matrices)
 
-    manifest_path = feature_distance_dir / "manifest.csv"
+    manifest_path = feature_dir / "manifest.csv"
     manifest_df = pd.read_csv(manifest_path)
     manifest_df['dtw_score'] = np.nan # initialize dtw_score column with NaN values
     
@@ -56,7 +57,7 @@ def main():
 
         manifest_df.iloc[batch_start:batch_end, dtw_score_col_loc] = dtw_scores
 
-    output_path = feature_distance_dir / "manifest_dtw.csv"
+    output_path = feature_dir / "manifest_dtw.csv"
     manifest_df.to_csv(output_path, index=False)
 
 def get_args():

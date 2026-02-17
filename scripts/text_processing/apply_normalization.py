@@ -190,7 +190,7 @@ def main():
     df = df.drop(columns=['text_normalized'])
 
     # save updated dataframe to use for building other files
-    df.to_csv(RECORD_LIST_CSV, index=False)
+    df.to_csv(RECORD_LIST_CSV, index_label='record_idx')
     unnormalized_words = set()
     df['text'].str.split().apply(unnormalized_words.update)
     with open(UNNORMALIZED_WORDS, 'w') as f:

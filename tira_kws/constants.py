@@ -13,13 +13,32 @@ BATCH_SIZE = int(os.environ.get("BATCH_SIZE", 256))
 
 ## model names
 
+MODEL_DIR = os.environ.get("MODEL_DIR", "~/models")
+MODEL_DIR = Path(os.path.expanduser(MODEL_DIR))
+
 CLAP_IPA_ENCODER_NAME = 'anyspeech/clap-ipa-{encoder_size}-speech'
 CLAP_IPA_TEXT_ENCODER_NAME = 'anyspeech/clap-ipa-{encoder_size}-phone'
 IPA_ALIGNER_ENCODER_NAME = 'anyspeech/ipa-align-{encoder_size}-speech'
 
 SPEECHBRAIN_LID_ENCODER_NAME = 'speechbrain/lang-id-voxlingua107-ecapa'
 
+ZIPA_SMALL_CTC = MODEL_DIR / "zipa" / "zipa_small_crctc_300000_avg10.pth"
+ZIPA_SMALL_TRANSDUCER = MODEL_DIR / "zipa" / "zipa_small_noncausal_500000_avg10.pth"
+
 # file paths
+
+## external code repositories
+ZIPA_DIR = os.environ.get("ZIPA_DIR", "~/projects/zipa")
+ZIPA_DIR = Path(os.path.expanduser(ZIPA_DIR))
+ZIPA_DIR = ZIPA_DIR.resolve()
+ZIPA_SENTENCEPIECE_MODEL = ZIPA_DIR / "ipa_simplified/unigram_127.model"
+ZIPA_IPA_SET = ZIPA_DIR / "ipa_simplified/phone_set.txt"
+
+ICEFALL_DIR = os.environ.get("ICEFALL_DIR", "~/projects/icefall")
+ICEFALL_DIR = Path(os.path.expanduser(ICEFALL_DIR))
+ICEFALL_DIR = ICEFALL_DIR.resolve()
+ICEFALL_MODULE = ICEFALL_DIR / "icefall"
+GIGASPEECH_KWS_DIR = ICEFALL_DIR / "egs" / "gigaspeech" / "KWS"
 
 ## dataset paths
 DATASETS_DIR = os.environ.get("DATASETS", "~/datasets")
@@ -65,6 +84,10 @@ PHRASES_CSV =           PHRASES_DIR / "tira_phrases.csv"
 
 # Use either FST normalization or unidecode normalization on raw EAF text.
 NORMALIZATION_TYPE = "unidecode" # change to "fst" to use FST normalization
+
+# Path to CSV containing word and phrase merges for the chosen normalization type.
+WORD_MERGES_CSV =   WORDS_DIR / f"merges_{NORMALIZATION_TYPE}.csv"
+PHRASE_MERGES_CSV = PHRASES_DIR / f"merges_{NORMALIZATION_TYPE}.csv"
 
 # matrix of character error rates (CER) between
 # all phrases in `PHRASES_CSV`.

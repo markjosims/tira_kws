@@ -6,8 +6,11 @@ This script adds the `keyword_idcs` key to the existing KEYWORD_LIST JSON file.
 See JSON structure in `keyword_list_builder.py`.
 """
 
-from tira_kws.constants import (MFA_SPEAKER_OUTPUT_DIR, KEYWORD_MANFIEST,
-    KEYWORD_SENTENCES, KEYWORDS_CSV, RECORDING_MANIFEST)
+from tira_kws.constants import (
+    MFA_SPEAKER_OUTPUT_DIR, KEYWORD_MANFIEST, WORD_MERGES_CSV,
+    KEYWORD_SENTENCES, KEYWORDS_CSV, RECORDING_MANIFEST,
+    RECORD_LIST_CSV, NORMALIZATION_TYPE,
+)
 from tira_kws.dataloading import load_elicitation_cuts
 from tgt.io import read_textgrid
 import pandas as pd
@@ -17,16 +20,21 @@ from lhotse import SupervisionSegment, SupervisionSet, RecordingSet
 from lhotse.supervision import AlignmentItem
 from lhotse.qa import validate_recordings_and_supervisions
 from unicodedata import normalize
-from typing import Tuple
+from typing import List, Tuple
 
 def main():
     args = get_args()
 
     # load Tira supervisions
     print("Loading Tira supervisions...")
+
     keyword_sentences_df = pd.read_csv(args.keyword_sentences_file)
-    keyword_df = pd.read_csv(KEYWORDS_CSV)
+    keyword_df = pd.read_csv(KEYWORDS_CSV, keep_default_na=False)
+    merges_df = pd.read_csv(WORD_MERGES_CSV, keep_default_na=False)
+    record_df= pd.read_csv(RECORD_LIST_CSV, keep_default_na=False)
+
     record_indices = keyword_sentences_df['record_idx'].tolist()
+    normalized_col = f"{NORMALIZATION_TYPE}_normalized"
     cuts = load_elicitation_cuts(index_list=record_indices)
 
     positive_indices = keyword_sentences_df[keyword_sentences_df['is_positive']]['record_idx'].apply(str).tolist()
@@ -40,11 +48,20 @@ def main():
         sentence_supervision = cut.supervisions[0]
         sentence_supervision.start = cut.start
 
+        # set text to string from record list
+        # so that preprocessing is accounted for
+        record_mask = record_df['record_idx'] == int(cut.id)
+        if record_mask.sum() != 1:
+            raise ValueError(f"Expected exactly one record corresponding to cut {cut.id} in record list, but got {record_df[record_mask]}")
+        sentence_supervision.text = str(record_df.loc[record_mask, 'text'].iloc[0])
+        sentence_supervision.custom['normalized_text'] = str(record_df.loc[record_mask, normalized_col].iloc[0])
+
         # only add keyword supervisions for cuts corresponding to positive records
         # since negative records don't contain the keyword
         if cut.id in positive_indices:
             word_idx, current_keyword = get_current_keyword(keyword_sentences_df, keyword_df, cut)
-            keyword_alignment = get_keyword_alignment(current_keyword, cut)
+            raw_keywords = get_raw_keywords(current_keyword, merges_df)
+            keyword_alignment = get_keyword_alignment(raw_keywords, cut)
 
             sentence_supervision.custom['keyword_type'] = "positive_sentence"
             sentence_supervision.custom['keyword'] = current_keyword
@@ -84,9 +101,19 @@ def get_current_keyword(keyword_sentences_df, keyword_df, cut) -> Tuple[int, str
     current_keyword = str(current_keyword.iloc[0])
     return word_idx, current_keyword
 
+def get_raw_keywords(current_keyword: str, merges_df: pd.DataFrame) -> List[str]:
+    """
+    Get all 'word' entries corresponding to the given normalized keyword
+    ('word_normalized' column) from the merges dataframe.
+    """
+    normalized_word_mask = merges_df['word_normalized'] == current_keyword
+    if normalized_word_mask.sum() == 0:
+        raise ValueError(f"Expected at least one raw word corresponding to normalized keyword '{current_keyword}', but got {merges_df[normalized_word_mask]}")
+    raw_keywords = merges_df.loc[normalized_word_mask, 'word'].tolist()
+    return raw_keywords
 
 def get_keyword_alignment(
-          current_keyword: str,
+          current_keywords: List[str],
           cut: SupervisionSegment
         ) -> AlignmentItem:
     record_id = cut.id
@@ -100,13 +127,13 @@ def get_keyword_alignment(
     for interval in intervals:
         # normalize text to ensure matching with keywords in KEYWORDS_CSV
         interval_text = normalize("NFKD", interval.text)
-        if interval_text == current_keyword:
+        if interval_text in current_keywords:
             keyword_interval = interval
             break
 
     # sanity check: ensure at least one interval with the keyword text
     assert keyword_interval is not None, "Expected at least one interval with keyword"\
-        + f" '{current_keyword}' for record {record_id}, but got {intervals}"
+        + f" '{current_keywords}' for record {record_id}, but got {intervals}"
 
     # start and end times of the keyword interval are relative to the start of the cut
     # change to be absolute times relative to the start of the recording
@@ -114,7 +141,7 @@ def get_keyword_alignment(
     end = cut.start + keyword_interval.end_time
     # create supervision segment for the keyword interval
     keyword_alignment = AlignmentItem(
-        symbol=current_keyword,
+        symbol=keyword_interval.text,
         start=start,
         duration=end-start,
     )

@@ -23,8 +23,11 @@ def main():
 
     args = get_args()
     feature_name = args.feature_name
-    feature_distance_dir = DISTANCE_DIR / feature_name
-    feature_distance_dir.mkdir(exist_ok=True, parents=True)
+    feature_dir = DISTANCE_DIR / feature_name
+    distance_matrix_dir = feature_dir / "distance_matrices"
+
+    feature_dir.mkdir(exist_ok=True, parents=True)
+    distance_matrix_dir.mkdir(exist_ok=True, parents=True)
 
     # Load keyword cuts
     print(f"Loading cuts for feature set '{feature_name}'...")
@@ -86,23 +89,25 @@ def main():
         padded_batch = pad_matrices(batch_matrices)
         batch_start = i*len(test_phrase_cuts)
         batch_end = batch_start + len(batch_matrices)
-        distance_matrix_path = feature_distance_dir / f"distance_matrices_{batch_start}_{batch_end}.npz"
+        distance_matrix_path = distance_matrix_dir / f"distance_matrices_{batch_start}_{batch_end}.npz"
         np.savez_compressed(distance_matrix_path, batch_matrices=padded_batch)
     
-    print(f"Saved distance matrices to {feature_distance_dir}")
+    print(f"Saved distance matrices to {distance_matrix_dir}")
 
     print("Saving manifest...")
-    manifest_path = feature_distance_dir / "manifest.csv"
+    manifest_path = feature_dir / "manifest.csv"
     manifest_df = pd.DataFrame(manifest)
 
     # associate word indices with positive phrase IDs in manifest
     keyword_sentences = pd.read_csv(KEYWORD_SENTENCES)
     phrase_idx2word_idx = {
-        row['phrase_idx']: row['word_idx']
+        int(row['phrase_idx']): int(row['word_idx'])
         for _, row in keyword_sentences.iterrows()
     }
     manifest_df['positive_record_id'] = manifest_df['positive_record_id'].astype(int)
     manifest_df['keyword_id'] = manifest_df['positive_record_id'].map(phrase_idx2word_idx)
+    assert manifest_df['keyword_id'].isna().sum() == 0,\
+        "Expected all positive record IDs in manifest to have a corresponding keyword ID, but got some missing values"
     print("Associated keyword IDs with positive phrase IDs in manifest")
 
     print(manifest_df.head())
