@@ -12,3 +12,4 @@ tgt
 pytest
 numba
 torchmetrics
+wandb
