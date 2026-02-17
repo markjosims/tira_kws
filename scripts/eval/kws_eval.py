@@ -133,6 +133,11 @@ def compute_metrics(all_scores, all_labels, all_indices, metric_dict):
         else:
             batch_metrics[metric_name] = metric(all_scores, all_labels)
 
+    # cast all metric values to Python floats for easier saving to CSV
+    for metric_name, metric_value in batch_metrics.items():
+        if isinstance(metric_value, torch.Tensor):
+            batch_metrics[metric_name] = metric_value.item()
+
     return batch_metrics
 
 def get_args():
