@@ -149,9 +149,9 @@ def get_all_words(df: pd.DataFrame, text_col: str = "text") -> set[str]:
     return words
 
 
-def get_ith_keyword(i: int) -> str:
+def get_keyword_index(keyword_str: str) -> int:
     keywords = st.session_state["keyword_df"]["keyword"].tolist()
-    return keywords[i]
+    return keywords.index(keyword_str)
 
 
 load_all_dataframes()
@@ -169,15 +169,48 @@ st.button(
     ),
 )
 
-current_keyword_i = st.pills(
+keyword_list = st.session_state["keyword_df"]["keyword"]
+
+current_keyword = st.pills(
     "Keyword query",
-    options=list(range(len(st.session_state["keyword_df"]["keyword"]))),
-    format_func=get_ith_keyword,
-    key="current_keyword_i",
+    options=st.session_state["keyword_df"]["keyword"],
+    key="current_keyword",
 )
-current_keyword = None
-if current_keyword_i is not None:
-    current_keyword = get_ith_keyword(current_keyword_i)
+current_keyword_i = None
+if current_keyword is not None:
+    current_keyword_i = get_keyword_index(current_keyword)
+st.session_state["current_keyword_i"] = current_keyword
+
+with st.popover("Progress"):
+    current_keyword = st.session_state.get("current_keyword", None)
+    st.progress(
+        value=len(keyword_list) / 10, text=f"Num keywords {len(keyword_list)}/10"
+    )
+    st.progress(
+        value=len(st.session_state["negative_df"]) / 100,
+        text=f"Negatives records: {len(st.session_state['negative_df'])}/100",
+    )
+
+    if current_keyword:
+        keyword_positives = (
+            st.session_state["positive_df"]["keyword"]
+            .value_counts()
+            .get(current_keyword, 0)
+        )
+        keyword_negatives = (
+            st.session_state["close_negative_df"]["keyword"]
+            .value_counts()
+            .get(current_keyword, 0)
+        )
+
+        st.progress(
+            value=keyword_positives / 10,
+            text=f"Positive records for {current_keyword} {keyword_positives}/10",
+        )
+        st.progress(
+            value=keyword_negatives / 10,
+            text=f"Close negative records for {current_keyword} {keyword_negatives}/10",
+        )
 
 search_column = st.selectbox(
     "Text column to use for searching:",
@@ -220,7 +253,11 @@ list_to_edit = st.selectbox(
 rows = None
 if selection and "selection" in selection and "rows" in selection["selection"]:
     rows = selection["selection"]["rows"]
-if current_keyword and rows and st.session_state.get("list_to_edit", None):
+if (
+    (current_keyword or list_to_edit == "negative_df")
+    and rows
+    and st.session_state.get("list_to_edit", None)
+):
     with st.container(border=True):
         list_to_edit = st.session_state["list_to_edit"]
         row_index = rows[0]
@@ -228,18 +265,20 @@ if current_keyword and rows and st.session_state.get("list_to_edit", None):
         row_data = selected_records.iloc[row_index]
         st.markdown(f"**Unnormalized text**:\t{row_data['text']}")
         st.markdown(f"**Translation**:\t{row_data['translation']}")
-        st.markdown(f"**Keyword**:\t\t{current_keyword}")
+        if list_to_edit != "negative_df":
+            st.markdown(f"**Keyword**:\t\t{current_keyword}")
         textnorm_sentence = st.text_input(
             label="Updated sentence", value=row_data["fst_normalized"]
         )
         new_row = {
-            "keyword": current_keyword,
-            "keyword_id": current_keyword_i,
             "sentence_id": row_data["record_idx"],
             "original_sentence": row_data["text"],
             "textnorm_sentence": textnorm_sentence,
             "translation": row_data["translation"],
         }
+        if list_to_edit != "negative_df":
+            new_row["keyword"] = current_keyword
+            new_row["keyword_i"] = current_keyword_i
         add_row = st.button(
             label=f"Add row to {list_to_edit}",
             on_click=lambda: put_row_to_dataframe(
@@ -252,5 +291,11 @@ if current_keyword and rows and st.session_state.get("list_to_edit", None):
 
 if list_to_edit:
     st.data_editor(st.session_state[list_to_edit], num_rows="delete")
+    st.button(
+        label=f"Save {list_to_edit}",
+        on_click=lambda: save_dataframe(
+            key=list_to_edit, df=st.session_state[list_to_edit]
+        ),
+    )
 
 logger.debug(selection)
