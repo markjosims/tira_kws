@@ -13,6 +13,21 @@ def load_supervisions_df() -> pd.DataFrame:
     """
     Load supervision segments from the Tira elicitation dataset
     and return as a dataframe.
+
+    Each row is a single audio record.
+    Dataframe should have columns:
+    - 'id': record index
+    - 'recording_id': stem for elicitation source
+    - 'start': start time in seconds
+    - 'duration': duration in seconds
+    - 'channel': audio channel, should always be 0
+    - 'text': Tira transcription
+    - 'language': should always be 'tic' (Tira ISO code)
+    - 'speaker': should always be 'Himidan'
+    - 'fst_text': FST parser normalization of 'text'
+    - 'gloss': FST parser gloss
+    - 'root': FST root/lemma forms for each word
+    - 'translation': free translation, may be null
     """
     supervisions_df = pd.read_json(SUPERVISION_MANIFEST, lines=True)
     supervisions_df = supervisions_df.set_index("id")
@@ -35,6 +50,12 @@ def load_supervisions_df() -> pd.DataFrame:
 
 
 def load_elicitation_cuts(index_list: Optional[List[int]] = None) -> CutSet:
+    """
+    Load Lhotse cutset for Tira elicitation audio.
+
+    By default, loads all records. If `index_list` is passed, only loads
+    records whose ID is contained in `index_list`.
+    """
     recordings = RecordingSet.from_jsonl(RECORDING_MANIFEST)
     supervisions = SupervisionSet.from_jsonl(SUPERVISION_MANIFEST)
     cuts = CutSet.from_manifests(

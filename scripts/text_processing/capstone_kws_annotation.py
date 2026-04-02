@@ -2,152 +2,47 @@
 Interface for selecting keywords and keyword sentences.
 """
 
-import keyword
 import streamlit as st
 import rapidfuzz
 
 from tira_kws.constants import (
     CAPSTONE_DIR,
-    CAPSTONE_KEYWORDS,
-    CAPSTONE_POSITIVE_RECORDS,
-    CAPSTONE_CLOSE_NEGATIVE_RECORDS,
-    CAPSTONE_NEGATIVE_RECORDS,
-    RECORD_LIST_CSV,
+    CAPSTONE_KWS_WORDLIST,
+)
+from tira_kws.interface_utils import (
+    load_all_dataframes,
+    save_dataframe,
+    put_row_to_dataframe,
 )
 import pandas as pd
-from pathlib import Path
 import logging
 import sys
 from unidecode import unidecode
+
 
 logger = logging.getLogger(__file__)
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 CAPSTONE_DIR.mkdir(exist_ok=True)
 
-# try to load each csv
-# if the file does not exist, create blank dataframe with expected columns
-
-df2columns = {
-    "keyword_df": ["keyword", "keyword_id", "gloss"],
-    "positive_df": [
-        "keyword",
-        "keyword_id",
-        "sentence_id",
-        "translation",
-        "original_sentence",
-        "textnorm_sentence",
-        "audionorm_sentence",
-        "audio_quality",
-        "comment",
-    ],
-    "close_negative_df": [
-        "keyword",
-        "keyword_id",
-        "sentence_id",
-        "translation",
-        "original_sentence",
-        "textnorm_sentence",
-        "audionorm_sentence",
-        "audio_quality",
-        "comment",
-    ],
-    "negative_df": [
-        "sentence_id",
-        "translation",
-        "original_sentence",
-        "textnorm_sentence",
-        "audionorm_sentence",
-        "audio_quality",
-        "comment",
-    ],
-}
-
-df2file = {
-    "keyword_df": CAPSTONE_KEYWORDS,
-    "positive_df": CAPSTONE_POSITIVE_RECORDS,
-    "close_negative_df": CAPSTONE_CLOSE_NEGATIVE_RECORDS,
-    "negative_df": CAPSTONE_NEGATIVE_RECORDS,
-    "record_df": RECORD_LIST_CSV,
-}
-
-
-def load_dataframe(key: str) -> pd.DataFrame:
-    filepath = df2file[key]
-
-    # if a dataframe is listed in `df2columns`, it should be initialized lazily
-    # if not, we expect it already exists
-    create_if_not_found = key in df2columns
-
-    if not filepath.exists() and create_if_not_found:
-        columns = pd.Index(df2columns[key])
-        df = pd.DataFrame(columns=columns)
-    elif not filepath.exists():
-        raise FileNotFoundError(filepath)
-    else:
-        df = pd.read_csv(str(filepath))
-
-    return df
-
-
-def load_all_dataframes():
-    for key in df2file.keys():
-        if key in st.session_state:
-            continue
-        df = load_dataframe(key)
-        st.session_state[key] = df
-
-
-def update_dataframe(
-    df: pd.DataFrame | dict[str, pd.DataFrame], key: str | None = None
-):
-    """
-    Updates the in-memory dataframe stored in the streamlit session state.
-    Does NOT update the csv on disk.
-    """
-    if type(key) is str:
-        assert type(df) is pd.DataFrame
-        st.session_state[key] = df
-        return
-
-    assert type(df) is dict
-    for key in df2file.keys():
-        st.session_state[key] = df[key]
-
-
-def save_dataframe(df: pd.DataFrame | dict[str, pd.DataFrame], key: str | None = None):
-    """
-    Updates in-memory dataframes and writes to disk.
-    """
-    update_dataframe(df=df, key=key)
-    if type(key) is str:
-        assert type(df) is pd.DataFrame
-        filepath = df2file[key]
-        file_str = str(filepath)
-        df.to_csv(file_str, index=False)
-        st.toast(f"Saved {key} to {file_str}!")
-        return
-
-    assert type(df) is dict
-    for (
-        item_key,
-        item_df,
-    ) in df.items():
-        save_dataframe(df=item_df, key=item_key)
-
-
-def put_row_to_dataframe(key: str, row: dict[str, str | int]):
-    df = st.session_state[key]
-    df.loc[len(df)] = row
-    st.session_state[key] = df
-
-
 @st.cache_data
-def get_all_words(df: pd.DataFrame, text_col: str = "text") -> set[str]:
+def get_words_from_records(df: pd.DataFrame, text_col: str = "text") -> set[str]:
     words = set()
     df[text_col].str.split().apply(words.update)
     return words
 
+def get_words_from_kws_data(col: str = "textnorm_sentence") -> set[str]:
+    words = set()
+    for df_key in ["positive_df", "negative_df", "close_negative_df"]:
+        df = st.session_state[df_key]
+        df[col].str.split().apply(words.update)
+    return words
+
+def save_words_from_kws_data(col: str = "textnorm_sentence"):
+    kws_words = get_words_from_kws_data(col)
+    with open(CAPSTONE_KWS_WORDLIST, 'w') as f:
+        f.write('\n'.join(kws_words))
+    st.toast(f"Saved wordlist from KWS data to {CAPSTONE_KWS_WORDLIST}")
 
 def get_keyword_index(keyword_str: str) -> int:
     keywords = st.session_state["keyword_df"]["keyword"].tolist()
@@ -225,7 +120,7 @@ search_column = st.selectbox(
     options=["text", "fst_normalized", "unidecode_normalized"],
 )
 
-all_words = get_all_words(st.session_state["record_df"], text_col=search_column)
+all_words = get_words_from_records(st.session_state["record_df"], text_col=search_column)
 
 selected_records = st.session_state["record_df"]
 if st.session_state.get("query", None):
@@ -313,5 +208,10 @@ if list_to_edit:
             df=edited_df,
         ),
     )
+
+st.button(
+    label="Save all words in KWS data to list (for MFA alignment)",
+    on_click=save_words_from_kws_data
+)
 
 logger.debug(selection)

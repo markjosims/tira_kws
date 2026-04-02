@@ -183,6 +183,9 @@ CAPSTONE_POSITIVE_RECORDS = CAPSTONE_DIR / "keyword_positives.csv"
 CAPSTONE_CLOSE_NEGATIVE_RECORDS = CAPSTONE_DIR / "keyword_close_negatives.csv"
 CAPSTONE_NEGATIVE_RECORDS = CAPSTONE_DIR / "keyword_negatives.csv"
 
+# text file containing all words in KWS data for purposes of MFA alignment
+CAPSTONE_KWS_WORDLIST = CAPSTONE_DIR / "all_words.csv"
+
 """
 ### output files
 Files related to outputs from keyword search experiments.
