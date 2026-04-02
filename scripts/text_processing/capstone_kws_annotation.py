@@ -38,6 +38,8 @@ df2columns = {
         "original_sentence",
         "textnorm_sentence",
         "audionorm_sentence",
+        "audio_quality",
+        "comment",
     ],
     "close_negative_df": [
         "keyword",
@@ -47,6 +49,8 @@ df2columns = {
         "original_sentence",
         "textnorm_sentence",
         "audionorm_sentence",
+        "audio_quality",
+        "comment",
     ],
     "negative_df": [
         "sentence_id",
@@ -54,6 +58,8 @@ df2columns = {
         "original_sentence",
         "textnorm_sentence",
         "audionorm_sentence",
+        "audio_quality",
+        "comment",
     ],
 }
 
@@ -86,6 +92,8 @@ def load_dataframe(key: str) -> pd.DataFrame:
 
 def load_all_dataframes():
     for key in df2file.keys():
+        if key in st.session_state:
+            continue
         df = load_dataframe(key)
         st.session_state[key] = df
 
@@ -131,6 +139,7 @@ def save_dataframe(df: pd.DataFrame | dict[str, pd.DataFrame], key: str | None =
 def put_row_to_dataframe(key: str, row: dict[str, str | int], row_id: int):
     df = st.session_state[key]
     df.loc[row_id] = row
+    st.session_state[key] = df
 
 
 @st.cache_data
@@ -202,6 +211,12 @@ selection = st.dataframe(
     selection_mode="single-row",
 )
 
+list_to_edit = st.selectbox(
+    label="Data file to add rows to",
+    options=["positive_df", "negative_df", "close_negative_df"],
+    key="list_to_edit",
+)
+
 rows = None
 if selection and "selection" in selection and "rows" in selection["selection"]:
     rows = selection["selection"]["rows"]
@@ -220,7 +235,7 @@ if current_keyword and rows and st.session_state.get("list_to_edit", None):
         new_row = {
             "keyword": current_keyword,
             "keyword_id": current_keyword_i,
-            "sentence_id": row_index,
+            "sentence_id": row_data["record_idx"],
             "original_sentence": row_data["text"],
             "textnorm_sentence": textnorm_sentence,
             "translation": row_data["translation"],
@@ -235,13 +250,7 @@ if current_keyword and rows and st.session_state.get("list_to_edit", None):
         )
 
 
-list_to_edit = st.selectbox(
-    label="Data file to add rows to",
-    options=["positive_df", "negative_df", "close_negative_df"],
-    key="list_to_edit",
-)
-
 if list_to_edit:
-    st.dataframe(st.session_state[list_to_edit])
+    st.data_editor(st.session_state[list_to_edit], num_rows="delete")
 
 logger.debug(selection)
