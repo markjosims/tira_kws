@@ -2,6 +2,10 @@
 tira_kws: Keyword and Keyphrase Search experiments for Tira
 """
 
+from dotenv import load_dotenv
+load_dotenv()
+
+
 __version__ = "0.1.0"
 
 from tira_kws.constants import *

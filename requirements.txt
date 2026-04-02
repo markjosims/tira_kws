@@ -16,3 +16,4 @@ wandb
 streamlit
 streamlit-advanced-audio
 rapidfuzz
+dotenv

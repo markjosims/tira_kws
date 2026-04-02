@@ -27,12 +27,14 @@ def get_all_sentence_ids() -> set[int]:
     return sentence_ids
 
 
-def get_updated_row_count(df_key: str) -> tuple[int, int]:
+def get_updated_row_count(df_key: str | None) -> tuple[int, int]:
     """
     Counts how many rows in specified dataframe have a non-NA value
     for "audionorm_sentence". Returns that count along with total
     number of rows in the dataframe.
     """
+    if df_key is None:
+        return 0, 0
     df = st.session_state[df_key]
     updated_rows = (~(df["audionorm_sentence"].isna())).sum()
     total_rows = len(df)
@@ -99,12 +101,14 @@ if list_to_edit:
         sentence_id = selected_row["sentence_id"]
         original_sentence = selected_row["textnorm_sentence"]
         translation = selected_row["translation"]
+        keyword = selected_row["keyword"]
 
         with st.container(border=True):
             audio_array, sample_rate = load_audio_for_record(
                 selected_row["sentence_id"]
             )
             st.subheader(f"Editing record {sentence_id}")
+            st.markdown(f"**Keyword:** {keyword}")
             st.markdown(f"**Text:** {original_sentence}")
             st.markdown(f"**Translation:** {translation}")
 
