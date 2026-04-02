@@ -83,7 +83,7 @@ PHRASES_DIR =           LABELS_DIR / "phrases"
 PHRASES_CSV =           PHRASES_DIR / "tira_phrases.csv"
 
 # Use either FST normalization or unidecode normalization on raw EAF text.
-NORMALIZATION_TYPE = "unidecode" # change to "fst" to use FST normalization
+NORMALIZATION_TYPE = "fst" # change to "unidecode" to use unidecode (utf8->ascii) normalization
 
 # Path to CSV containing word and phrase merges for the chosen normalization type.
 WORD_MERGES_CSV =   WORDS_DIR / f"merges_{NORMALIZATION_TYPE}.csv"
@@ -167,6 +167,21 @@ CALIBRATION_LIST =          PHRASES_DIR / "calibration_list.json"
 
 # TXT list for English calibration keyphrase indices
 ENGLISH_CALIBRATION_LIST =  PHRASES_DIR / "english_calibration_keyphrase_idcs.txt"
+
+"""
+### Capstone wordlists
+Keyword lists specific to the CSS-MS capstone project on Tira KWS
+"""
+
+CAPSTONE_DIR = LABELS_DIR / "capstone"
+
+# CSV containing keywords and glosses
+CAPSTONE_KEYWORDS = CAPSTONE_DIR / "keywords.csv"
+
+# CSV containing positive, close negative, and negative records for each keyword
+CAPSTONE_POSITIVE_RECORDS = CAPSTONE_DIR / "keyword_positives.csv"
+CAPSTONE_CLOSE_NEGATIVE_RECORDS = CAPSTONE_DIR / "keyword_close_negatives.csv"
+CAPSTONE_NEGATIVE_RECORDS = CAPSTONE_DIR / "keyword_negatives.csv"
 
 """
 ### output files

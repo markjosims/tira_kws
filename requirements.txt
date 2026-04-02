@@ -13,3 +13,5 @@ pytest
 numba
 torchmetrics
 wandb
+streamlit
+rapidfuzz
