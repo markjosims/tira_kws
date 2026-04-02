@@ -136,9 +136,9 @@ def save_dataframe(df: pd.DataFrame | dict[str, pd.DataFrame], key: str | None =
         save_dataframe(df=item_df, key=item_key)
 
 
-def put_row_to_dataframe(key: str, row: dict[str, str | int], row_id: int):
+def put_row_to_dataframe(key: str, row: dict[str, str | int]):
     df = st.session_state[key]
-    df.loc[row_id] = row
+    df.loc[len(df)] = row
     st.session_state[key] = df
 
 
@@ -176,10 +176,18 @@ current_keyword = st.pills(
     options=st.session_state["keyword_df"]["keyword"],
     key="current_keyword",
 )
+
+query_non_keyword = st.checkbox(label="Query non-keyword")
+
+query = current_keyword
+if query_non_keyword:
+    query = st.text_input(label="Query")
+st.session_state.query = query
+
 current_keyword_i = None
 if current_keyword is not None:
     current_keyword_i = get_keyword_index(current_keyword)
-st.session_state["current_keyword_i"] = current_keyword
+st.session_state["current_keyword_i"] = current_keyword_i
 
 with st.popover("Progress"):
     current_keyword = st.session_state.get("current_keyword", None)
@@ -220,12 +228,13 @@ search_column = st.selectbox(
 all_words = get_all_words(st.session_state["record_df"], text_col=search_column)
 
 selected_records = st.session_state["record_df"]
-if current_keyword:
-    query = current_keyword
+if st.session_state.get("query", None):
+    query = st.session_state.query
+    assert type(query) is str
     if search_column == "unidecode_normalized":
-        query = unidecode(current_keyword)
+        query = unidecode(query)
     top_words = rapidfuzz.process.extract(
-        current_keyword,
+        query,
         all_words,
         limit=20,
         scorer=rapidfuzz.distance.DamerauLevenshtein.distance,
@@ -234,7 +243,9 @@ if current_keyword:
     selected_hit = st.selectbox("Fuzzy match", options=[hit[0] for hit in top_words])
     st.session_state.selected_hit = selected_hit
     selected_records = st.session_state["record_df"][
-        st.session_state["record_df"][search_column].str.contains(selected_hit)
+        st.session_state["record_df"][search_column].str.contains(
+            selected_hit, regex=True
+        )
     ]
 
 
@@ -267,8 +278,13 @@ if (
         st.markdown(f"**Translation**:\t{row_data['translation']}")
         if list_to_edit != "negative_df":
             st.markdown(f"**Keyword**:\t\t{current_keyword}")
+
+        textnorm_sentence_type = st.pills(
+            "Sentence column to use:", options=["text", "fst_normalized"]
+        )
+        textnorm_sentence = row_data[textnorm_sentence_type or "text"]
         textnorm_sentence = st.text_input(
-            label="Updated sentence", value=row_data["fst_normalized"]
+            label="Updated sentence", value=textnorm_sentence
         )
         new_row = {
             "sentence_id": row_data["record_idx"],
@@ -283,18 +299,18 @@ if (
             label=f"Add row to {list_to_edit}",
             on_click=lambda: put_row_to_dataframe(
                 key=list_to_edit,
-                row_id=row_index,
                 row=new_row,
             ),
         )
 
 
 if list_to_edit:
-    st.data_editor(st.session_state[list_to_edit], num_rows="delete")
+    edited_df = st.data_editor(st.session_state[list_to_edit], num_rows="delete")
     st.button(
         label=f"Save {list_to_edit}",
         on_click=lambda: save_dataframe(
-            key=list_to_edit, df=st.session_state[list_to_edit]
+            key=list_to_edit,
+            df=edited_df,
         ),
     )
 
