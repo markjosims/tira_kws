@@ -2,10 +2,20 @@
 Based on code in zipa/zipa_ctc_inference.py and zipa/zipformer_crctc/
 retrieved on 16 Feb 2026.
 Commit: f96afe2842868bb1d3cea1efe191806fdcd3c955
+
+Usage for CTC output:
+wav -> features???
+features -> model.forward_encoder
+encoder_out -> model.ctc_output
+ctc_output -> add wildcard
+ctc_output_w_wildcard -> torch.nn.functional.ctc_loss
+
 """
 
 from tira_kws.constants import (
-    ZIPA_DIR, ZIPA_SMALL_CTC, ZIPA_SENTENCEPIECE_MODEL,
+    ZIPA_DIR,
+    ZIPA_SMALL_CTC,
+    ZIPA_SENTENCEPIECE_MODEL,
     ICEFALL_MODULE,
 )
 import sys
@@ -35,14 +45,19 @@ from zipa_transducer_inference import small_params as transducer_params
 from zipformer_crctc.train import get_model as get_ctc_model
 from zipformer_transducer.train import get_model as get_transducer_model
 
+
 def load_zipa_small_crctc(params: AttributeDict = ctc_params) -> torch.nn.Module:
     return get_ctc_model(params)
-    
-def load_zipa_small_transducer(params: AttributeDict = transducer_params) -> torch.nn.Module:
-    if 'bpe_model' not in params:
+
+
+def load_zipa_small_transducer(
+    params: AttributeDict = transducer_params,
+) -> torch.nn.Module:
+    if "bpe_model" not in params:
         params = add_default_bpe_params(params)
 
     return get_transducer_model(params)
+
 
 def add_default_bpe_params(params: AttributeDict) -> AttributeDict:
     bpe_model = sentencepiece.SentencePieceProcessor()
@@ -56,10 +71,8 @@ def add_default_bpe_params(params: AttributeDict) -> AttributeDict:
 def main():
     model = load_zipa_small_crctc()
 
-
-
     model = load_zipa_small_transducer()
-   
+
     # # Generate a dummy audio batch (1 sample of 2 seconds of silence)
     # sample_rate = 16000
     # dummy_audio = [torch.zeros(int(sample_rate * 2)),torch.zeros(int(sample_rate * 2)),torch.zeros(int(sample_rate * 2))]  # 2-second silent audio
@@ -67,6 +80,7 @@ def main():
     # # Run inference
     # output = model.inference(dummy_audio)
     # print("Predicted transcript:", output)
+
 
 if __name__ == "__main__":
     main()
