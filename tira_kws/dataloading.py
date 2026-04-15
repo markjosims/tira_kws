@@ -1,10 +1,21 @@
-from tira_kws.constants import SUPERVISION_MANIFEST, RECORDING_MANIFEST, FEATURES_DIR
+from tira_kws.constants import (
+    SUPERVISION_MANIFEST,
+    RECORDING_MANIFEST,
+    CAPSTONE_SUPERVISIONS,
+    FEATURES_DIR,
+    K2_MAX_DURATION,
+    K2_MAX_CUTS,
+)
 
-from typing import *
+from typing import Literal
 import pandas as pd
-from lhotse import CutSet, RecordingSet, SupervisionSet
+from lhotse import CutSet, RecordingSet, SupervisionSet, Fbank
 from lhotse.cut import Cut
-from lhotse.dataset import K2SpeechRecognitionDataset, DynamicBucketingSampler
+from lhotse.dataset import (
+    K2SpeechRecognitionDataset,
+    DynamicBucketingSampler,
+    OnTheFlyFeatures,
+)
 from torch.utils.data import DataLoader
 from argparse import Namespace
 
@@ -49,7 +60,7 @@ def load_supervisions_df() -> pd.DataFrame:
     return supervisions_df
 
 
-def load_elicitation_cuts(index_list: Optional[List[int]] = None) -> CutSet:
+def load_elicitation_cuts(index_list: list[int] | None = None) -> CutSet:
     """
     Load Lhotse cutset for Tira elicitation audio.
 
@@ -79,7 +90,7 @@ def load_elicitation_cuts(index_list: Optional[List[int]] = None) -> CutSet:
 def load_kws_cuts(
     feature_set: Literal["xlsr", "fbank"],
     normalize_text: bool = False,
-) -> Tuple[CutSet, CutSet]:
+) -> tuple[CutSet, CutSet]:
     cuts_path = FEATURES_DIR / f"kws_{feature_set}.jsonl"
     cuts = CutSet.from_jsonl(cuts_path)
 
@@ -97,13 +108,29 @@ def load_kws_cuts(
     return word_cuts, sentence_cuts
 
 
-def get_k2_dataloader(cuts: CutSet, args: Namespace) -> DataLoader:
+def load_capstone_kws_cuts() -> CutSet:
+    cuts = CutSet.from_jsonl(CAPSTONE_SUPERVISIONS)
+    return cuts
+
+
+def get_k2_dataloader(cuts: CutSet, args: Namespace | None = Namespace) -> DataLoader:
     # based on GigaSpeechAsrDataModule.test_dataloders()
     # in icefall/egs/gigaspeech/KWS/zipformer/asr_datamodule.py
     # hardcoding defaults based on values in icefall/egs/gigaspeech/KWS/run.sh
-    test_ds = K2SpeechRecognitionDataset(return_cuts=True)
+
+    max_duration = K2_MAX_DURATION
+    max_cuts = K2_MAX_CUTS
+
+    if args is not None and hasattr(args, "max_duration"):
+        max_duration = args.max_duration
+    if args is not None and hasattr(args, "max_cuts"):
+        max_cuts = args.max_cuts
+
+    test_ds = K2SpeechRecognitionDataset(
+        return_cuts=True, input_strategy=OnTheFlyFeatures(Fbank())
+    )
     sampler = DynamicBucketingSampler(
-        cuts, max_duration=args.max_duration, max_cuts=args.max_cuts, shuffle=False
+        cuts, max_duration=max_duration, max_cuts=max_cuts, shuffle=False
     )
     test_dl = DataLoader(
         test_ds,
@@ -112,4 +139,3 @@ def get_k2_dataloader(cuts: CutSet, args: Namespace) -> DataLoader:
         num_workers=0,
     )
     return test_dl
-

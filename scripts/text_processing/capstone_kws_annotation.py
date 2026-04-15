@@ -25,11 +25,13 @@ logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 CAPSTONE_DIR.mkdir(exist_ok=True)
 
+
 @st.cache_data
 def get_words_from_records(df: pd.DataFrame, text_col: str = "text") -> set[str]:
     words = set()
     df[text_col].str.split().apply(words.update)
     return words
+
 
 def get_words_from_kws_data(col: str = "textnorm_sentence") -> set[str]:
     words = set()
@@ -38,13 +40,17 @@ def get_words_from_kws_data(col: str = "textnorm_sentence") -> set[str]:
         df[col].str.split().apply(words.update)
     return words
 
+
 def save_words_from_kws_data(col: str = "textnorm_sentence"):
     kws_words = get_words_from_kws_data(col)
-    with open(CAPSTONE_KWS_WORDLIST, 'w') as f:
-        f.write('\n'.join(kws_words))
+    with open(CAPSTONE_KWS_WORDLIST, "w") as f:
+        f.write("\n".join(kws_words))
     st.toast(f"Saved wordlist from KWS data to {CAPSTONE_KWS_WORDLIST}")
 
+
 def get_keyword_index(keyword_str: str) -> int:
+    if keyword_str == "EXCLUDE":
+        return -1
     keywords = st.session_state["keyword_df"]["keyword"].tolist()
     return keywords.index(keyword_str)
 
@@ -68,14 +74,17 @@ keyword_list = st.session_state["keyword_df"]["keyword"]
 
 current_keyword = st.pills(
     "Keyword query",
-    options=st.session_state["keyword_df"]["keyword"],
+    options=st.session_state["keyword_df"]["keyword"].tolist() + ["EXCLUDE"],
     key="current_keyword",
 )
+exclude_keywords = current_keyword == "EXCLUDE"
 
-query_non_keyword = st.checkbox(label="Query non-keyword")
+query_non_keyword = st.checkbox(
+    label="Query non-keyword", disabled=not exclude_keywords
+)
 
 query = current_keyword
-if query_non_keyword:
+if query_non_keyword and not exclude_keywords:
     query = st.text_input(label="Query")
 st.session_state.query = query
 
@@ -94,7 +103,7 @@ with st.popover("Progress"):
         text=f"Negatives records: {len(st.session_state['negative_df'])}/100",
     )
 
-    if current_keyword:
+    if current_keyword and current_keyword != "EXCLUDE":
         keyword_positives = (
             st.session_state["positive_df"]["keyword"]
             .value_counts()
@@ -120,10 +129,19 @@ search_column = st.selectbox(
     options=["text", "fst_normalized", "unidecode_normalized"],
 )
 
-all_words = get_words_from_records(st.session_state["record_df"], text_col=search_column)
+all_words = get_words_from_records(
+    st.session_state["record_df"], text_col=search_column
+)
 
 selected_records = st.session_state["record_df"]
-if st.session_state.get("query", None):
+if st.session_state.get("current_keyword", None) == "EXCLUDE":
+    record_df = st.session_state["record_df"]
+    no_keyword_mask = pd.Series([True] * len(record_df))
+    keywords = st.session_state["keyword_df"]["keyword"].tolist()
+    for keyword in keywords:
+        no_keyword_mask &= ~record_df["fst_normalized"].str.contains(keyword)
+    selected_records = record_df[no_keyword_mask]
+elif st.session_state.get("query", None):
     query = st.session_state.query
     assert type(query) is str
     if search_column == "unidecode_normalized":
@@ -211,7 +229,7 @@ if list_to_edit:
 
 st.button(
     label="Save all words in KWS data to list (for MFA alignment)",
-    on_click=save_words_from_kws_data
+    on_click=save_words_from_kws_data,
 )
 
 logger.debug(selection)
