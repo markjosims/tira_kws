@@ -98,17 +98,18 @@ def load_all_dataframes(cache_on_first_load=True):
         cache_all_dataframes()
         st.session_state["first_load"] = False
 
+
 def cache_all_dataframes():
     now = datetime.now()
-    time_string  = now.strftime("%Y-%m-%d-%H-%M-%S")
-    cache_dir = CAPSTONE_DIR / '.cache' / time_string
+    time_string = now.strftime("%Y-%m-%d-%H-%M-%S")
+    cache_dir = CAPSTONE_DIR / ".cache" / time_string
     cache_dir.mkdir(parents=True, exist_ok=True)
 
     for key, filepath in df2file.items():
         df: pd.DataFrame = st.session_state[key]
         cached_path = cache_dir / filepath.name
         df.to_csv(str(cached_path), index=False)
-    st.toast(f"Cached dataframes to {cache_dir}")  
+    st.toast(f"Cached dataframes to {cache_dir}")
 
 
 def update_dataframe(
@@ -149,10 +150,13 @@ def save_dataframe(df: pd.DataFrame | dict[str, pd.DataFrame], key: str | None =
         save_dataframe(df=item_df, key=item_key)
 
 
-def put_row_to_dataframe(key: str, row: dict[str, str | int], row_id: int | None = None):
+def put_row_to_dataframe(
+    key: str, row: dict[str, str | int], row_id: int | None = None
+):
     df = st.session_state[key]
     if row_id is None:
         df.loc[len(df)] = row
     else:
         df.loc[row_id] = row
     st.session_state[key] = df
+

@@ -5,17 +5,13 @@ Interface for validating transcriptions of KWS audio records
 import streamlit as st
 from streamlit_advanced_audio import audix
 
-from tira_kws.constants import RECORDS_DIR
 from tira_kws.interface_utils import (
     load_all_dataframes,
     save_dataframe,
     put_row_to_dataframe,
 )
 from tira_kws.dataloading import load_elicitation_cuts
-import pandas as pd
 import numpy as np
-import logging
-import sys
 from lhotse.cut import Cut
 
 
@@ -85,6 +81,8 @@ st.progress(updated_rows / total_rows if total_rows > 0 else 0)
 
 if list_to_edit:
     selected_df = st.session_state[list_to_edit]
+    if st.toggle("Unvalidated only"):
+        selected_df = selected_df[selected_df["audionorm_sentence"].isna()]
     event = st.dataframe(selected_df, selection_mode="single-row", on_select="rerun")
 
     # display dataframe, then when a row is selected make a container
@@ -99,34 +97,29 @@ if list_to_edit:
         selected_row = selected_df.iloc[row_index]
 
         sentence_id = selected_row["sentence_id"]
-        original_sentence = selected_row["textnorm_sentence"]
+        textnorm_sentence = selected_row["textnorm_sentence"]
+        original_sentence = selected_row["original_sentence"]
         translation = selected_row["translation"]
-        keyword = selected_row["keyword"]
+        keyword = selected_row.get("keyword", None)
 
         with st.container(border=True):
             audio_array, sample_rate = load_audio_for_record(
                 selected_row["sentence_id"]
             )
             st.subheader(f"Editing record {sentence_id}")
-            st.markdown(f"**Keyword:** {keyword}")
-            st.markdown(f"**Text:** {original_sentence}")
+            if keyword:
+                st.markdown(f"**Keyword:** {keyword}")
+            st.markdown(f"**Original text:** {original_sentence}")
+            st.markdown(f"**Text:** {textnorm_sentence}")
             st.markdown(f"**Translation:** {translation}")
 
             audix(audio_array, sample_rate=sample_rate)
 
-            original_as_default = lambda: st.session_state.update(
-                updated_sentence=original_sentence
-            )
-            st.button(
-                "Copy original sentence",
-                on_click=original_as_default
-            )
-            updated_sentence_default = st.session_state.get("updated_sentence", None)
-
-            updated_sentence = st.text_input(
+            updated_sentence = st.selectbox(
                 label="Updated sentence",
-                value=updated_sentence_default,
+                options=[textnorm_sentence, original_sentence],
                 help="Edit the sentence as needed to match the audio as accurately as possible.",
+                accept_new_options=True,
             )
             audio_quality = st.select_slider(
                 label="Audio quality",
@@ -157,14 +150,13 @@ if list_to_edit:
                 "mistranscription": mistranscription,
                 "audio_quality": audio_quality,
             }
-            st.button(
-                "Update Row",
-                on_click=lambda: put_row_to_dataframe(
-                    key=list_to_edit,
-                    row=row_data,
-                    row_id=row_index,
-                ),
-            )
+
+            def handle_update():
+                put_row_to_dataframe(
+                    key=list_to_edit, row=row_data, row_id=selected_row.name
+                )
+
+            st.button("Update Row", on_click=handle_update)
 
     # button to save all data
     st.button(
