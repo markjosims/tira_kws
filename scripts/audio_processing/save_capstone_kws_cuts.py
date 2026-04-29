@@ -52,6 +52,7 @@ def main():
         else:
             supervision_id = f"{row['keyword']}_{id}"
             supervision.custom["keyword"] = row["keyword"]
+        supervision.custom["norm_text"] = row["audionorm_sentence"]
         supervision_id = f"{supervision_id}_{record_type}"
         supervision.id = supervision_id
         supervision.custom["record_type"] = record_type
