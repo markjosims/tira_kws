@@ -41,13 +41,19 @@ if zipa_transducer not in sys.path:
     sys.path.append(str(zipa_transducer))
 
 from zipa_ctc_inference import small_params as ctc_params
+from zipa_ctc_inference import large_params as ctc_params_large
 from zipa_transducer_inference import small_params as transducer_params
+from zipa_transducer_inference import large_params as transducer_params_large
 from zipformer_crctc.train import get_model as get_ctc_model
 from zipformer_transducer.train import get_model as get_transducer_model
 
 
 def load_zipa_small_crctc(params: AttributeDict = ctc_params) -> torch.nn.Module:
     return get_ctc_model(params)
+
+
+def load_zipa_large_crctc() -> torch.nn.Module:
+    return get_ctc_model(ctc_params_large)
 
 
 def load_zipa_small_transducer(
@@ -57,6 +63,10 @@ def load_zipa_small_transducer(
         params = add_default_bpe_params(params)
 
     return get_transducer_model(params)
+
+
+def load_zipa_large_transducer() -> torch.nn.Module:
+    return get_transducer_model(transducer_params_large)
 
 
 def add_default_bpe_params(params: AttributeDict) -> AttributeDict:
