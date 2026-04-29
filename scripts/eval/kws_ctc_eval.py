@@ -2,7 +2,7 @@
 
 # imports
 from tira_kws.dataloading import load_capstone_kws_cuts, get_k2_dataloader
-from tira_kws.models.zipa import load_zipa_small_crctc
+from tira_kws.models.zipa import load_zipa_large_crctc
 from tira_kws.constants import CAPSTONE_SUPERVISIONS, CAPSTONE_KEYWORDS
 from lhotse import SupervisionSet
 import pandas as pd
@@ -64,16 +64,19 @@ def main():
 
     
     # load zipa small
-    model = load_zipa_small_crctc()
+    model = load_zipa_large_crctc()
     model = model.to('cuda')
     
 
     losses = []
-    sentence_infos = []
+    sentence_infos = []        
+
+    # make a dataframe for each batch
+    batch_df_list = []
 
     # tokenize the keyword
     tokenizer = sentencepiece.SentencePieceProcessor()
-    tokenizer.load(str(ZIPA_SENTENCEPIECE_MODEL))
+    tokenizer.load(str(ZIPA_SENTENCEPIECE_MODEL))  
 
 
     # iterate through each of the keyword cutsets
@@ -87,9 +90,6 @@ def main():
     
         # batch each of the cutsets
         dataloader = get_k2_dataloader(kw_cutset)
-
-        # make a dataframe for each batch
-        batch_df_list = []
         
         for batch in dataloader:
     
@@ -105,7 +105,7 @@ def main():
 
             token_indices = torch.argmax(ctc_logits, 2).tolist()
             pred_strings = tokenizer.decode(token_indices)
-            breakpoint()
+            #breakpoint()
             
     
             # get the probabilities from the logits for each batch
@@ -150,10 +150,12 @@ def main():
                 #sentence = record.custom['fst_text']
                 record_info['sentence'] = record.custom['fst_text']
                 record_info['record_type'] = record.custom['record_type']
+                record_info['keyword'] = kw
+                '''
                 if 'keyword' in record.custom:
                     record_info['keyword'] = record.custom['keyword']
                 else:
-                    record_info['keyword'] = 0
+                    record_info['keyword'] = 0'''
                 
                 batch_sent_info.append(record_info)
             print('BATCH SENT INFO: ', batch_sent_info)
@@ -172,7 +174,7 @@ def main():
 
     # concatenate all batch dataframes into a big df
     tot_df = pd.concat(batch_df_list)
-    tot_df.to_csv('tot_df.csv')
+    tot_df.to_csv('large_tot_df.csv')
             
     
             #probs = sigmoid(loss)
