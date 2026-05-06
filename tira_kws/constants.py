@@ -186,7 +186,8 @@ CAPSTONE_CLOSE_NEGATIVE_RECORDS = CAPSTONE_DIR / "keyword_close_negatives.csv"
 CAPSTONE_NEGATIVE_RECORDS = CAPSTONE_DIR / "keyword_negatives.csv"
 
 # text file containing all words in KWS data for purposes of MFA alignment
-CAPSTONE_KWS_WORDLIST = CAPSTONE_DIR / "all_words.csv"
+CAPSTONE_KWS_WORDLIST = CAPSTONE_DIR / "all_words.txt"
+CAPSTONE_KWS_WORD_MERGES = CAPSTONE_DIR / "all_words_merged.tsv"
 
 # JSONL manifest containing supervisions from keyword lists
 CAPSTONE_SUPERVISIONS = TIRA_ELICITATION / "capstone_kws_supervisions.jsonl"
