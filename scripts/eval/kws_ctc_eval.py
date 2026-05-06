@@ -112,7 +112,7 @@ def main():
             batch_size = ctc_logits.shape[0]
             targets = torch.tensor([kw_tokenized]*batch_size)
             target_lengths = torch.tensor([len(kw_tokenized)]*batch_size)
-            ctc_probs = log_softmax(ctc_logits)
+            ctc_probs = log_softmax(ctc_logits, 2)
 
             ctc_loss = CTCLoss(reduction='none')
             
