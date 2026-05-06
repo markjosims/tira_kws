@@ -46,13 +46,15 @@ from zipa_transducer_inference import small_params as transducer_params
 from zipa_transducer_inference import large_params as transducer_params_large
 from zipformer_crctc.train import get_model as get_ctc_model
 from zipformer_transducer.train import get_model as get_transducer_model
+from zipformer_crctc.ctc_decode import decode_one_batch as _decode_ctc
+from zipformer_transducer.decode import decode_one_batch as _decode_transducer
 
 
 def load_zipa_small_crctc(params: AttributeDict = ctc_params) -> torch.nn.Module:
     return get_ctc_model(params)
 
 
-def load_zipa_large_crctc() -> torch.nn.Module:
+def load_zipa_large_crctc(params: AttributeDict = ctc_params_large) -> torch.nn.Module:
     return get_ctc_model(ctc_params_large)
 
 
@@ -65,7 +67,12 @@ def load_zipa_small_transducer(
     return get_transducer_model(params)
 
 
-def load_zipa_large_transducer() -> torch.nn.Module:
+def load_zipa_large_transducer(
+    params: AttributeDict = transducer_params_large,
+) -> torch.nn.Module:
+    if "bpe_model" not in params:
+        params = add_default_bpe_params(params)
+
     return get_transducer_model(transducer_params_large)
 
 
@@ -76,6 +83,41 @@ def add_default_bpe_params(params: AttributeDict) -> AttributeDict:
     params.sos_id = params.eos_id = bpe_model.piece_to_id("<sos/eos>")
     params.vocab_size = bpe_model.get_piece_size()
     return params
+
+
+def decode_ctc(
+    params: AttributeDict,
+    model: torch.nn.Module,
+    sp: sentencepiece.SentencePieceProcessor,
+    batch: dict,
+) -> dict:
+    if not hasattr(params, "decoding_method"):
+        params.decoding_method = "ctc-greedy-search"
+    device = torch.device("cuda")
+    dummy_H = torch.tensor(0, device=device)
+    return _decode_ctc(
+        params=params,
+        model=model,
+        bpe_model=sp,
+        batch=batch,
+        HLG=None,
+        H=dummy_H,
+        word_table=None,
+        G=None,
+    )
+
+
+def decode_transducer(
+    params: AttributeDict,
+    model: torch.nn.Module,
+    sp: sentencepiece.SentencePieceProcessor,
+    batch: dict,
+) -> dict:
+    if not hasattr(params, "decoding_method"):
+        params.decoding_method = "greedy_search"
+    if not hasattr(params, "max_sym_per_frame"):
+        params.max_sym_per_frame = 1
+    return _decode_transducer(params=params, model=model, sp=sp, batch=batch)
 
 
 def main():
