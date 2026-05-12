@@ -75,14 +75,12 @@ sentence_id,translation,original_sentence,textnorm_sentence,audionorm_sentence,a
 19144,snake,rŋɔ̀,ŕŋɔ̀,ŕŋɔ̀,3.0,False,False,False,,r̀ŋɔ̀
 2198,If there are no herbs I will swallow/take medicine,án ìdɜ̀ɽì kèró íŋgárnà ɲiroba,àn èdɛ̀ɽì kɛ̀ɾɔ́ íŋgá_ŕnà ŋrɔ̂bà,àn èdɛ̀ɽì kɛ̀ɾɔ́ íŋgá_ŕnà ŋrɔ̂bà,3.0,False,False,False,,àn èdɛ̀ɽì kɛ̀ɾɔ́ íŋgá_ŕnà ŋrɔ́bà
 9992,Don't push the bicycles! (towards),àt̪á dɔ̀ŋðɔ́ lə́vàvrà dɛ̀,àɽá dɔ̀ŋðɔ́ lə́vàvɾà dɛ̀,àt̪á dɔ̀ŋðɔ́ lə́vàvrà dɛ̀,3.0,False,False,False,,àt̪á dɔ̀ŋðɔ́ lə̀vàvrà dɛ̀
-8339,Who is afraid of the leopard? ,àn ɔ́ɟɔ́ kə́ðíɲɔ́ múðɔ̀,àn ɔ́ɟɔ́ kə́ðìɲɔ́ múðù,àn ɔ́ɟɔ́ kə́ðìɲɔ́ múðù,3.0,False,False,False,,àn ɔ́ɟɔ̀ kə̀ðìɲɔ́ mùðù
 19851,cut/chop/hash the meat,ðɔ́ ɛ̀ðɛ̀,ðɔ́ ɛ̀ðɛ̀,ðɔ́ ɛ̀ðɛ̀,3.0,False,False,False,,ðɔ́ ɛ̀ðɛ̀
 17518,"""I came to speak with you. The hare is very weak. He said you have been eating all his meat""",jít̪ɔ́ lí lɔ́ɽǎ ŋìðìní kə̀rə̀mná kàɾú ŋgàó ŋgájájât̪à ɛ̀ðɛ̀,jít̪ɔ́ ílí lɔ́ɽá ŋìðìjí kə̀r̀nà kàɾó ŋgá ŋgá_jájàt̪à ɛ̀ðɛ̀,jít̪ɔ́ lí lɔ́ɽá ŋìðìní kə̀rə̀mná kàɾú ŋgàó ŋgájájàt̪à ɛ̀ðɛ̀,3.0,False,False,False,,jít̪ɔ̀ lí lɔ́ɽá ŋìðɛ̀ní kə̀rə̀mná kàɾú ŋgàó ŋgájájàt̪à ɛ̀ðɛ̀
 4981,They will build a house tomorrow,lɔ́dâ ìŋnà nd̪ɔ̀bà,lɔ́dà ə̀ŋná nd̪ɔ̀bà,lɔ́dà ə̀ŋná nd̪ɔ̀bà,3.0,False,False,False,,lɔ́dà ə̀ŋná nd̪ɔ̀bà
 16445,The back (body part) is good.,lɔ́ɾɔ́ lìcɽò,lɔ́ɾɔ́ lìcò,lɔ́ɾɔ́ lìcə̀lò,3.0,False,False,False,,lɔ́ɾɔ́ lìcə̀lò
 6870,They pushed the goat yesterday (and left),làdɔ́ŋðɛ̀ r̀ɽò ùnɛ̀ɾɛ̀,là_dɔ́ŋðɛ̀ r̀ɽò ùnɛ́ɾɛ́,là_dɔ́ŋðɛ̀ r̀ɽò ùnɛ́ɾɛ́,3.0,False,False,False,,là_dɔ́ŋðɛ̀ r̀ɽò ùnɛ́rɛ́
 4288,We (excl) are going to cut the rope,ɲàlɛ́là ðə́t̪ə́và ðàr,ɲàĺl ðə́t̪ə́vá ðár,ɲàlɛ́là ðə́t̪ə́và ðàr,3.0,False,False,False,,ɲàlɛ́là ðə́t̪ə́và ðàr
-8314,The farmer will fear the leopard tomorrow,ɛ̀làɽà káðíɲɔ̀ mùðɔ̀ nd̪ɔ̀bà,ɛ̀làɽà kə́ðìɲɔ̀ mùðù nd̪ɔ̀bà,ɛ̀làɽà ká_ðíɲɔ̀ mùðɔ̀ nd̪ɔ̀bà,3.0,False,False,False,,ɛ̀làɽà ká_ðíɲɔ̀ mùðɔ̀ nd̪ɔ̀bà
 20288,my sibling-in-law,ìbɛ̀j,ìbɛ́j,ìbɛ́j,3.0,False,False,False,,ìbɛ́j
 19555,Run fast (towards speaker),ɔ̀ɽá t̪ə̀màn,ɔ̀ɽá t̪ə̀mànì,ɔ̀ɽá t̪ə̀màn,3.0,False,False,False,,ɔ̀ɽá t̪ə̀màn
 9330,Refuse Kuku now!,nɛ́ðɔ́ kúkùŋú t̪ɔ̀wə̀nì,nɛ́ðɔ́ kúkùŋú t̪ɔ́wɜ̀nì,nɛ́ðɔ́ kúkùŋú t̪ɔ́wɜ̀nì,3.0,False,False,False,,nɛ́ðɔ́ kúkùŋú t̪ɔ̀wɜ̀ni
@@ -99,3 +97,5 @@ sentence_id,translation,original_sentence,textnorm_sentence,audionorm_sentence,a
 16492,The lion is tall,t̪òlí t̪ɔ̀là,t̪òlé t̪ɔ̀là,t̪òlé t̪ɔ̀là,3.0,False,False,False,,t̪òlé t̪ɔ̀là
 17540,pour water,ɾácí ŋávɛ̀,ɾácí ŋávɛ́,ɾácí ŋávɛ́,3.0,False,False,False,,ɾácí ŋávɛ́
 19745,‘chew meat for someone!’,jáít̪ɔ́ ɛ̀ðɛ̀,jájít̪ɔ́ ɛ̀ðɛ̀,jájít̪ɔ́ ɛ̀ðɛ̀,3.0,False,False,False,,jájít̪ɔ́ ɛ̀ðɛ̀
+4986,They will build a house tomorrow (far away),lɔ́dɔ́ íŋnà nd̪ɔ̀bà,lɔ́dɔ́ ə́ŋná nd̪ɔ̀bà,,,,,,,
+17486,‘Hit something now (far)!’,bə̀ɽɔ́ t̪ɔ́wə̀nì,bìɽɔ́ t̪ɔ́wɜ̀nì,,,,,,,
