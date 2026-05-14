@@ -17,6 +17,7 @@ from tira_kws.constants import (
     ZIPA_SMALL_CTC,
     ZIPA_SENTENCEPIECE_MODEL,
     ICEFALL_MODULE,
+    MODEL_DIR,
 )
 import sys
 import torch
@@ -42,25 +43,39 @@ if zipa_transducer not in sys.path:
 
 from zipa_ctc_inference import small_params as ctc_params
 from zipa_ctc_inference import large_params as ctc_params_large
+from zipa_ctc_inference import ZIPA_CTC
 from zipa_transducer_inference import small_params as transducer_params
 from zipa_transducer_inference import large_params as transducer_params_large
-from zipformer_crctc.train import get_model as get_ctc_model
+
+# from zipformer_crctc.train import get_model as get_ctc_model
 from zipformer_transducer.train import get_model as get_transducer_model
 from zipformer_crctc.ctc_decode import decode_one_batch as _decode_ctc
 from zipformer_transducer.decode import decode_one_batch as _decode_transducer
 
 
 def load_zipa_small_crctc(params: AttributeDict = ctc_params) -> torch.nn.Module:
-    return get_ctc_model(params)
+    raise NotImplementedError("Don't use!")
+    # return get_ctc_model(params)
 
 
 def load_zipa_large_crctc(params: AttributeDict = ctc_params_large) -> torch.nn.Module:
-    return get_ctc_model(ctc_params_large)
+    if "model_path" not in params:
+        params.model_path = str(
+            MODEL_DIR / "zipa" / "zipa_large_crctc_0.5_scale_800000_avg10.pth"
+        )
+    if "device" not in params:
+        params.device = "cuda"
+    if "bpe_model" not in params:
+        params = add_default_bpe_params(params)
+
+    # return get_ctc_model(ctc_params_large)
+    return ZIPA_CTC(params)
 
 
 def load_zipa_small_transducer(
     params: AttributeDict = transducer_params,
 ) -> torch.nn.Module:
+    raise NotImplementedError("Don't use!")
     if "bpe_model" not in params:
         params = add_default_bpe_params(params)
 
@@ -70,6 +85,7 @@ def load_zipa_small_transducer(
 def load_zipa_large_transducer(
     params: AttributeDict = transducer_params_large,
 ) -> torch.nn.Module:
+    raise NotImplementedError("Don't use!")
     if "bpe_model" not in params:
         params = add_default_bpe_params(params)
 
@@ -79,6 +95,7 @@ def load_zipa_large_transducer(
 def add_default_bpe_params(params: AttributeDict) -> AttributeDict:
     bpe_model = sentencepiece.SentencePieceProcessor()
     bpe_model.load(str(ZIPA_SENTENCEPIECE_MODEL))
+    params.bpe_model = str(ZIPA_SENTENCEPIECE_MODEL)
     params.blank_id = bpe_model.piece_to_id("<blk>")
     params.sos_id = params.eos_id = bpe_model.piece_to_id("<sos/eos>")
     params.vocab_size = bpe_model.get_piece_size()

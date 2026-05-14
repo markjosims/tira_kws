@@ -24,6 +24,7 @@ SPEECHBRAIN_LID_ENCODER_NAME = "speechbrain/lang-id-voxlingua107-ecapa"
 
 ZIPA_SMALL_CTC = MODEL_DIR / "zipa" / "zipa_small_crctc_300000_avg10.pth"
 ZIPA_SMALL_TRANSDUCER = MODEL_DIR / "zipa" / "zipa_small_noncausal_500000_avg10.pth"
+ZIPA_TOKEN_FILE = MODEL_DIR / "zipa" / "tokens.txt"
 
 # file paths
 
@@ -187,6 +188,7 @@ CAPSTONE_NEGATIVE_RECORDS = CAPSTONE_DIR / "keyword_negatives.csv"
 
 # text file containing all words in KWS data for purposes of MFA alignment
 CAPSTONE_KWS_WORDLIST = CAPSTONE_DIR / "all_words.txt"
+CAPSTONE_TOKENIZED_WORDLIST = CAPSTONE_DIR / "tokenized_words.txt"
 CAPSTONE_KWS_WORD_MERGES = CAPSTONE_DIR / "all_words_merged.tsv"
 
 # JSONL manifest containing supervisions from keyword lists
